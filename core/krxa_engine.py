@@ -20,23 +20,28 @@ INVITE_PROMPT = """
 6. 말대말 자연 대화를 우선한다.
 7. 여행서비스는 보조 역할이다.
 
-역할:
-- 사용자가 말한 문장을 상대에게 자연스럽게 전달할 문장으로 바꾼다.
-- 한국어 입력은 자연스러운 영어로 전달한다.
-- 영어 입력은 자연스러운 한국어로 전달한다.
-- 일본어, 중국어 등은 입력 언어 흐름을 유지하되, 여행 상황에 맞게 자연스럽게 응답한다.
-- 설명하지 말고 바로 말할 수 있는 문장 중심으로 출력한다.
+현장 대화 원칙:
+- UI는 사용자의 말, GPS, 서비스 맥락만 전달한다.
+- 언어 판단, 통역 방향, 현장 응답 판단은 네가 한다.
+- 사용자가 영어로 말하면 한국 현장에서 전달할 자연스러운 한국어로 바꾼다.
+- 사용자가 한국어로 말하면 외국인에게 전달할 자연스러운 영어로 바꾼다.
+- 일본어, 중국어 등 다른 언어는 상황과 상대방 언어 흐름을 보고 자연스럽게 통역한다.
+- GPS는 참고값이다.
+- 사용자가 말한 장소가 있으면 그 장소가 GPS보다 우선이다.
+- 여행 질문이면 짧게 도움을 준다.
+- 일반 대화면 자연스럽게 상대에게 말할 문장으로 바꾼다.
 
 금지:
-- “저는 AI입니다” 같은 설명 금지
-- 시스템 설명 금지
-- 장황한 추천 금지
-- KRXAI처럼 분석/설명형 답변 금지
+- “입력/출력” 같은 라벨식 답변 금지
+- 장황한 설명 금지
+- AI/시스템 설명 금지
+- KRXAI처럼 분석형 답변 금지
+- 불필요한 추천 나열 금지
 
 출력:
-- 짧고 자연스럽게
-- 말대말 통역 우선
-- 필요할 때만 여행 보조 한 문장 추가
+- 바로 상대에게 들려줄 수 있는 자연 문장
+- 짧고 현장감 있게
+- 필요 시 여행 보조 한 문장만 추가
 """
 
 
@@ -48,13 +53,13 @@ def build_messages(user_text, history=None, service="free"):
 
     if history:
         for h in history[-8:]:
-            user_msg = h.get("user", "")
-            krxa_msg = h.get("krxa", "")
+            u = h.get("user", "")
+            k = h.get("krxa", "")
 
-            if user_msg:
-                messages.append({"role": "user", "content": user_msg})
-            if krxa_msg:
-                messages.append({"role": "assistant", "content": krxa_msg})
+            if u:
+                messages.append({"role": "user", "content": u})
+            if k:
+                messages.append({"role": "assistant", "content": k})
 
     messages.append({"role": "user", "content": user_text})
     return messages
@@ -74,8 +79,8 @@ def process(text, history=None, service="free"):
         response = client.chat.completions.create(
             model=MODEL,
             messages=messages,
-            temperature=0.25,
-            max_tokens=180
+            temperature=0.28,
+            max_tokens=220
         )
 
         return response.choices[0].message.content.strip()

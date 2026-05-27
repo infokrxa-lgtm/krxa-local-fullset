@@ -35,7 +35,7 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
         <button class="btn map" onclick="openMap()">📍 지도 안내</button>
     </div>
 
-    <div class="status" id="status">KRXA 준비됨 · 영어⇄한국어 말대말 통역</div>
+    <div class="status" id="status">KRXA 준비됨 · 말하면 자연스럽게 통역합니다</div>
 
     <div class="chat" id="chat"></div>
 
@@ -44,11 +44,11 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
     </div>
 
     <div class="inputbox">
-        <textarea id="text" placeholder="영어 또는 한국어로 말하거나 입력하세요"></textarea>
+        <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
         <button class="send" onclick="sendText()">텍스트 전송</button>
     </div>
 
-    <div class="small" id="locText">기기 GPS 우선 · 말한 장소가 있으면 기준 위치 변경</div>
+    <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
 </div>
 
 <script>
@@ -64,9 +64,6 @@ let currentLat = "";
 let currentLng = "";
 let currentPlace = "";
 let deviceLocale = navigator.language || "ko-KR";
-let inputLang = "";
-let outputLang = "";
-let conversationMode = "auto_ko_en";
 
 function setStatus(t){
     document.getElementById("status").innerText = t;
@@ -99,28 +96,6 @@ function addMessage(type, title, text){
     chat.scrollTop = chat.scrollHeight;
 }
 
-function detectInputLang(text){
-    if(/[가-힣]/.test(text)) return "ko-KR";
-    if(/[a-zA-Z]/.test(text)) return "en-US";
-    if(/[\u3040-\u30ff]/.test(text)) return "ja-JP";
-    if(/[\u4e00-\u9fff]/.test(text)) return "zh-CN";
-    return deviceLocale || "ko-KR";
-}
-
-function decideOutputLang(lang){
-    if(lang === "ko-KR") return "en-US";
-    if(lang === "en-US") return "ko-KR";
-    return "ko-KR";
-}
-
-function labelForLang(lang){
-    if(lang === "ko-KR") return "한국어";
-    if(lang === "en-US") return "English";
-    if(lang === "ja-JP") return "日本語";
-    if(lang === "zh-CN") return "中文";
-    return lang;
-}
-
 function updatePlaceFromText(text){
     const patterns = [
         /나는\s*([^,.!?，。！？\s]+(?:역|시|구|동|로|거리|호텔|공항|터미널))/,
@@ -133,7 +108,7 @@ function updatePlaceFromText(text){
         const m = text.match(p);
         if(m && m[1]){
             currentPlace = m[1].trim();
-            setLocText("현재 기준 위치: " + currentPlace + " · 사용자 발화 위치 우선");
+            setLocText("현재 기준 위치: " + currentPlace);
             return;
         }
     }
@@ -149,12 +124,12 @@ function requestDeviceLocation(){
         pos => {
             currentLat = pos.coords.latitude;
             currentLng = pos.coords.longitude;
-            setStatus("KRXA 준비됨 · 기기 위치 기반 안내 가능");
-            setLocText("기기 GPS 기준 · 한국 현장 위치 우선 적용");
+            setStatus("KRXA 준비됨 · 기기 위치 참고 가능");
+            setLocText("기기 위치 참고 · 사용자가 말한 장소 우선");
         },
         err => {
             setStatus("KRXA 준비됨 · 위치 권한 없음");
-            setLocText("위치 권한 없음 · 사용자가 말한 장소를 기준으로 변경 가능");
+            setLocText("위치 권한 없음 · 말한 장소 기준 가능");
         },
         {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
     );
@@ -198,41 +173,50 @@ function showCards(cards){
     document.getElementById("cards").innerHTML = html;
 }
 
+function isNoise(text){
+    const t = text.trim();
+    if(!t) return true;
+    if(t.length <= 1) return true;
+
+    const noise = [
+        "thanks for watching",
+        "thank you for watching",
+        "구독",
+        "시청해주셔서",
+        "음",
+        "어"
+    ];
+
+    return noise.some(n => t.toLowerCase().includes(n));
+}
+
 async function sendToServer(message){
-    if(!message.trim()){ return; }
+    if(isNoise(message)){
+        setStatus("음성이 너무 짧거나 불명확합니다. 다시 말해주세요.");
+        return;
+    }
 
     updatePlaceFromText(message);
 
-    inputLang = detectInputLang(message);
-    outputLang = decideOutputLang(inputLang);
-
-    addMessage("me", "입력 · " + labelForLang(inputLang), message);
-
-    setStatus(
-        "KRXA 통역 중 · " +
-        labelForLang(inputLang) +
-        " → " +
-        labelForLang(outputLang)
-    );
+    addMessage("me", "나", message);
+    setStatus("KRXA 통역 중...");
 
     let context = "";
-    context += "\n\n[KRXA_TRANSLATION_CONTEXT]";
-    context += "\nConversation mode: English-Korean speech-to-speech interpreter.";
-    context += "\nInput language: " + inputLang;
-    context += "\nRequired output language: " + outputLang;
-    context += "\nRule: If input is English, output Korean. If input is Korean, output English.";
-    context += "\nGPS is Korea field context.";
-    context += "\nPriority location: user-spoken place > device GPS > service default.";
+    context += "\n\n[KRXA_CONTEXT]";
+    context += "\nDevice locale: " + deviceLocale;
+    context += "\nGPS is reference only.";
+    context += "\nUser spoken place has priority over GPS.";
+    context += "\nUI does not decide language direction. Engine must decide naturally.";
 
     if(currentPlace){
         context += "\nCurrent reference place from user speech: " + currentPlace;
     }
 
     if(currentLat && currentLng){
-        context += "\nDevice GPS: " + currentLat + "," + currentLng;
+        context += "\nDevice GPS reference: " + currentLat + "," + currentLng;
     }
 
-    context += "\n[/KRXA_TRANSLATION_CONTEXT]";
+    context += "\n[/KRXA_CONTEXT]";
 
     const fd = new FormData();
     fd.append("text", message + context);
@@ -251,7 +235,7 @@ async function sendToServer(message){
         localStorage.setItem("krxa_session_id", sessionId);
     }
 
-    addMessage("bot", "출력 · " + labelForLang(outputLang), data.result);
+    addMessage("bot", "KRXA", data.result);
     showCards(data.cards);
 
     await playServerTTS(data.result);
@@ -309,7 +293,6 @@ async function playServerTTS(text){
 
         const fd = new FormData();
         fd.append("text", text);
-        fd.append("lang", outputLang);
 
         const res = await fetch("/api/tts", {
             method:"POST",
