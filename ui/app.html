@@ -2,42 +2,64 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;font-family:Arial;background:#eef2f7}
-.header{background:#0b1f3a;color:white;padding:16px;text-align:center;font-weight:bold}
-.box{padding:14px}
-textarea{width:100%;height:86px;font-size:16px;box-sizing:border-box}
-button{width:100%;padding:14px;margin-top:8px;background:#2563eb;color:white;border:0;border-radius:10px;font-weight:bold}
-button.secondary{background:#475569}
-button.mic{background:#16a34a;font-size:20px}
-.msg{background:white;padding:12px;margin:10px 0;border-radius:10px}
-.card{background:#fff7ed;padding:12px;margin:8px 0;border-radius:10px}
-.status{font-size:13px;color:#475569;margin:8px 0}
-.small{font-size:12px;color:#64748b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#eaf0f7;color:#111827}
+.app{max-width:520px;margin:0 auto;min-height:100vh;background:#f8fafc;display:flex;flex-direction:column}
+.header{background:#0b1f3a;color:white;padding:12px;text-align:center;font-weight:bold}
+.topbar{display:flex;gap:8px;padding:12px}
+.topbar button{flex:1;padding:14px;border:0;border-radius:14px;color:white;font-weight:bold}
+.mic{background:#16a34a}
+.map{background:#2563eb}
+.status{margin:0 12px 10px;padding:10px;border-radius:12px;background:#ecfdf5;color:#065f46;text-align:center;font-size:13px}
+.now{padding:12px;flex:1}
+.msg{padding:14px;margin:10px 0;border-radius:14px;font-size:16px;line-height:1.45}
+.user{background:#dbeafe}
+.krxa{background:white;border:1px solid #e5e7eb}
+.label{font-size:12px;font-weight:bold;color:#475569;margin-bottom:5px}
+.cards{padding:0 12px 12px}
+.card{background:#fff7ed;border:1px solid #fed7aa;padding:14px;margin:8px 0;border-radius:14px;font-weight:bold}
+.card a{text-decoration:none;color:#2563eb}
+.inputBox{padding:12px;background:white;border-top:1px solid #e5e7eb}
+textarea{width:100%;height:58px;font-size:15px;padding:10px;border-radius:12px;border:1px solid #cbd5e1}
+.btn{width:100%;padding:13px;margin-top:8px;border:0;border-radius:12px;background:#2563eb;color:white;font-weight:bold}
+.btn.secondary{background:#64748b}
+.small{text-align:center;font-size:12px;color:#64748b;margin-top:8px}
+.tools{text-align:center;font-size:13px;margin-top:8px}
+.tools a{color:#2563eb}
 </style>
 </head>
+
 <body>
-<div class="header">__SERVICE__ 서비스</div>
+<div class="app">
 
-<div class="box">
-<div class="status" id="status">KRXA 준비됨</div>
+<div class="header">KRXA · __SERVICE__ 서비스</div>
 
-<button class="mic" onclick="recordVoice()">🎤 말하기</button>
-<textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
-<button onclick="sendText()">전송</button>
-<button class="secondary" onclick="clearMemory()">단기 기억 초기화</button>
+<div class="topbar">
+    <button class="mic" onclick="recordVoice()">🎤 말하기</button>
+    <button class="map" onclick="openMap()">📍 지도 안내</button>
+</div>
 
-<p class="small">회원가입 없이 guest/session 기준으로 기록됩니다. 회원 전환은 앱 출시 단계에서 확장합니다.</p>
+<div class="status" id="status">KRXA 준비됨 · 위치 기반 여행 안내 가능</div>
 
-<h3>대화</h3>
-<div id="chat"></div>
+<div class="now">
+    <div id="userLine" class="msg user" style="display:none"></div>
+    <div id="krxaLine" class="msg krxa" style="display:none"></div>
+</div>
 
-<h3>서비스 카드</h3>
-<div id="cards"></div>
+<div id="cards" class="cards"></div>
 
-<p>
-<a href="/user">← 홈</a> |
-<a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
-</p>
+<div class="inputBox">
+    <textarea id="t" placeholder="직접 입력도 가능합니다"></textarea>
+    <button class="btn" onclick="sendText()">텍스트 전송</button>
+    <button class="btn secondary" onclick="clearMemory()">단기 기억 초기화</button>
+
+    <div class="small">회원가입 없이 guest/session 기준으로 기록됩니다.</div>
+    <div class="tools">
+        <a href="/user">홈</a> |
+        <a id="historyLink" href="#" onclick="this.href='/history?session_id='+sessionId" target="_blank">기억보기</a>
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -47,54 +69,100 @@ if(!sessionId){
     localStorage.setItem("krxa_session_id", sessionId);
 }
 
+let currentLat = "";
+let currentLng = "";
+
+navigator.geolocation.getCurrentPosition(
+    pos => {
+        currentLat = pos.coords.latitude;
+        currentLng = pos.coords.longitude;
+        setStatus("위치 확인 완료 · 현재 위치 기반 안내 가능");
+    },
+    err => {
+        setStatus("위치 권한 없음 · 기본 지도 안내로 작동");
+    }
+);
+
 function setStatus(t){
     document.getElementById("status").innerText = t;
 }
 
-function addChat(title, text){
-    document.getElementById("chat").innerHTML +=
-        "<div class='msg'><b>" + title + ":</b><br>" + text + "</div>";
+function setCurrentChat(userText, krxaText){
+    let u = document.getElementById("userLine");
+    let k = document.getElementById("krxaLine");
+
+    u.style.display = "block";
+    k.style.display = "block";
+
+    u.innerHTML = "<div class='label'>나</div>" + userText;
+    k.innerHTML = "<div class='label'>KRXA</div>" + krxaText;
 }
 
 function showCards(cards){
     let html = "";
+
     if(cards && cards.length > 0){
         cards.forEach(function(c){
             if(c.url){
-                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
-            } else if(c.text){
-                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+                let url = c.url;
+                if(currentLat && currentLng && c.label.includes("맛집")){
+                    url = "https://www.google.com/maps/search/restaurant/@" + currentLat + "," + currentLng + ",15z";
+                }
+                if(currentLat && currentLng && c.label.includes("역")){
+                    url = "https://www.google.com/maps/search/station/@" + currentLat + "," + currentLng + ",15z";
+                }
+                html += "<div class='card'><a href='" + url + "' target='_blank'>↗ " + c.label + "</a></div>";
+            }else if(c.text){
+                html += "<div class='card'>" + c.label + "<br><span style='font-weight:normal'>" + c.text + "</span></div>";
             }
         });
     }
+
     document.getElementById("cards").innerHTML = html;
+}
+
+function openMap(){
+    let url = "https://www.google.com/maps";
+    if(currentLat && currentLng){
+        url = "https://www.google.com/maps/search/travel+nearby/@" + currentLat + "," + currentLng + ",15z";
+    }
+    window.open(url, "_blank");
 }
 
 async function sendKRXA(text){
     if(!text){ return; }
 
-    addChat("나", text);
     setStatus("KRXA 처리 중...");
 
+    let sendText = text;
+    if(currentLat && currentLng){
+        sendText = text + "\n\nUser current location: " + currentLat + "," + currentLng;
+    }
+
     let fd = new FormData();
-    fd.append("text", text);
+    fd.append("text", sendText);
     fd.append("service", "__SERVICE__");
     fd.append("session_id", sessionId);
 
-    let r = await fetch("/chat", {method:"POST", body:fd});
-    let j = await r.json();
+    try{
+        let r = await fetch("/chat", {method:"POST", body:fd});
+        let j = await r.json();
 
-    if(j.session_id){
-        sessionId = j.session_id;
-        localStorage.setItem("krxa_session_id", sessionId);
+        if(j.session_id){
+            sessionId = j.session_id;
+            localStorage.setItem("krxa_session_id", sessionId);
+        }
+
+        setCurrentChat(text, j.result);
+        showCards(j.cards);
+
+        setStatus("KRXA가 음성으로 전달 중...");
+        await playTTS(j.result);
+        setStatus("KRXA 준비됨 · 다음 말을 해주세요");
+
+    }catch(e){
+        setStatus("오류 발생: " + e.message);
     }
-
-    addChat("KRXA", j.result);
-    showCards(j.cards);
-
-    setStatus("음성 출력 중...");
-    await playTTS(j.result);
-    setStatus("KRXA 준비됨");
 }
 
 async function sendText(){
@@ -106,7 +174,8 @@ async function sendText(){
 
 async function recordVoice(){
     try{
-        setStatus("듣는 중...");
+        setStatus("듣는 중... 3.5초 동안 말하세요");
+
         const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         const mr = new MediaRecorder(stream);
         let chunks = [];
@@ -114,6 +183,8 @@ async function recordVoice(){
         mr.ondataavailable = e => chunks.push(e.data);
 
         mr.onstop = async () => {
+            stream.getTracks().forEach(track => track.stop());
+
             setStatus("음성 인식 중...");
             let blob = new Blob(chunks, {type:"audio/webm"});
             let fd = new FormData();
@@ -122,7 +193,7 @@ async function recordVoice(){
             let r = await fetch("/api/stt", {method:"POST", body:fd});
             let j = await r.json();
 
-            if(j.ok){
+            if(j.ok && j.text){
                 await sendKRXA(j.text);
             }else{
                 setStatus("음성 인식 실패");
@@ -145,8 +216,15 @@ async function playTTS(text){
 
         let r = await fetch("/api/tts", {method:"POST", body:fd});
         let blob = await r.blob();
+
+        if(blob.size < 100){
+            setStatus("음성 생성 실패");
+            return;
+        }
+
         let audio = new Audio(URL.createObjectURL(blob));
         await audio.play();
+
     }catch(e){
         setStatus("스피커 재생 실패");
     }
@@ -158,9 +236,10 @@ async function clearMemory(){
 
     await fetch("/history/clear", {method:"POST", body:fd});
 
-    document.getElementById("chat").innerHTML = "";
+    document.getElementById("userLine").style.display = "none";
+    document.getElementById("krxaLine").style.display = "none";
     document.getElementById("cards").innerHTML = "";
-    alert("단기 기억을 초기화했습니다.");
+    setStatus("단기 기억을 초기화했습니다.");
 }
 </script>
 </body>
