@@ -1,8 +1,31 @@
 <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#0f172a;color:white;margin:0;padding:20px}
+.card{background:#1e293b;padding:16px;border-radius:12px;margin:12px 0}
+a{color:#93c5fd}
+pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px}
+</style>
+</head>
 <body>
 <h1>KRXA CONTROL</h1>
-<p>운영 관제 화면</p>
-<pre>__LOGS__</pre>
-<p><a href="/user">USER</a> | <a href="/dev">DEV</a> | <a href="/api/state">STATE</a></p>
+
+<div class="card">
+<p>운영 관제 UI</p>
+<p>접속 상태 / 세션 / 로그 / 오류 / 서비스 상태 확인</p>
+<p>현재 회원 기능은 비활성입니다. guest/session 기준으로 운영됩니다.</p>
+</div>
+
+<div class="card">
+<a href="/user">USER</a> |
+<a href="/dev">DEV</a> |
+<a href="/api/state">STATE JSON</a>
+</div>
+
+<div class="card">
+<h3>상태</h3>
+<pre>__STATE__</pre>
+</div>
 </body>
 </html>

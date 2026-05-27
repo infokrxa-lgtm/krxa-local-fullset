@@ -5,18 +5,28 @@
 body{margin:0;font-family:Arial;background:#eef2f7}
 .header{background:#0b1f3a;color:white;padding:16px;text-align:center;font-weight:bold}
 .box{padding:14px}
-textarea{width:100%;height:90px;font-size:16px;box-sizing:border-box}
+textarea{width:100%;height:86px;font-size:16px;box-sizing:border-box}
 button{width:100%;padding:14px;margin-top:8px;background:#2563eb;color:white;border:0;border-radius:10px;font-weight:bold}
+button.secondary{background:#475569}
+button.mic{background:#16a34a;font-size:20px}
 .msg{background:white;padding:12px;margin:10px 0;border-radius:10px}
 .card{background:#fff7ed;padding:12px;margin:8px 0;border-radius:10px}
+.status{font-size:13px;color:#475569;margin:8px 0}
+.small{font-size:12px;color:#64748b}
 </style>
 </head>
 <body>
 <div class="header">__SERVICE__ 서비스</div>
+
 <div class="box">
+<div class="status" id="status">KRXA 준비됨</div>
+
+<button class="mic" onclick="recordVoice()">🎤 말하기</button>
 <textarea id="t" placeholder="사용자 입력 언어로 입력하세요"></textarea>
-<button onclick="send()">전송</button>
-<button onclick="clearMemory()">기억 초기화</button>
+<button onclick="sendText()">전송</button>
+<button class="secondary" onclick="clearMemory()">단기 기억 초기화</button>
+
+<p class="small">회원가입 없이 guest/session 기준으로 기록됩니다. 회원 전환은 앱 출시 단계에서 확장합니다.</p>
 
 <h3>대화</h3>
 <div id="chat"></div>
@@ -37,11 +47,34 @@ if(!sessionId){
     localStorage.setItem("krxa_session_id", sessionId);
 }
 
-async function send(){
-    let input = document.getElementById("t");
-    let text = input.value.trim();
+function setStatus(t){
+    document.getElementById("status").innerText = t;
+}
+
+function addChat(title, text){
+    document.getElementById("chat").innerHTML +=
+        "<div class='msg'><b>" + title + ":</b><br>" + text + "</div>";
+}
+
+function showCards(cards){
+    let html = "";
+    if(cards && cards.length > 0){
+        cards.forEach(function(c){
+            if(c.url){
+                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
+            } else if(c.text){
+                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+            }
+        });
+    }
+    document.getElementById("cards").innerHTML = html;
+}
+
+async function sendKRXA(text){
     if(!text){ return; }
-    input.value = "";
+
+    addChat("나", text);
+    setStatus("KRXA 처리 중...");
 
     let fd = new FormData();
     fd.append("text", text);
@@ -56,29 +89,78 @@ async function send(){
         localStorage.setItem("krxa_session_id", sessionId);
     }
 
-    document.getElementById("chat").innerHTML += "<div class='msg'><b>나:</b><br>" + text + "</div>";
-    document.getElementById("chat").innerHTML += "<div class='msg'><b>KRXA:</b><br>" + j.result + "</div>";
+    addChat("KRXA", j.result);
+    showCards(j.cards);
 
-    let html = "";
-    if(j.cards && j.cards.length > 0){
-        j.cards.forEach(function(c){
-            if(c.url){
-                html += "<div class='card'><a href='" + c.url + "' target='_blank'>" + c.label + "</a></div>";
-            } else if(c.text){
-                html += "<div class='card'><b>" + c.label + "</b><br>" + c.text + "</div>";
+    setStatus("음성 출력 중...");
+    await playTTS(j.result);
+    setStatus("KRXA 준비됨");
+}
+
+async function sendText(){
+    let input = document.getElementById("t");
+    let text = input.value.trim();
+    input.value = "";
+    await sendKRXA(text);
+}
+
+async function recordVoice(){
+    try{
+        setStatus("듣는 중...");
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        const mr = new MediaRecorder(stream);
+        let chunks = [];
+
+        mr.ondataavailable = e => chunks.push(e.data);
+
+        mr.onstop = async () => {
+            setStatus("음성 인식 중...");
+            let blob = new Blob(chunks, {type:"audio/webm"});
+            let fd = new FormData();
+            fd.append("file", blob, "voice.webm");
+
+            let r = await fetch("/api/stt", {method:"POST", body:fd});
+            let j = await r.json();
+
+            if(j.ok){
+                await sendKRXA(j.text);
+            }else{
+                setStatus("음성 인식 실패");
             }
-        });
+        };
+
+        mr.start();
+        setTimeout(()=>mr.stop(), 3500);
+
+    }catch(e){
+        alert("마이크 권한을 허용해야 합니다.");
+        setStatus("마이크 권한 필요");
     }
-    document.getElementById("cards").innerHTML = html;
+}
+
+async function playTTS(text){
+    try{
+        let fd = new FormData();
+        fd.append("text", text);
+
+        let r = await fetch("/api/tts", {method:"POST", body:fd});
+        let blob = await r.blob();
+        let audio = new Audio(URL.createObjectURL(blob));
+        await audio.play();
+    }catch(e){
+        setStatus("스피커 재생 실패");
+    }
 }
 
 async function clearMemory(){
     let fd = new FormData();
     fd.append("session_id", sessionId);
+
     await fetch("/history/clear", {method:"POST", body:fd});
+
     document.getElementById("chat").innerHTML = "";
     document.getElementById("cards").innerHTML = "";
-    alert("기억을 초기화했습니다.");
+    alert("단기 기억을 초기화했습니다.");
 }
 </script>
 </body>

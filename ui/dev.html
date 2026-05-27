@@ -1,14 +1,76 @@
 <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#f8fafc;margin:0;padding:20px}
+.card{background:white;padding:16px;border-radius:12px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+textarea{width:100%;height:60vh;box-sizing:border-box}
+input{width:100%;padding:10px;box-sizing:border-box}
+button{padding:10px;margin-top:8px}
+pre{background:#0f172a;color:white;padding:12px;border-radius:8px;white-space:pre-wrap}
+a{color:#2563eb}
+</style>
+</head>
 <body>
 <h1>KRXA DEV</h1>
-<p>개발자 화면</p>
-<ul>
-<li>main.py</li>
-<li>core/krxa_engine.py</li>
-<li>core/krxa_travel.py</li>
-<li>core/krxa_voice.py</li>
-<li>core/krxa_store.py</li>
-</ul>
+
+<div class="card">
+<p>개발자 UI</p>
+<p>파일 생성 / 수정 / 저장 / 삭제 / 외부 API 설정 안내 / Render 재배포 체크</p>
+<p>현재는 owner 단독 운영 기준입니다. 권한 시스템은 향후 확장합니다.</p>
 <p><a href="/user">USER</a> | <a href="/control">CONTROL</a></p>
+</div>
+
+<div class="card">
+<h3>파일 생성</h3>
+<form method="post" action="/dev/create">
+<input name="path" placeholder="예: ui/new.html 또는 core/new_module.py">
+<button type="submit">CREATE</button>
+</form>
+</div>
+
+<div class="card">
+<h3>파일 목록</h3>
+<ul>
+__FILE_LIST__
+</ul>
+</div>
+
+<div class="card">
+<h3>파일 편집</h3>
+<p>현재 파일: __FILE_PATH__</p>
+<form method="post" action="/dev/save">
+<input type="hidden" name="path" value="__FILE_PATH__">
+<textarea name="content">__FILE_CONTENT__</textarea>
+<button type="submit">SAVE</button>
+</form>
+
+<form method="post" action="/dev/delete">
+<input type="hidden" name="path" value="__FILE_PATH__">
+<button type="submit">DELETE</button>
+</form>
+</div>
+
+<div class="card">
+<h3>외부 API / Render</h3>
+<pre>
+필수 환경변수:
+OPENAI_API_KEY
+
+선택:
+OPENAI_TEXT_MODEL
+OPENAI_STT_MODEL
+OPENAI_TTS_MODEL
+OPENAI_TTS_VOICE
+
+배포:
+git add .
+git commit -m "update krxa fullset"
+git push
+
+Render:
+자동 배포 또는 Manual Deploy
+</pre>
+</div>
 </body>
 </html>
