@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+storage/
+logs/
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.webp

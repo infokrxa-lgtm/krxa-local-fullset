@@ -1,0 +1,24 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#eef2f7;margin:0}
+.wrap{max-width:480px;margin:auto;padding:24px}
+h1{text-align:center}
+.card{background:white;padding:20px;margin:14px 0;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.08);cursor:pointer;font-size:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>KRXA 여행 도우미</h1>
+<div class="card" onclick="openService('food')">🍴 맛집 찾기</div>
+<div class="card" onclick="openService('map')">📍 길찾기</div>
+<div class="card" onclick="openService('hotel')">🏨 숙소</div>
+</div>
+<script>
+function openService(service){
+    window.open("/app?service=" + service, "_blank");
+}
+</script>
+</body>
+</html>
