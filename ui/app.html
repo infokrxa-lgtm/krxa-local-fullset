@@ -22,6 +22,7 @@ body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .inputbox{padding:14px}
 textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding:10px;font-size:15px}
 .send{margin-top:10px;width:100%;border:0;background:#2563eb;color:white;padding:15px;border-radius:10px;font-size:17px;font-weight:bold}
+.small{font-size:12px;color:#64748b;text-align:center;padding-bottom:10px}
 </style>
 </head>
 
@@ -34,7 +35,7 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
         <button class="btn map" onclick="openMap()">📍 지도 안내</button>
     </div>
 
-    <div class="status" id="status">KRXA 준비됨 · 마이크를 누르고 말하세요</div>
+    <div class="status" id="status">KRXA 준비됨 · 영어⇄한국어 말대말 통역</div>
 
     <div class="chat" id="chat"></div>
 
@@ -43,9 +44,11 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
     </div>
 
     <div class="inputbox">
-        <textarea id="text" placeholder="직접 입력도 가능합니다"></textarea>
+        <textarea id="text" placeholder="영어 또는 한국어로 말하거나 입력하세요"></textarea>
         <button class="send" onclick="sendText()">텍스트 전송</button>
     </div>
+
+    <div class="small" id="locText">기기 GPS 우선 · 말한 장소가 있으면 기준 위치 변경</div>
 </div>
 
 <script>
@@ -59,27 +62,34 @@ if(!sessionId){
 
 let currentLat = "";
 let currentLng = "";
-
-navigator.geolocation.getCurrentPosition(
-    pos => {
-        currentLat = pos.coords.latitude;
-        currentLng = pos.coords.longitude;
-        setStatus("KRXA 준비됨 · 위치 기반 안내 가능");
-    },
-    err => {
-        setStatus("KRXA 준비됨 · 위치 권한 없이 작동");
-    }
-);
+let currentPlace = "";
+let deviceLocale = navigator.language || "ko-KR";
+let inputLang = "";
+let outputLang = "";
+let conversationMode = "auto_ko_en";
 
 function setStatus(t){
     document.getElementById("status").innerText = t;
+}
+
+function setLocText(t){
+    document.getElementById("locText").innerText = t;
+}
+
+function escapeHtml(text){
+    return String(text)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
 }
 
 function addMessage(type, title, text){
     const chat = document.getElementById("chat");
     const div = document.createElement("div");
     div.className = type;
-    div.innerHTML = "<b>" + title + "</b><br>" + text;
+    div.innerHTML = "<b>" + title + "</b><br>" + escapeHtml(text);
     chat.appendChild(div);
 
     while(chat.children.length > 4){
@@ -89,15 +99,96 @@ function addMessage(type, title, text){
     chat.scrollTop = chat.scrollHeight;
 }
 
+function detectInputLang(text){
+    if(/[가-힣]/.test(text)) return "ko-KR";
+    if(/[a-zA-Z]/.test(text)) return "en-US";
+    if(/[\u3040-\u30ff]/.test(text)) return "ja-JP";
+    if(/[\u4e00-\u9fff]/.test(text)) return "zh-CN";
+    return deviceLocale || "ko-KR";
+}
+
+function decideOutputLang(lang){
+    if(lang === "ko-KR") return "en-US";
+    if(lang === "en-US") return "ko-KR";
+    return "ko-KR";
+}
+
+function labelForLang(lang){
+    if(lang === "ko-KR") return "한국어";
+    if(lang === "en-US") return "English";
+    if(lang === "ja-JP") return "日本語";
+    if(lang === "zh-CN") return "中文";
+    return lang;
+}
+
+function updatePlaceFromText(text){
+    const patterns = [
+        /나는\s*([^,.!?，。！？\s]+(?:역|시|구|동|로|거리|호텔|공항|터미널))/,
+        /내가\s*지금\s*([^,.!?，。！？\s]+(?:역|시|구|동|로|거리|호텔|공항|터미널))/,
+        /([^,.!?，。！？\s]+역)(?:이라고|이야|입니다|근처|주변)?/,
+        /([^,.!?，。！？\s]+시)(?:라고|이야|입니다|근처|주변)?/
+    ];
+
+    for(const p of patterns){
+        const m = text.match(p);
+        if(m && m[1]){
+            currentPlace = m[1].trim();
+            setLocText("현재 기준 위치: " + currentPlace + " · 사용자 발화 위치 우선");
+            return;
+        }
+    }
+}
+
+function requestDeviceLocation(){
+    if(!navigator.geolocation){
+        setStatus("KRXA 준비됨 · GPS 미지원");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            currentLat = pos.coords.latitude;
+            currentLng = pos.coords.longitude;
+            setStatus("KRXA 준비됨 · 기기 위치 기반 안내 가능");
+            setLocText("기기 GPS 기준 · 한국 현장 위치 우선 적용");
+        },
+        err => {
+            setStatus("KRXA 준비됨 · 위치 권한 없음");
+            setLocText("위치 권한 없음 · 사용자가 말한 장소를 기준으로 변경 가능");
+        },
+        {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
+    );
+}
+
+requestDeviceLocation();
+
 function showCards(cards){
     let html = "";
 
     if(cards && cards.length > 0){
         cards.forEach(c => {
             if(c.url){
-                html += "<button class='linkbtn' onclick=\"window.open('" + c.url + "','_blank')\">↗ " + c.label + "</button>";
+                let url = c.url;
+
+                if(currentPlace){
+                    if(c.label.includes("맛집")){
+                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace + " 맛집");
+                    }else if(c.label.includes("역")){
+                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace + " 가까운 역");
+                    }else{
+                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace);
+                    }
+                }else if(currentLat && currentLng){
+                    if(c.label.includes("맛집")){
+                        url = "https://www.google.com/maps/search/restaurant/@" + currentLat + "," + currentLng + ",15z";
+                    }else if(c.label.includes("역")){
+                        url = "https://www.google.com/maps/search/station/@" + currentLat + "," + currentLng + ",15z";
+                    }
+                }
+
+                html += "<button class='linkbtn' onclick=\"window.open('" + url + "','_blank')\">↗ " + escapeHtml(c.label) + "</button>";
             }else if(c.text){
-                html += "<button class='linkbtn'>" + c.label + "<br>" + c.text + "</button>";
+                html += "<button class='linkbtn'>" + escapeHtml(c.label) + "<br>" + escapeHtml(c.text) + "</button>";
             }
         });
     }else{
@@ -110,16 +201,41 @@ function showCards(cards){
 async function sendToServer(message){
     if(!message.trim()){ return; }
 
-    addMessage("me", "나", message);
-    setStatus("KRXA 통역 중...");
+    updatePlaceFromText(message);
 
-    let finalText = message;
-    if(currentLat && currentLng){
-        finalText += "\\n\\nUser location: " + currentLat + "," + currentLng;
+    inputLang = detectInputLang(message);
+    outputLang = decideOutputLang(inputLang);
+
+    addMessage("me", "입력 · " + labelForLang(inputLang), message);
+
+    setStatus(
+        "KRXA 통역 중 · " +
+        labelForLang(inputLang) +
+        " → " +
+        labelForLang(outputLang)
+    );
+
+    let context = "";
+    context += "\n\n[KRXA_TRANSLATION_CONTEXT]";
+    context += "\nConversation mode: English-Korean speech-to-speech interpreter.";
+    context += "\nInput language: " + inputLang;
+    context += "\nRequired output language: " + outputLang;
+    context += "\nRule: If input is English, output Korean. If input is Korean, output English.";
+    context += "\nGPS is Korea field context.";
+    context += "\nPriority location: user-spoken place > device GPS > service default.";
+
+    if(currentPlace){
+        context += "\nCurrent reference place from user speech: " + currentPlace;
     }
 
+    if(currentLat && currentLng){
+        context += "\nDevice GPS: " + currentLat + "," + currentLng;
+    }
+
+    context += "\n[/KRXA_TRANSLATION_CONTEXT]";
+
     const fd = new FormData();
-    fd.append("text", finalText);
+    fd.append("text", message + context);
     fd.append("service", SERVICE);
     fd.append("session_id", sessionId);
 
@@ -135,7 +251,7 @@ async function sendToServer(message){
         localStorage.setItem("krxa_session_id", sessionId);
     }
 
-    addMessage("bot", "KRXA", data.result);
+    addMessage("bot", "출력 · " + labelForLang(outputLang), data.result);
     showCards(data.cards);
 
     await playServerTTS(data.result);
@@ -154,7 +270,6 @@ async function recordVoice(){
 
         mr.onstop = async () => {
             stream.getTracks().forEach(track => track.stop());
-
             setStatus("음성 인식 중...");
 
             const blob = new Blob(chunks, {type:"audio/webm"});
@@ -194,6 +309,7 @@ async function playServerTTS(text){
 
         const fd = new FormData();
         fd.append("text", text);
+        fd.append("lang", outputLang);
 
         const res = await fetch("/api/tts", {
             method:"POST",
@@ -218,9 +334,13 @@ function sendText(){
 
 function openMap(){
     let url = "https://www.google.com/maps";
-    if(currentLat && currentLng){
+
+    if(currentPlace){
+        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace);
+    }else if(currentLat && currentLng){
         url = "https://www.google.com/maps/search/travel+nearby/@" + currentLat + "," + currentLng + ",15z";
     }
+
     window.open(url, "_blank");
 }
 </script>
