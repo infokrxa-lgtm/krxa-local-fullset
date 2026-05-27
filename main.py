@@ -13,7 +13,6 @@ from core.krxa_store import new_id, load_history, save_turn, clear_history, load
 from core.krxa_voice import stt, tts_response
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
-
 ROOT = Path(".").resolve()
 
 
@@ -34,7 +33,7 @@ def safe_path(p: str = ""):
 
 @app.get("/")
 def root():
-    return {"ok": True, "version": "KRXA_FULLSET_REAL_V1"}
+    return {"ok": True, "version": "KRXA_MODE_FULLSET_V1"}
 
 
 @app.get("/user", response_class=HTMLResponse)
@@ -48,21 +47,40 @@ def app_ui(service: str = "free"):
 
 
 @app.post("/chat")
-def chat(text: str = Form(...), service: str = Form("free"), session_id: str = Form("")):
+def chat(
+    text: str = Form(...),
+    service: str = Form("free"),
+    session_id: str = Form(""),
+    mode: str = Form("interpreter")
+):
     if not session_id:
         session_id = new_id("session")
 
     history = load_history(session_id, limit=12)
-    result = process(text, history=history, service=service)
+
+    result = process(
+        text=text,
+        history=history,
+        service=service,
+        mode=mode
+    )
+
     cards = get_cards(text, service)
 
-    save_turn(session_id, text, result, service, cards)
+    save_turn(
+        session_id=session_id,
+        user_text=text,
+        krxa_text=result,
+        service=service,
+        cards=cards
+    )
 
     return {
         "ok": True,
         "result": result,
         "cards": cards,
-        "session_id": session_id
+        "session_id": session_id,
+        "mode": mode
     }
 
 
@@ -85,10 +103,11 @@ def history(session_id: str):
 def state():
     return {
         "ok": True,
-        "version": "KRXA_FULLSET_REAL_V1",
+        "version": "KRXA_MODE_FULLSET_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
+        "modes": ["interpreter", "agency"],
         "logs": load_logs(80)
     }
 
@@ -96,10 +115,14 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     state_json = json.dumps({
-        "version": "KRXA_FULLSET_REAL_V1",
+        "version": "KRXA_MODE_FULLSET_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
+        "modes": {
+            "interpreter": "free",
+            "agency": "paid_later"
+        },
         "logs": load_logs(80)
     }, ensure_ascii=False, indent=2)
 

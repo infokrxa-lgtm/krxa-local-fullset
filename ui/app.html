@@ -9,6 +9,9 @@
 body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .wrap{max-width:420px;margin:auto;min-height:100vh;background:#f8fafc}
 .top{background:#082046;color:white;padding:16px;text-align:center;font-size:18px;font-weight:bold}
+.modebar{display:flex;gap:8px;padding:12px 14px 0}
+.modebtn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:bold;background:#e5e7eb;color:#334155}
+.modebtn.active{background:#0ea5e9;color:white}
 .row{display:flex;gap:10px;padding:14px}
 .btn{flex:1;border:0;border-radius:14px;padding:16px;color:white;font-size:20px;font-weight:bold}
 .mic{background:#16a34a}
@@ -30,18 +33,21 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
 <div class="wrap">
     <div class="top">KRXA · __SERVICE__ 서비스</div>
 
+    <div class="modebar">
+        <button id="interpreterBtn" class="modebtn active" onclick="setMode('interpreter')">무료 통역</button>
+        <button id="agencyBtn" class="modebtn" onclick="setMode('agency')">여행 에이전시</button>
+    </div>
+
     <div class="row">
         <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
         <button class="btn map" onclick="openMap()">📍 지도 안내</button>
     </div>
 
-    <div class="status" id="status">KRXA 준비됨 · 말하면 자연스럽게 통역합니다</div>
+    <div class="status" id="status">KRXA 준비됨 · 무료 통역 모드</div>
 
     <div class="chat" id="chat"></div>
 
-    <div class="cards" id="cards">
-        <button class="linkbtn" onclick="openMap()">↗ 지도 열기</button>
-    </div>
+    <div class="cards" id="cards"></div>
 
     <div class="inputbox">
         <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
@@ -60,10 +66,27 @@ if(!sessionId){
     localStorage.setItem("krxa_session_id", sessionId);
 }
 
+let mode = localStorage.getItem("krxa_mode") || "interpreter";
 let currentLat = "";
 let currentLng = "";
 let currentPlace = "";
 let deviceLocale = navigator.language || "ko-KR";
+
+function setMode(m){
+    mode = m;
+    localStorage.setItem("krxa_mode", mode);
+
+    document.getElementById("interpreterBtn").classList.toggle("active", mode === "interpreter");
+    document.getElementById("agencyBtn").classList.toggle("active", mode === "agency");
+
+    if(mode === "interpreter"){
+        setStatus("KRXA 준비됨 · 무료 통역 모드");
+    }else{
+        setStatus("KRXA 준비됨 · 여행 에이전시 모드");
+    }
+}
+
+setTimeout(() => setMode(mode), 0);
 
 function setStatus(t){
     document.getElementById("status").innerText = t;
@@ -124,11 +147,9 @@ function requestDeviceLocation(){
         pos => {
             currentLat = pos.coords.latitude;
             currentLng = pos.coords.longitude;
-            setStatus("KRXA 준비됨 · 기기 위치 참고 가능");
             setLocText("기기 위치 참고 · 사용자가 말한 장소 우선");
         },
         err => {
-            setStatus("KRXA 준비됨 · 위치 권한 없음");
             setLocText("위치 권한 없음 · 말한 장소 기준 가능");
         },
         {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
@@ -166,8 +187,6 @@ function showCards(cards){
                 html += "<button class='linkbtn'>" + escapeHtml(c.label) + "<br>" + escapeHtml(c.text) + "</button>";
             }
         });
-    }else{
-        html = "<button class='linkbtn' onclick='openMap()'>↗ 지도 열기</button>";
     }
 
     document.getElementById("cards").innerHTML = html;
@@ -199,14 +218,19 @@ async function sendToServer(message){
     updatePlaceFromText(message);
 
     addMessage("me", "나", message);
-    setStatus("KRXA 통역 중...");
+
+    if(mode === "interpreter"){
+        setStatus("KRXA 통역 중...");
+    }else{
+        setStatus("KRXA 여행 에이전시 처리 중...");
+    }
 
     let context = "";
     context += "\n\n[KRXA_CONTEXT]";
     context += "\nDevice locale: " + deviceLocale;
     context += "\nGPS is reference only.";
     context += "\nUser spoken place has priority over GPS.";
-    context += "\nUI does not decide language direction. Engine must decide naturally.";
+    context += "\nCurrent mode: " + mode;
 
     if(currentPlace){
         context += "\nCurrent reference place from user speech: " + currentPlace;
@@ -222,6 +246,7 @@ async function sendToServer(message){
     fd.append("text", message + context);
     fd.append("service", SERVICE);
     fd.append("session_id", sessionId);
+    fd.append("mode", mode);
 
     const res = await fetch("/chat", {
         method:"POST",
@@ -239,7 +264,12 @@ async function sendToServer(message){
     showCards(data.cards);
 
     await playServerTTS(data.result);
-    setStatus("KRXA 준비됨 · 다음 말을 해주세요");
+
+    if(mode === "interpreter"){
+        setStatus("KRXA 준비됨 · 무료 통역 모드");
+    }else{
+        setStatus("KRXA 준비됨 · 여행 에이전시 모드");
+    }
 }
 
 async function recordVoice(){
