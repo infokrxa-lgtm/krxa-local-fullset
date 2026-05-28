@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
-.wrap{max-width:900px;margin:auto;padding:18px}
+.wrap{max-width:960px;margin:auto;padding:18px}
 h1{margin:0 0 12px}
 .card{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
@@ -18,6 +18,10 @@ a{color:#93c5fd}
 .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#334155;margin:4px}
 .ok{background:#166534}
 .warn{background:#92400e}
+button{padding:12px 16px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
+.on{background:#16a34a;color:white}
+.off{background:#dc2626;color:white}
+.mode{background:#2563eb;color:white}
 </style>
 </head>
 
@@ -27,12 +31,26 @@ a{color:#93c5fd}
 
 <div class="card">
 <p>운영 관제 UI</p>
-<p>접속 상태 / 세션 / 로그 / STT 실패율 / 오류 / 모드 상태 확인</p>
+<p>접속 상태 / 세션 / 로그 / STT 실패율 / VAD ON·OFF / 오류 / 모드 상태 확인</p>
 <p>
 <a href="/user">USER</a> |
 <a href="/app?service=food">APP</a> |
 <a href="/dev">DEV</a> |
-<a href="/api/state">STATE JSON</a>
+<a href="/api/state">STATE JSON</a> |
+<a href="/api/config">CONFIG JSON</a>
+</p>
+</div>
+
+<div class="card">
+<h3>VAD / Voice 설정</h3>
+<p id="vadState">로드 중...</p>
+
+<button class="on" onclick="updateConfig(true,'vad_engine')">VAD ON</button>
+<button class="off" onclick="updateConfig(false,'stable_recording')">VAD OFF</button>
+<button class="mode" onclick="updateConfig(false,'stable_recording')">안정형 녹음</button>
+
+<p style="font-size:13px;color:#cbd5e1">
+현재 권장: VAD OFF + 안정형 녹음. VAD는 엔진에서 테스트 후 ON.
 </p>
 </div>
 
@@ -70,18 +88,28 @@ function safe(v){
 
 function renderSummary(){
     const box = document.getElementById("summary");
+    const vadBox = document.getElementById("vadState");
 
     if(!state){
         box.innerHTML = "<div class='metric'>상태 JSON 파싱 실패</div>";
+        vadBox.innerText = "상태 파싱 실패";
         return;
     }
 
     const stats = state.stats || {};
+    const config = state.config || {};
+    const vad = config.vad || {};
     const openai = state.openai_key ? "연결됨" : "없음";
+
+    vadBox.innerText =
+        "VAD: " + (vad.enabled ? "ON" : "OFF") +
+        " / Voice Mode: " + safe(config.voice_mode);
 
     box.innerHTML = `
         <div class="metric">Version<b>${safe(state.version)}</b></div>
         <div class="metric">OpenAI<b>${openai}</b></div>
+        <div class="metric">Voice Mode<b>${safe(config.voice_mode)}</b></div>
+        <div class="metric">VAD<b>${vad.enabled ? "ON" : "OFF"}</b></div>
         <div class="metric">Turns<b>${safe(stats.turns)}</b></div>
         <div class="metric">STT Total<b>${safe(stats.stt_total)}</b></div>
         <div class="metric">STT Fail<b>${safe(stats.stt_fail)}</b></div>
@@ -101,8 +129,8 @@ function renderLogs(){
 
     state.logs.slice().reverse().forEach(function(log){
         let cls = "badge";
-        if(log.kind && log.kind.includes("fail")) cls += " warn";
-        if(log.kind && (log.kind.includes("result") || log.kind === "turn_saved")) cls += " ok";
+        if(log.kind && (log.kind.includes("fail") || log.kind.includes("block"))) cls += " warn";
+        if(log.kind && (log.kind.includes("result") || log.kind === "turn_saved" || log.kind.includes("pass"))) cls += " ok";
 
         html += `
         <div class="card">
@@ -113,6 +141,26 @@ function renderLogs(){
     });
 
     box.innerHTML = html;
+}
+
+async function updateConfig(vadEnabled, voiceMode){
+    const fd = new FormData();
+    fd.append("vad_enabled", vadEnabled ? "true" : "false");
+    fd.append("voice_mode", voiceMode);
+
+    const r = await fetch("/api/config/update", {
+        method:"POST",
+        body:fd
+    });
+
+    const j = await r.json();
+
+    if(j.ok){
+        alert("설정 저장 완료");
+        location.reload();
+    }else{
+        alert("설정 저장 실패");
+    }
 }
 
 renderSummary();

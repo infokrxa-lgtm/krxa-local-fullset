@@ -17,39 +17,53 @@ from core.krxa_store import (
     clear_history,
     load_logs,
     stats,
-    log_event
+    log_event,
+    read_json,
+    write_json
 )
 from core.krxa_voice import stt, tts_response
+from core.krxa_vad import VAD_DEFAULT_CONFIG
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
 ROOT = Path(".").resolve()
+CONFIG_PATH = Path("storage") / "config.json"
+
+
+def get_config():
+    default = {
+        "vad": VAD_DEFAULT_CONFIG,
+        "voice_mode": "stable_recording",
+        "interpreter_default": True
+    }
+    saved = read_json(CONFIG_PATH, default)
+    default.update(saved)
+    return default
+
+
+def save_config(data):
+    write_json(CONFIG_PATH, data)
+    log_event("config_saved", data)
+    return data
 
 
 def render_template(name: str, **kwargs):
     path = Path("ui") / name
     text = path.read_text(encoding="utf-8")
-
     for key, value in kwargs.items():
         text = text.replace("__" + key.upper() + "__", str(value))
-
     return text
 
 
 def safe_path(p: str = ""):
     target = (ROOT / p).resolve()
-
     if not str(target).startswith(str(ROOT)):
         raise ValueError("invalid path")
-
     return target
 
 
 @app.get("/")
 def root():
-    return {
-        "ok": True,
-        "version": "KRXA_VAD_PHASE1"
-    }
+    return {"ok": True, "version": "KRXA_VAD_CONTROL_PHASE1"}
 
 
 @app.get("/user", response_class=HTMLResponse)
@@ -115,11 +129,7 @@ async def chat(
 @app.post("/history/clear")
 def history_clear(session_id: str = Form(...)):
     clear_history(session_id)
-
-    return {
-        "ok": True,
-        "session_id": session_id
-    }
+    return {"ok": True, "session_id": session_id}
 
 
 @app.get("/history")
@@ -131,15 +141,34 @@ def history(session_id: str):
     }
 
 
+@app.get("/api/config")
+def api_config():
+    return {"ok": True, "config": get_config()}
+
+
+@app.post("/api/config/update")
+def api_config_update(
+    vad_enabled: str = Form("false"),
+    voice_mode: str = Form("stable_recording")
+):
+    config = get_config()
+    config["vad"]["enabled"] = vad_enabled == "true"
+    config["voice_mode"] = voice_mode
+    save_config(config)
+    return {"ok": True, "config": config}
+
+
 @app.get("/api/state")
 def state():
+    config = get_config()
     return {
         "ok": True,
-        "version": "KRXA_VAD_PHASE1",
+        "version": "KRXA_VAD_CONTROL_PHASE1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
         "modes": ["interpreter", "agency"],
+        "config": config,
         "stats": stats(),
         "logs": load_logs(120)
     }
@@ -148,7 +177,7 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {
-        "version": "KRXA_VAD_PHASE1",
+        "version": "KRXA_VAD_CONTROL_PHASE1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
@@ -156,15 +185,14 @@ def control():
             "interpreter": "free",
             "agency": "paid_later"
         },
+        "config": get_config(),
         "stats": stats(),
         "logs": load_logs(120)
     }
 
     return render_template(
         "control.html",
-        state=html.escape(
-            json.dumps(payload, ensure_ascii=False, indent=2)
-        )
+        state=html.escape(json.dumps(payload, ensure_ascii=False, indent=2))
     )
 
 
@@ -172,15 +200,8 @@ def control():
 def dev(path: str = ""):
     if path:
         target = safe_path(path)
-
         if target.is_file():
-            content = html.escape(
-                target.read_text(
-                    encoding="utf-8",
-                    errors="ignore"
-                )
-            )
-
+            content = html.escape(target.read_text(encoding="utf-8", errors="ignore"))
             return render_template(
                 "dev.html",
                 file_path=html.escape(path),
@@ -189,15 +210,11 @@ def dev(path: str = ""):
             )
 
     items = []
-
     for item in sorted(ROOT.iterdir()):
         name = item.name
-
         if name.startswith(".git"):
             continue
-
         label = "[DIR]" if item.is_dir() else "[FILE]"
-
         items.append(
             f"<li><a href='/dev?path={html.escape(name)}'>{label} {html.escape(name)}</a></li>"
         )
@@ -211,70 +228,32 @@ def dev(path: str = ""):
 
 
 @app.post("/dev/save")
-def dev_save(
-    path: str = Form(...),
-    content: str = Form(...)
-):
+def dev_save(path: str = Form(...), content: str = Form(...)):
     target = safe_path(path)
-
-    target.write_text(
-        content,
-        encoding="utf-8"
-    )
-
-    log_event("dev_save", {
-        "path": path
-    })
-
-    return RedirectResponse(
-        url=f"/dev?path={path}",
-        status_code=303
-    )
+    target.write_text(content, encoding="utf-8")
+    log_event("dev_save", {"path": path})
+    return RedirectResponse(url=f"/dev?path={path}", status_code=303)
 
 
 @app.post("/dev/create")
 def dev_create(path: str = Form(...)):
     target = safe_path(path)
-
-    target.parent.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
+    target.parent.mkdir(parents=True, exist_ok=True)
     if not target.exists():
-        target.write_text(
-            "",
-            encoding="utf-8"
-        )
-
-    log_event("dev_create", {
-        "path": path
-    })
-
-    return RedirectResponse(
-        url=f"/dev?path={path}",
-        status_code=303
-    )
+        target.write_text("", encoding="utf-8")
+    log_event("dev_create", {"path": path})
+    return RedirectResponse(url=f"/dev?path={path}", status_code=303)
 
 
 @app.post("/dev/delete")
 def dev_delete(path: str = Form(...)):
     target = safe_path(path)
-
     if target.is_file():
         target.unlink()
-
     elif target.is_dir():
         shutil.rmtree(target)
-
-    log_event("dev_delete", {
-        "path": path
-    })
-
-    return RedirectResponse(
-        url="/dev",
-        status_code=303
-    )
+    log_event("dev_delete", {"path": path})
+    return RedirectResponse(url="/dev", status_code=303)
 
 
 @app.post("/api/stt")
@@ -285,17 +264,20 @@ async def api_stt(
     duration: float = Form(0)
 ):
     device = request.headers.get("user-agent", "")
+    config = get_config()
 
     text = await stt(
         file=file,
         session_id=session_id,
         duration=duration,
-        device=device
+        device=device,
+        vad_config=config.get("vad", {})
     )
 
     return {
         "ok": bool(text),
-        "text": text
+        "text": text,
+        "vad_enabled": config.get("vad", {}).get("enabled", False)
     }
 
 
@@ -304,7 +286,4 @@ def api_tts(
     text: str = Form(...),
     session_id: str = Form("")
 ):
-    return tts_response(
-        text=text,
-        session_id=session_id
-    )
+    return tts_response(text=text, session_id=session_id)

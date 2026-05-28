@@ -4,99 +4,296 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRXA Voice Travel</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
-.wrap{max-width:420px;margin:auto;min-height:100vh;background:#f8fafc;display:flex;flex-direction:column}
-.top{background:#082046;color:white;padding:16px;text-align:center;font-size:18px;font-weight:bold}
-.modebar{display:flex;gap:8px;padding:12px 14px}
-.modebtn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:bold;background:#e5e7eb;color:#334155}
-.modebtn.active{background:#0ea5e9;color:white}
-.status{margin:0 14px 10px;background:#e8f8ee;color:#25734d;padding:11px;border-radius:10px;text-align:center;font-size:14px}
-.chat{flex:1;padding:14px;overflow-y:auto}
-.me{background:#dbeafe;padding:14px;border-radius:12px;margin-bottom:10px;font-size:15px}
-.bot{background:white;padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #ddd;font-size:15px}
-.err{background:#fee2e2;color:#991b1b;padding:12px;border-radius:12px;margin-bottom:10px;font-size:14px}
-.bottom{position:sticky;bottom:0;background:#f8fafc;padding:12px 14px;border-top:1px solid #e5e7eb}
-.row{display:flex;gap:10px;margin-bottom:10px}
-.btn{flex:1;border:0;border-radius:14px;padding:16px;color:white;font-size:20px;font-weight:bold}
+
+body{
+    margin:0;
+    background:#eef2f7;
+    font-family:Arial,sans-serif;
+}
+
+.wrap{
+    max-width:420px;
+    margin:auto;
+    min-height:100vh;
+    background:#f8fafc;
+    display:flex;
+    flex-direction:column;
+}
+
+.top{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:#082046;
+    color:white;
+    padding:16px;
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.modebar{
+    display:flex;
+    gap:8px;
+    padding:12px 14px;
+    background:#f8fafc;
+    position:sticky;
+    top:56px;
+    z-index:9;
+}
+
+.modebtn{
+    flex:1;
+    border:0;
+    border-radius:12px;
+    padding:12px;
+    font-weight:bold;
+    background:#e5e7eb;
+    color:#334155;
+}
+
+.modebtn.active{
+    background:#0ea5e9;
+    color:white;
+}
+
+.status{
+    margin:0 14px 10px;
+    background:#e8f8ee;
+    color:#25734d;
+    padding:11px;
+    border-radius:10px;
+    text-align:center;
+    font-size:14px;
+}
+
+.chat{
+    flex:1;
+    overflow-y:auto;
+    padding:12px 14px 160px;
+}
+
+.me{
+    background:#dbeafe;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:10px;
+    font-size:15px;
+}
+
+.bot{
+    background:white;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:10px;
+    border:1px solid #ddd;
+    font-size:15px;
+}
+
+.err{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:12px;
+    border-radius:12px;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.bottom{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    max-width:420px;
+    margin:auto;
+    background:#f8fafc;
+    padding:12px 14px;
+    border-top:1px solid #e5e7eb;
+}
+
+.row{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.btn{
+    flex:1;
+    border:0;
+    border-radius:14px;
+    padding:16px;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+}
+
 .mic{background:#16a34a}
-.mic.recording{background:#dc2626}
 .map{background:#2563eb}
-textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding:10px;font-size:15px}
-.send{margin-top:10px;width:100%;border:0;background:#2563eb;color:white;padding:15px;border-radius:10px;font-size:17px;font-weight:bold}
-.small{font-size:12px;color:#64748b;text-align:center;margin-top:8px}
+
+textarea{
+    width:100%;
+    height:64px;
+    border-radius:10px;
+    border:1px solid #bbb;
+    padding:10px;
+    font-size:15px;
+}
+
+.send{
+    margin-top:10px;
+    width:100%;
+    border:0;
+    background:#2563eb;
+    color:white;
+    padding:15px;
+    border-radius:10px;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.small{
+    font-size:12px;
+    color:#64748b;
+    text-align:center;
+    margin-top:8px;
+}
 </style>
 </head>
 
 <body>
-<div class="wrap">
-    <div class="top">KRXA · __SERVICE__ 서비스</div>
 
-    <div class="modebar">
-        <button id="interpreterBtn" class="modebtn active" onclick="setMode('interpreter')">무료 통역</button>
-        <button id="agencyBtn" class="modebtn" onclick="setMode('agency')">여행 에이전시</button>
+<div class="wrap">
+
+    <div class="top">
+        KRXA · __SERVICE__ 서비스
     </div>
 
-    <div class="status" id="status">KRXA 준비됨</div>
+    <div class="modebar">
+        <button id="interpreterBtn"
+                class="modebtn active"
+                onclick="setMode('interpreter')">
+            무료 통역
+        </button>
+
+        <button id="agencyBtn"
+                class="modebtn"
+                onclick="setMode('agency')">
+            여행 에이전시
+        </button>
+    </div>
+
+    <div class="status" id="status">
+        KRXA 준비됨
+    </div>
 
     <div class="chat" id="chat"></div>
 
     <div class="bottom">
+
         <div class="row">
-            <button id="micBtn" class="btn mic" onclick="startSmartVoice()">🎤 말하기</button>
-            <button class="btn map" onclick="openMap()">📍 지도 안내</button>
+            <button class="btn mic"
+                    onclick="recordVoice()">
+                🎤 말하기
+            </button>
+
+            <button class="btn map"
+                    onclick="openMap()">
+                📍 지도 안내
+            </button>
         </div>
 
-        <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
-        <button class="send" onclick="sendText()">텍스트 전송</button>
-        <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
+        <textarea id="text"
+                  placeholder="말하거나 직접 입력하세요"></textarea>
+
+        <button class="send"
+                onclick="sendText()">
+            텍스트 전송
+        </button>
+
+        <div class="small" id="locText">
+            기기 위치 참고 · 사용자가 말한 장소 우선
+        </div>
+
     </div>
+
 </div>
 
 <script>
+
 const SERVICE = "__SERVICE__";
 
-let sessionId = localStorage.getItem("krxa_session_id");
+let sessionId =
+    localStorage.getItem("krxa_session_id");
+
 if(!sessionId){
-    sessionId = "session-" + Math.random().toString(16).slice(2,10);
-    localStorage.setItem("krxa_session_id", sessionId);
+    sessionId =
+        "session-" +
+        Math.random().toString(16).slice(2,10);
+
+    localStorage.setItem(
+        "krxa_session_id",
+        sessionId
+    );
 }
 
-let mode = localStorage.getItem("krxa_mode") || "interpreter";
+let mode =
+    localStorage.getItem("krxa_mode")
+    || "interpreter";
+
 let currentLat = "";
 let currentLng = "";
 let currentPlace = "";
-let deviceLocale = navigator.language || "ko-KR";
-
-let mediaRecorder = null;
-let audioContext = null;
-let analyser = null;
-let streamRef = null;
-let chunks = [];
-let vadTimer = null;
-let recordStartAt = 0;
-let speechStarted = false;
-let lastVoiceAt = 0;
 let currentAudio = null;
+let appConfig = {};
 
-const START_THRESHOLD = 0.035;
-const SILENCE_THRESHOLD = 0.018;
-const SILENCE_MS = 1400;
-const MAX_RECORD_MS = 9000;
-const MIN_RECORD_MS = 700;
+function setStatus(t){
+    document.getElementById("status").innerText = t;
+}
 
 function setMode(m){
     mode = m;
-    localStorage.setItem("krxa_mode", mode);
-    document.getElementById("interpreterBtn").classList.toggle("active", mode === "interpreter");
-    document.getElementById("agencyBtn").classList.toggle("active", mode === "agency");
-    setStatus(mode === "interpreter" ? "KRXA 준비됨 · 무료 통역 모드" : "KRXA 준비됨 · 여행 에이전시 모드");
+
+    localStorage.setItem(
+        "krxa_mode",
+        mode
+    );
+
+    document.getElementById("interpreterBtn")
+        .classList.toggle(
+            "active",
+            mode === "interpreter"
+        );
+
+    document.getElementById("agencyBtn")
+        .classList.toggle(
+            "active",
+            mode === "agency"
+        );
+
+    setStatus(
+        mode === "interpreter"
+        ? "무료 통역 모드"
+        : "여행 에이전시 모드"
+    );
 }
+
 setTimeout(()=>setMode(mode),0);
 
-function setStatus(t){ document.getElementById("status").innerText = t; }
-function setLocText(t){ document.getElementById("locText").innerText = t; }
+async function loadConfig(){
+    try{
+        const r = await fetch("/api/config");
+        const j = await r.json();
+
+        if(j.ok){
+            appConfig = j.config || {};
+        }
+    }catch(e){}
+}
+
+loadConfig();
 
 function escapeHtml(text){
     return String(text)
@@ -107,141 +304,50 @@ function escapeHtml(text){
       .replaceAll("'","&#039;");
 }
 
-function addMessage(type, title, text){
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
+function addMessage(type,title,text){
+
+    const chat =
+        document.getElementById("chat");
+
+    const div =
+        document.createElement("div");
+
     div.className = type;
-    div.innerHTML = "<b>" + title + "</b><br>" + escapeHtml(text);
+
+    div.innerHTML =
+        "<b>" + title + "</b><br>" +
+        escapeHtml(text);
+
     chat.appendChild(div);
-    while(chat.children.length > 4){ chat.removeChild(chat.children[0]); }
+
+    while(chat.children.length > 4){
+        chat.removeChild(chat.children[0]);
+    }
+
     chat.scrollTop = chat.scrollHeight;
 }
 
 function addError(text){
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
+
+    const chat =
+        document.getElementById("chat");
+
+    const div =
+        document.createElement("div");
+
     div.className = "err";
-    div.innerHTML = "<b>오류</b><br>" + escapeHtml(text);
+
+    div.innerHTML =
+        "<b>오류</b><br>" +
+        escapeHtml(text);
+
     chat.appendChild(div);
+
     chat.scrollTop = chat.scrollHeight;
 }
 
-function updatePlaceFromText(text){
-    const patterns = [
-        /나는\s*([^,.!?，。！？\s]+(?:역|시|구|동|로|거리|호텔|공항|터미널))/,
-        /내가\s*지금\s*([^,.!?，。！？\s]+(?:역|시|구|동|로|거리|호텔|공항|터미널))/,
-        /([^,.!?，。！？\s]+역)(?:이라고|이야|입니다|근처|주변)?/,
-        /([^,.!?，。！？\s]+시)(?:라고|이야|입니다|근처|주변)?/
-    ];
+function stopAudio(){
 
-    for(const p of patterns){
-        const m = text.match(p);
-        if(m && m[1]){
-            currentPlace = m[1].trim();
-            setLocText("현재 기준 위치: " + currentPlace);
-            return;
-        }
-    }
-}
-
-function requestDeviceLocation(){
-    if(!navigator.geolocation){
-        setLocText("GPS 미지원 · 말한 장소 기준 가능");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            currentLat = pos.coords.latitude;
-            currentLng = pos.coords.longitude;
-            setLocText("기기 위치 확인됨 · 사용자가 말한 장소 우선");
-        },
-        err => {
-            setLocText("위치 권한 없음 · 말한 장소 기준 가능");
-        },
-        {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
-    );
-}
-requestDeviceLocation();
-
-function isNoise(text){
-    const t = text.trim().toLowerCase();
-    if(!t) return true;
-    if(t.length <= 1) return true;
-    if(t.includes("inaudible")) return true;
-    if(t.includes("background")) return true;
-    if(t.includes("chatter")) return true;
-    if(t.includes("radio")) return true;
-
-    const noise = [
-        "thanks for watching",
-        "thank you for watching",
-        "구독",
-        "시청해주셔서",
-        "음",
-        "어"
-    ];
-
-    return noise.some(n => t.includes(n));
-}
-
-async function sendToServer(message){
-    if(isNoise(message)){
-        setStatus("음성이 너무 짧거나 불명확합니다. 다시 말해주세요.");
-        return;
-    }
-
-    updatePlaceFromText(message);
-    addMessage("me", "나", message);
-    setStatus(mode === "interpreter" ? "KRXA 통역 중..." : "KRXA 에이전시 처리 중...");
-
-    let context = "\n\n[KRXA_CONTEXT]";
-    context += "\nDevice locale: " + deviceLocale;
-    context += "\nGPS is reference only.";
-    context += "\nUser spoken place has priority over GPS.";
-    context += "\nCurrent mode: " + mode;
-
-    if(currentPlace){ context += "\nCurrent reference place from user speech: " + currentPlace; }
-    if(currentLat && currentLng){ context += "\nDevice GPS reference: " + currentLat + "," + currentLng; }
-
-    context += "\n[/KRXA_CONTEXT]";
-
-    const fd = new FormData();
-    fd.append("text", message + context);
-    fd.append("service", SERVICE);
-    fd.append("session_id", sessionId);
-    fd.append("mode", mode);
-
-    try{
-        const res = await fetch("/chat", {method:"POST", body:fd});
-        const raw = await res.text();
-
-        if(!res.ok){
-            addError("/chat 오류: " + raw);
-            setStatus("서버 응답 오류");
-            return;
-        }
-
-        const data = JSON.parse(raw);
-
-        if(data.session_id){
-            sessionId = data.session_id;
-            localStorage.setItem("krxa_session_id", sessionId);
-        }
-
-        addMessage("bot", "KRXA", data.result);
-        setStatus("응답 완료 · 음성 출력 중...");
-
-        playServerTTS(data.result);
-        setStatus(mode === "interpreter" ? "KRXA 준비됨 · 무료 통역 모드" : "KRXA 준비됨 · 여행 에이전시 모드");
-
-    }catch(e){
-        addError(e.message);
-        setStatus("전송 실패");
-    }
-}
-
-function stopCurrentAudio(){
     try{
         if(currentAudio){
             currentAudio.pause();
@@ -251,207 +357,348 @@ function stopCurrentAudio(){
     }catch(e){}
 }
 
-async function startSmartVoice(){
-    stopCurrentAudio();
+async function sendToServer(message){
 
-    if(mediaRecorder && mediaRecorder.state === "recording"){
-        stopRecording("사용자 종료");
+    if(!message || !message.trim()){
+        setStatus("입력 없음");
         return;
     }
 
-    try{
-        setStatus("마이크 준비 중...");
+    addMessage("me","나",message);
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio:{
-                echoCancellation:true,
-                noiseSuppression:true,
-                autoGainControl:true,
-                channelCount:1
-            }
-        });
-
-        streamRef = stream;
-        chunks = [];
-        speechStarted = false;
-        lastVoiceAt = Date.now();
-        recordStartAt = Date.now();
-
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioContext.createMediaStreamSource(stream);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 2048;
-        source.connect(analyser);
-
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = onRecordingStop;
-
-        mediaRecorder.start();
-
-        document.getElementById("micBtn").classList.add("recording");
-        setStatus("듣는 중... 말하면 자동으로 종료됩니다.");
-
-        monitorVoice();
-
-    }catch(e){
-        setStatus("마이크 권한 필요");
-        alert("마이크 권한을 허용해야 합니다.");
-    }
-}
-
-function getVolume(){
-    const data = new Uint8Array(analyser.fftSize);
-    analyser.getByteTimeDomainData(data);
-
-    let sum = 0;
-    for(let i=0;i<data.length;i++){
-        const v = (data[i] - 128) / 128;
-        sum += v * v;
-    }
-    return Math.sqrt(sum / data.length);
-}
-
-function monitorVoice(){
-    if(!mediaRecorder || mediaRecorder.state !== "recording") return;
-
-    const now = Date.now();
-    const volume = getVolume();
-
-    if(volume > START_THRESHOLD){
-        speechStarted = true;
-        lastVoiceAt = now;
-        setStatus("말소리 감지됨...");
-    }
-
-    if(speechStarted && volume > SILENCE_THRESHOLD){
-        lastVoiceAt = now;
-    }
-
-    if(speechStarted && now - lastVoiceAt > SILENCE_MS && now - recordStartAt > MIN_RECORD_MS){
-        stopRecording("침묵 감지 종료");
-        return;
-    }
-
-    if(now - recordStartAt > MAX_RECORD_MS){
-        stopRecording("최대 시간 종료");
-        return;
-    }
-
-    vadTimer = requestAnimationFrame(monitorVoice);
-}
-
-function stopRecording(reason){
-    try{
-        if(vadTimer){ cancelAnimationFrame(vadTimer); }
-        if(mediaRecorder && mediaRecorder.state === "recording"){
-            setStatus(reason + " · 음성 인식 중...");
-            mediaRecorder.stop();
-        }
-    }catch(e){
-        setStatus("녹음 종료 오류");
-    }
-}
-
-async function onRecordingStop(){
-    document.getElementById("micBtn").classList.remove("recording");
-
-    if(streamRef){
-        streamRef.getTracks().forEach(track => track.stop());
-        streamRef = null;
-    }
-
-    if(audioContext){
-        try{ audioContext.close(); }catch(e){}
-        audioContext = null;
-    }
-
-    const duration = (Date.now() - recordStartAt) / 1000;
-
-    if(!speechStarted){
-        setStatus("말소리가 감지되지 않았습니다. 다시 말해주세요.");
-        return;
-    }
-
-    const blob = new Blob(chunks, {type:"audio/webm"});
-
-    if(blob.size < 1500){
-        setStatus("녹음이 너무 짧습니다. 다시 말해주세요.");
-        return;
-    }
+    setStatus("KRXA 처리 중...");
 
     const fd = new FormData();
-    fd.append("file", blob, "voice.webm");
+
+    fd.append("text", message);
+    fd.append("service", SERVICE);
     fd.append("session_id", sessionId);
-    fd.append("duration", duration.toFixed(2));
+    fd.append("mode", mode);
 
     try{
-        const res = await fetch("/api/stt", {method:"POST", body:fd});
-        const raw = await res.text();
+
+        const res =
+            await fetch("/chat",{
+                method:"POST",
+                body:fd
+            });
+
+        const raw =
+            await res.text();
 
         if(!res.ok){
-            addError("/api/stt 오류: " + raw);
-            setStatus("음성 인식 실패");
+
+            addError(raw);
+
+            setStatus("서버 오류");
+
             return;
         }
 
-        const data = JSON.parse(raw);
+        const data =
+            JSON.parse(raw);
 
-        if(data.ok && data.text && !isNoise(data.text)){
-            await sendToServer(data.text);
-        }else{
-            setStatus("음성이 불명확합니다. 다시 말해주세요.");
+        if(data.session_id){
+
+            sessionId =
+                data.session_id;
+
+            localStorage.setItem(
+                "krxa_session_id",
+                sessionId
+            );
         }
 
+        addMessage(
+            "bot",
+            "KRXA",
+            data.result
+        );
+
+        setStatus("응답 완료");
+
+        playTTS(data.result);
+
     }catch(e){
+
         addError(e.message);
-        setStatus("음성 인식 오류");
+
+        setStatus("전송 실패");
     }
 }
 
-async function playServerTTS(text){
+async function recordVoice(){
+
+    stopAudio();
+
     try{
-        const fd = new FormData();
-        fd.append("text", text);
-        fd.append("session_id", sessionId);
 
-        const res = await fetch("/api/tts", {method:"POST", body:fd});
-        const blob = await res.blob();
+        setStatus("5초 동안 말해주세요...");
 
-        if(blob.size < 100){ return; }
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                audio:{
+                    echoCancellation:true,
+                    noiseSuppression:true,
+                    autoGainControl:true,
+                    channelCount:1
+                }
+            });
 
-        currentAudio = new Audio(URL.createObjectURL(blob));
+        const mr =
+            new MediaRecorder(stream);
+
+        let chunks = [];
+
+        mr.ondataavailable =
+            e => chunks.push(e.data);
+
+        mr.onstop = async ()=>{
+
+            stream.getTracks()
+                .forEach(track=>track.stop());
+
+            const blob =
+                new Blob(
+                    chunks,
+                    {type:"audio/webm"}
+                );
+
+            if(blob.size < 1500){
+
+                setStatus(
+                    "음성이 너무 짧습니다."
+                );
+
+                return;
+            }
+
+            setStatus("음성 인식 중...");
+
+            const fd =
+                new FormData();
+
+            fd.append(
+                "file",
+                blob,
+                "voice.webm"
+            );
+
+            fd.append(
+                "session_id",
+                sessionId
+            );
+
+            fd.append(
+                "duration",
+                "5"
+            );
+
+            try{
+
+                const res =
+                    await fetch(
+                        "/api/stt",
+                        {
+                            method:"POST",
+                            body:fd
+                        }
+                    );
+
+                const raw =
+                    await res.text();
+
+                if(!res.ok){
+
+                    addError(raw);
+
+                    setStatus(
+                        "STT 오류"
+                    );
+
+                    return;
+                }
+
+                const data =
+                    JSON.parse(raw);
+
+                if(
+                    data.ok &&
+                    data.text
+                ){
+
+                    sendToServer(
+                        data.text
+                    );
+
+                }else{
+
+                    setStatus(
+                        "음성 인식 실패"
+                    );
+                }
+
+            }catch(e){
+
+                addError(e.message);
+
+                setStatus(
+                    "STT 실패"
+                );
+            }
+        };
+
+        mr.start();
+
+        setTimeout(()=>{
+
+            if(
+                mr.state !==
+                "inactive"
+            ){
+                mr.stop();
+            }
+
+        },5000);
+
+    }catch(e){
+
+        addError(e.message);
+
+        setStatus(
+            "마이크 권한 필요"
+        );
+    }
+}
+
+async function playTTS(text){
+
+    try{
+
+        const fd =
+            new FormData();
+
+        fd.append(
+            "text",
+            text
+        );
+
+        fd.append(
+            "session_id",
+            sessionId
+        );
+
+        const res =
+            await fetch(
+                "/api/tts",
+                {
+                    method:"POST",
+                    body:fd
+                }
+            );
+
+        const blob =
+            await res.blob();
+
+        if(blob.size < 100){
+            return;
+        }
+
+        currentAudio =
+            new Audio(
+                URL.createObjectURL(blob)
+            );
+
         currentAudio.play();
 
     }catch(e){
-        setStatus("스피커 재생 실패");
+
+        setStatus(
+            "TTS 실패"
+        );
     }
 }
 
 function sendText(){
-    const el = document.getElementById("text");
-    const text = el.value.trim();
-    el.value = "";
 
-    if(!text){
-        setStatus("입력 내용이 없습니다.");
-        return;
-    }
+    const el =
+        document.getElementById("text");
+
+    const text =
+        el.value.trim();
+
+    el.value = "";
 
     sendToServer(text);
 }
 
 function openMap(){
-    let url = "https://www.google.com/maps";
+
+    let url =
+        "https://www.google.com/maps";
 
     if(currentPlace){
-        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace);
-    }else if(currentLat && currentLng){
-        url = "https://www.google.com/maps/search/travel+nearby/@" + currentLat + "," + currentLng + ",15z";
+
+        url =
+            "https://www.google.com/maps/search/" +
+            encodeURIComponent(
+                currentPlace
+            );
+
+    }else if(
+        currentLat &&
+        currentLng
+    ){
+
+        url =
+            "https://www.google.com/maps/search/travel+nearby/@"
+            + currentLat + ","
+            + currentLng +
+            ",15z";
     }
 
-    window.open(url, "_blank");
+    window.open(
+        url,
+        "_blank"
+    );
 }
+
+function requestDeviceLocation(){
+
+    if(!navigator.geolocation){
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        pos=>{
+            currentLat =
+                pos.coords.latitude;
+
+            currentLng =
+                pos.coords.longitude;
+
+            document.getElementById(
+                "locText"
+            ).innerText =
+                "기기 위치 확인됨";
+        },
+        err=>{
+            document.getElementById(
+                "locText"
+            ).innerText =
+                "위치 권한 없음";
+        },
+        {
+            enableHighAccuracy:true,
+            timeout:8000,
+            maximumAge:30000
+        }
+    );
+}
+
+requestDeviceLocation();
+
 </script>
+
 </body>
 </html>
