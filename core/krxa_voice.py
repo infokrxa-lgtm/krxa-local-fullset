@@ -1,51 +1,60 @@
 import os
 import tempfile
+
 from fastapi import UploadFile
 from fastapi.responses import Response
 from openai import OpenAI
 
 from core.krxa_store import save_stt_result, save_tts_result
+from core.krxa_vad import (
+    check_audio,
+    check_text,
+    log_vad_decision
+)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-NOISE_WORDS = [
-    "inaudible",
-    "background",
-    "chatter",
-    "radio",
-    "thanks for watching",
-    "thank you for watching",
-    "시청해주셔서",
-    "구독",
-]
-
-
-def is_noise_text(text: str) -> bool:
-    if not text:
-        return True
-
-    t = text.strip().lower()
-
-    if len(t) <= 1:
-        return True
-
-    return any(w in t for w in NOISE_WORDS)
-
-
-async def stt(file: UploadFile, session_id: str = "", duration: float = 0, device: str = ""):
+async def stt(
+    file: UploadFile,
+    session_id: str = "",
+    duration: float = 0,
+    device: str = "",
+    vad_config=None
+):
     tmp_path = None
-    audio_bytes = await file.read()
-    audio_size = len(audio_bytes)
 
     try:
-        if audio_size < 1500:
+        audio_bytes = await file.read()
+        audio_size = len(audio_bytes)
+        content_type = file.content_type or ""
+
+        ok_audio, audio_reason = check_audio(
+            audio_size=audio_size,
+            duration=duration,
+            config=vad_config
+        )
+
+        log_vad_decision(
+            ok_audio,
+            "audio",
+            audio_reason,
+            {
+                "audio_size": audio_size,
+                "duration": duration,
+                "content_type": content_type,
+                "session_id": session_id
+            }
+        )
+
+        if not ok_audio:
             save_stt_result(
                 ok=False,
-                reason="audio_too_small",
+                text="",
+                reason=audio_reason,
                 audio_size=audio_size,
                 duration=duration,
-                content_type=file.content_type or "",
+                content_type=content_type,
                 session_id=session_id,
                 device=device
             )
@@ -63,14 +72,31 @@ async def stt(file: UploadFile, session_id: str = "", duration: float = 0, devic
 
         text = (tr.text or "").strip()
 
-        if is_noise_text(text):
+        ok_text, text_reason = check_text(
+            text=text,
+            config=vad_config
+        )
+
+        log_vad_decision(
+            ok_text,
+            "text",
+            text_reason,
+            {
+                "text": text,
+                "audio_size": audio_size,
+                "duration": duration,
+                "session_id": session_id
+            }
+        )
+
+        if not ok_text:
             save_stt_result(
                 ok=False,
                 text=text,
-                reason="noise_or_inaudible",
+                reason=text_reason,
                 audio_size=audio_size,
                 duration=duration,
-                content_type=file.content_type or "",
+                content_type=content_type,
                 session_id=session_id,
                 device=device
             )
@@ -79,9 +105,10 @@ async def stt(file: UploadFile, session_id: str = "", duration: float = 0, devic
         save_stt_result(
             ok=True,
             text=text,
+            reason="ok",
             audio_size=audio_size,
             duration=duration,
-            content_type=file.content_type or "",
+            content_type=content_type,
             session_id=session_id,
             device=device
         )
@@ -91,8 +118,9 @@ async def stt(file: UploadFile, session_id: str = "", duration: float = 0, devic
     except Exception as e:
         save_stt_result(
             ok=False,
+            text="",
             reason=str(e),
-            audio_size=audio_size,
+            audio_size=0,
             duration=duration,
             content_type=file.content_type or "",
             session_id=session_id,
@@ -108,7 +136,10 @@ async def stt(file: UploadFile, session_id: str = "", duration: float = 0, devic
                 pass
 
 
-def tts_response(text: str, session_id: str = ""):
+def tts_response(
+    text: str,
+    session_id: str = ""
+):
     try:
         audio = client.audio.speech.create(
             model=os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts"),
@@ -122,6 +153,7 @@ def tts_response(text: str, session_id: str = ""):
             ok=True,
             text_len=len(text or ""),
             audio_size=len(data),
+            reason="ok",
             session_id=session_id
         )
 
@@ -134,6 +166,7 @@ def tts_response(text: str, session_id: str = ""):
         save_tts_result(
             ok=False,
             text_len=len(text or ""),
+            audio_size=0,
             reason=str(e),
             session_id=session_id
         )
