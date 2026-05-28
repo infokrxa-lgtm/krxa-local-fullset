@@ -7,25 +7,24 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
-.wrap{max-width:420px;margin:auto;min-height:100vh;background:#f8fafc}
+.wrap{max-width:420px;margin:auto;min-height:100vh;background:#f8fafc;display:flex;flex-direction:column}
 .top{background:#082046;color:white;padding:16px;text-align:center;font-size:18px;font-weight:bold}
-.modebar{display:flex;gap:8px;padding:12px 14px 0}
+.modebar{display:flex;gap:8px;padding:12px 14px}
 .modebtn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:bold;background:#e5e7eb;color:#334155}
 .modebtn.active{background:#0ea5e9;color:white}
-.row{display:flex;gap:10px;padding:14px}
+.status{margin:0 14px 10px;background:#e8f8ee;color:#25734d;padding:11px;border-radius:10px;text-align:center;font-size:14px}
+.chat{flex:1;padding:14px;overflow-y:auto}
+.me{background:#dbeafe;padding:14px;border-radius:12px;margin-bottom:10px;font-size:15px}
+.bot{background:white;padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #ddd;font-size:15px}
+.err{background:#fee2e2;color:#991b1b;padding:12px;border-radius:12px;margin-bottom:10px;font-size:14px}
+.bottom{position:sticky;bottom:0;background:#f8fafc;padding:12px 14px;border-top:1px solid #e5e7eb}
+.row{display:flex;gap:10px;margin-bottom:10px}
 .btn{flex:1;border:0;border-radius:14px;padding:16px;color:white;font-size:20px;font-weight:bold}
 .mic{background:#16a34a}
 .map{background:#2563eb}
-.status{margin:0 14px;background:#e8f8ee;color:#25734d;padding:11px;border-radius:10px;text-align:center;font-size:14px}
-.chat{padding:14px;min-height:310px;max-height:430px;overflow-y:auto}
-.me{background:#dbeafe;padding:14px;border-radius:12px;margin-bottom:10px;font-size:15px}
-.bot{background:white;padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #ddd;font-size:15px}
-.cards{padding:0 14px}
-.linkbtn{width:100%;margin-top:8px;border:1px solid #ffbf75;background:#fff7ef;color:#b45309;padding:14px;border-radius:10px}
-.inputbox{padding:14px}
 textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding:10px;font-size:15px}
 .send{margin-top:10px;width:100%;border:0;background:#2563eb;color:white;padding:15px;border-radius:10px;font-size:17px;font-weight:bold}
-.small{font-size:12px;color:#64748b;text-align:center;padding-bottom:10px}
+.small{font-size:12px;color:#64748b;text-align:center;margin-top:8px}
 </style>
 </head>
 
@@ -38,23 +37,20 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
         <button id="agencyBtn" class="modebtn" onclick="setMode('agency')">여행 에이전시</button>
     </div>
 
-    <div class="row">
-        <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
-        <button class="btn map" onclick="openMap()">📍 지도 안내</button>
-    </div>
-
-    <div class="status" id="status">KRXA 준비됨 · 무료 통역 모드</div>
+    <div class="status" id="status">KRXA 준비됨</div>
 
     <div class="chat" id="chat"></div>
 
-    <div class="cards" id="cards"></div>
+    <div class="bottom">
+        <div class="row">
+            <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
+            <button class="btn map" onclick="openMap()">📍 지도 안내</button>
+        </div>
 
-    <div class="inputbox">
         <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
         <button class="send" onclick="sendText()">텍스트 전송</button>
+        <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
     </div>
-
-    <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
 </div>
 
 <script>
@@ -75,26 +71,15 @@ let deviceLocale = navigator.language || "ko-KR";
 function setMode(m){
     mode = m;
     localStorage.setItem("krxa_mode", mode);
-
     document.getElementById("interpreterBtn").classList.toggle("active", mode === "interpreter");
     document.getElementById("agencyBtn").classList.toggle("active", mode === "agency");
-
-    if(mode === "interpreter"){
-        setStatus("KRXA 준비됨 · 무료 통역 모드");
-    }else{
-        setStatus("KRXA 준비됨 · 여행 에이전시 모드");
-    }
+    setStatus(mode === "interpreter" ? "KRXA 준비됨 · 무료 통역 모드" : "KRXA 준비됨 · 여행 에이전시 모드");
 }
 
-setTimeout(() => setMode(mode), 0);
+setTimeout(()=>setMode(mode),0);
 
-function setStatus(t){
-    document.getElementById("status").innerText = t;
-}
-
-function setLocText(t){
-    document.getElementById("locText").innerText = t;
-}
+function setStatus(t){ document.getElementById("status").innerText = t; }
+function setLocText(t){ document.getElementById("locText").innerText = t; }
 
 function escapeHtml(text){
     return String(text)
@@ -111,11 +96,16 @@ function addMessage(type, title, text){
     div.className = type;
     div.innerHTML = "<b>" + title + "</b><br>" + escapeHtml(text);
     chat.appendChild(div);
+    while(chat.children.length > 4){ chat.removeChild(chat.children[0]); }
+    chat.scrollTop = chat.scrollHeight;
+}
 
-    while(chat.children.length > 4){
-        chat.removeChild(chat.children[0]);
-    }
-
+function addError(text){
+    const chat = document.getElementById("chat");
+    const div = document.createElement("div");
+    div.className = "err";
+    div.innerHTML = "<b>오류</b><br>" + escapeHtml(text);
+    chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 }
 
@@ -139,7 +129,7 @@ function updatePlaceFromText(text){
 
 function requestDeviceLocation(){
     if(!navigator.geolocation){
-        setStatus("KRXA 준비됨 · GPS 미지원");
+        setLocText("GPS 미지원 · 말한 장소 기준 가능");
         return;
     }
 
@@ -147,7 +137,7 @@ function requestDeviceLocation(){
         pos => {
             currentLat = pos.coords.latitude;
             currentLng = pos.coords.longitude;
-            setLocText("기기 위치 참고 · 사용자가 말한 장소 우선");
+            setLocText("기기 위치 확인됨 · 사용자가 말한 장소 우선");
         },
         err => {
             setLocText("위치 권한 없음 · 말한 장소 기준 가능");
@@ -158,44 +148,13 @@ function requestDeviceLocation(){
 
 requestDeviceLocation();
 
-function showCards(cards){
-    let html = "";
-
-    if(cards && cards.length > 0){
-        cards.forEach(c => {
-            if(c.url){
-                let url = c.url;
-
-                if(currentPlace){
-                    if(c.label.includes("맛집")){
-                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace + " 맛집");
-                    }else if(c.label.includes("역")){
-                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace + " 가까운 역");
-                    }else{
-                        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace);
-                    }
-                }else if(currentLat && currentLng){
-                    if(c.label.includes("맛집")){
-                        url = "https://www.google.com/maps/search/restaurant/@" + currentLat + "," + currentLng + ",15z";
-                    }else if(c.label.includes("역")){
-                        url = "https://www.google.com/maps/search/station/@" + currentLat + "," + currentLng + ",15z";
-                    }
-                }
-
-                html += "<button class='linkbtn' onclick=\"window.open('" + url + "','_blank')\">↗ " + escapeHtml(c.label) + "</button>";
-            }else if(c.text){
-                html += "<button class='linkbtn'>" + escapeHtml(c.label) + "<br>" + escapeHtml(c.text) + "</button>";
-            }
-        });
-    }
-
-    document.getElementById("cards").innerHTML = html;
-}
-
 function isNoise(text){
-    const t = text.trim();
+    const t = text.trim().toLowerCase();
     if(!t) return true;
     if(t.length <= 1) return true;
+    if(t.includes("inaudible")) return true;
+    if(t.includes("background")) return true;
+    if(t.includes("chatter")) return true;
 
     const noise = [
         "thanks for watching",
@@ -206,7 +165,7 @@ function isNoise(text){
         "어"
     ];
 
-    return noise.some(n => t.toLowerCase().includes(n));
+    return noise.some(n => t.includes(n));
 }
 
 async function sendToServer(message){
@@ -216,29 +175,17 @@ async function sendToServer(message){
     }
 
     updatePlaceFromText(message);
-
     addMessage("me", "나", message);
+    setStatus(mode === "interpreter" ? "KRXA 통역 중..." : "KRXA 에이전시 처리 중...");
 
-    if(mode === "interpreter"){
-        setStatus("KRXA 통역 중...");
-    }else{
-        setStatus("KRXA 여행 에이전시 처리 중...");
-    }
-
-    let context = "";
-    context += "\n\n[KRXA_CONTEXT]";
+    let context = "\n\n[KRXA_CONTEXT]";
     context += "\nDevice locale: " + deviceLocale;
     context += "\nGPS is reference only.";
     context += "\nUser spoken place has priority over GPS.";
     context += "\nCurrent mode: " + mode;
 
-    if(currentPlace){
-        context += "\nCurrent reference place from user speech: " + currentPlace;
-    }
-
-    if(currentLat && currentLng){
-        context += "\nDevice GPS reference: " + currentLat + "," + currentLng;
-    }
+    if(currentPlace){ context += "\nCurrent reference place from user speech: " + currentPlace; }
+    if(currentLat && currentLng){ context += "\nDevice GPS reference: " + currentLat + "," + currentLng; }
 
     context += "\n[/KRXA_CONTEXT]";
 
@@ -248,33 +195,38 @@ async function sendToServer(message){
     fd.append("session_id", sessionId);
     fd.append("mode", mode);
 
-    const res = await fetch("/chat", {
-        method:"POST",
-        body:fd
-    });
+    try{
+        const res = await fetch("/chat", {method:"POST", body:fd});
+        const raw = await res.text();
 
-    const data = await res.json();
+        if(!res.ok){
+            addError("/chat 오류: " + raw);
+            setStatus("서버 응답 오류");
+            return;
+        }
 
-    if(data.session_id){
-        sessionId = data.session_id;
-        localStorage.setItem("krxa_session_id", sessionId);
-    }
+        const data = JSON.parse(raw);
 
-    addMessage("bot", "KRXA", data.result);
-    showCards(data.cards);
+        if(data.session_id){
+            sessionId = data.session_id;
+            localStorage.setItem("krxa_session_id", sessionId);
+        }
 
-    await playServerTTS(data.result);
+        addMessage("bot", "KRXA", data.result);
+        setStatus("응답 완료 · 음성 출력 중...");
 
-    if(mode === "interpreter"){
-        setStatus("KRXA 준비됨 · 무료 통역 모드");
-    }else{
-        setStatus("KRXA 준비됨 · 여행 에이전시 모드");
+        playServerTTS(data.result);
+        setStatus(mode === "interpreter" ? "KRXA 준비됨 · 무료 통역 모드" : "KRXA 준비됨 · 여행 에이전시 모드");
+
+    }catch(e){
+        addError(e.message);
+        setStatus("전송 실패");
     }
 }
 
 async function recordVoice(){
     try{
-        setStatus("듣는 중... 3.5초 동안 말하세요");
+        setStatus("듣는 중... 5초 동안 말하세요");
 
         const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         const mr = new MediaRecorder(stream);
@@ -290,26 +242,34 @@ async function recordVoice(){
             const fd = new FormData();
             fd.append("file", blob, "voice.webm");
 
-            const res = await fetch("/api/stt", {
-                method:"POST",
-                body:fd
-            });
+            try{
+                const res = await fetch("/api/stt", {method:"POST", body:fd});
+                const raw = await res.text();
 
-            const data = await res.json();
+                if(!res.ok){
+                    addError("/api/stt 오류: " + raw);
+                    setStatus("음성 인식 실패");
+                    return;
+                }
 
-            if(data.ok && data.text){
-                await sendToServer(data.text);
-            }else{
-                setStatus("음성 인식 실패");
+                const data = JSON.parse(raw);
+
+                if(data.ok && data.text && !isNoise(data.text)){
+                    await sendToServer(data.text);
+                }else{
+                    setStatus("음성이 너무 짧거나 불명확합니다. 다시 말해주세요.");
+                }
+
+            }catch(e){
+                addError(e.message);
+                setStatus("음성 인식 오류");
             }
         };
 
         mr.start();
         setTimeout(() => {
-            if(mr.state !== "inactive"){
-                mr.stop();
-            }
-        }, 3500);
+            if(mr.state !== "inactive"){ mr.stop(); }
+        }, 5000);
 
     }catch(e){
         setStatus("마이크 권한 필요");
@@ -319,19 +279,16 @@ async function recordVoice(){
 
 async function playServerTTS(text){
     try{
-        setStatus("KRXA 음성 출력 중...");
-
         const fd = new FormData();
         fd.append("text", text);
 
-        const res = await fetch("/api/tts", {
-            method:"POST",
-            body:fd
-        });
-
+        const res = await fetch("/api/tts", {method:"POST", body:fd});
         const blob = await res.blob();
+
+        if(blob.size < 100){ return; }
+
         const audio = new Audio(URL.createObjectURL(blob));
-        await audio.play();
+        audio.play();
 
     }catch(e){
         setStatus("스피커 재생 실패");
@@ -342,6 +299,12 @@ function sendText(){
     const el = document.getElementById("text");
     const text = el.value.trim();
     el.value = "";
+
+    if(!text){
+        setStatus("입력 내용이 없습니다.");
+        return;
+    }
+
     sendToServer(text);
 }
 
