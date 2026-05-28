@@ -22,6 +22,7 @@ button{padding:12px 16px;border:0;border-radius:10px;font-weight:bold;margin:4px
 .on{background:#16a34a;color:white}
 .off{background:#dc2626;color:white}
 .mode{background:#2563eb;color:white}
+select{padding:10px;border-radius:8px;margin:4px}
 </style>
 </head>
 
@@ -31,13 +32,14 @@ button{padding:12px 16px;border:0;border-radius:10px;font-weight:bold;margin:4px
 
 <div class="card">
 <p>운영 관제 UI</p>
-<p>접속 상태 / 세션 / 로그 / STT 실패율 / VAD ON·OFF / 오류 / 모드 상태 확인</p>
+<p>VAD / STT 실패율 / 자동학습 분석 / language hint / 로그 / 모드 상태 확인</p>
 <p>
 <a href="/user">USER</a> |
 <a href="/app?service=food">APP</a> |
 <a href="/dev">DEV</a> |
 <a href="/api/state">STATE JSON</a> |
-<a href="/api/config">CONFIG JSON</a>
+<a href="/api/config">CONFIG JSON</a> |
+<a href="/api/learning/analyze">LEARNING JSON</a>
 </p>
 </div>
 
@@ -49,9 +51,26 @@ button{padding:12px 16px;border:0;border-radius:10px;font-weight:bold;margin:4px
 <button class="off" onclick="updateConfig(false,'stable_recording')">VAD OFF</button>
 <button class="mode" onclick="updateConfig(false,'stable_recording')">안정형 녹음</button>
 
+<h4>Language Hint</h4>
+<select id="languageHint">
+<option value="auto">auto</option>
+<option value="ko">ko</option>
+<option value="en">en</option>
+<option value="ja">ja</option>
+<option value="zh">zh</option>
+</select>
+<button class="mode" onclick="saveLanguageHint()">언어힌트 저장</button>
+
 <p style="font-size:13px;color:#cbd5e1">
-현재 권장: VAD OFF + 안정형 녹음. VAD는 엔진에서 테스트 후 ON.
+현재 권장: VAD OFF + 안정형 녹음 + learning 분석 기반 language hint.
 </p>
+</div>
+
+<div class="card">
+<h3>자동 학습 분석</h3>
+<button class="mode" onclick="analyzeLearning()">학습 분석</button>
+<button class="on" onclick="applyLearning()">추천값 적용</button>
+<pre id="learningBox">아직 분석 전입니다.</pre>
 </div>
 
 <div class="card">
@@ -99,17 +118,23 @@ function renderSummary(){
     const stats = state.stats || {};
     const config = state.config || {};
     const vad = config.vad || {};
+    const learning = config.learning || {};
     const openai = state.openai_key ? "연결됨" : "없음";
 
     vadBox.innerText =
         "VAD: " + (vad.enabled ? "ON" : "OFF") +
-        " / Voice Mode: " + safe(config.voice_mode);
+        " / Voice Mode: " + safe(config.voice_mode) +
+        " / Language Hint: " + safe(learning.language_hint);
+
+    document.getElementById("languageHint").value =
+        learning.language_hint || "auto";
 
     box.innerHTML = `
         <div class="metric">Version<b>${safe(state.version)}</b></div>
         <div class="metric">OpenAI<b>${openai}</b></div>
         <div class="metric">Voice Mode<b>${safe(config.voice_mode)}</b></div>
         <div class="metric">VAD<b>${vad.enabled ? "ON" : "OFF"}</b></div>
+        <div class="metric">Lang Hint<b>${safe(learning.language_hint)}</b></div>
         <div class="metric">Turns<b>${safe(stats.turns)}</b></div>
         <div class="metric">STT Total<b>${safe(stats.stt_total)}</b></div>
         <div class="metric">STT Fail<b>${safe(stats.stt_fail)}</b></div>
@@ -144,9 +169,13 @@ function renderLogs(){
 }
 
 async function updateConfig(vadEnabled, voiceMode){
+    const lang = document.getElementById("languageHint").value || "auto";
+
     const fd = new FormData();
     fd.append("vad_enabled", vadEnabled ? "true" : "false");
     fd.append("voice_mode", voiceMode);
+    fd.append("language_hint", lang);
+    fd.append("learning_auto_apply", "false");
 
     const r = await fetch("/api/config/update", {
         method:"POST",
@@ -160,6 +189,57 @@ async function updateConfig(vadEnabled, voiceMode){
         location.reload();
     }else{
         alert("설정 저장 실패");
+    }
+}
+
+async function saveLanguageHint(){
+    const config = state.config || {};
+    const vad = config.vad || {};
+    const voiceMode = config.voice_mode || "stable_recording";
+    const lang = document.getElementById("languageHint").value || "auto";
+
+    const fd = new FormData();
+    fd.append("vad_enabled", vad.enabled ? "true" : "false");
+    fd.append("voice_mode", voiceMode);
+    fd.append("language_hint", lang);
+    fd.append("learning_auto_apply", "false");
+
+    const r = await fetch("/api/config/update", {
+        method:"POST",
+        body:fd
+    });
+
+    const j = await r.json();
+
+    if(j.ok){
+        alert("언어힌트 저장 완료");
+        location.reload();
+    }else{
+        alert("저장 실패");
+    }
+}
+
+async function analyzeLearning(){
+    const r = await fetch("/api/learning/analyze");
+    const j = await r.json();
+    document.getElementById("learningBox").innerText =
+        JSON.stringify(j.analysis || j, null, 2);
+}
+
+async function applyLearning(){
+    const r = await fetch("/api/learning/apply", {
+        method:"POST"
+    });
+    const j = await r.json();
+
+    document.getElementById("learningBox").innerText =
+        JSON.stringify(j, null, 2);
+
+    if(j.ok){
+        alert("추천값 적용 완료");
+        location.reload();
+    }else{
+        alert("적용 실패");
     }
 }
 

@@ -15,6 +15,21 @@ from core.krxa_vad import (
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
+def get_learning_config(vad_config=None):
+    vad_config = vad_config or {}
+    return vad_config.get("learning", {}) or {}
+
+
+def choose_stt_language(vad_config=None):
+    learning = get_learning_config(vad_config)
+    hint = learning.get("language_hint", "auto")
+
+    if hint in ["ko", "en", "ja", "zh"]:
+        return hint
+
+    return None
+
+
 async def stt(
     file: UploadFile,
     session_id: str = "",
@@ -23,11 +38,12 @@ async def stt(
     vad_config=None
 ):
     tmp_path = None
+    audio_size = 0
+    content_type = file.content_type or ""
 
     try:
         audio_bytes = await file.read()
         audio_size = len(audio_bytes)
-        content_type = file.content_type or ""
 
         ok_audio, audio_reason = check_audio(
             audio_size=audio_size,
@@ -64,11 +80,18 @@ async def stt(
             tmp.write(audio_bytes)
             tmp_path = tmp.name
 
+        stt_language = choose_stt_language(vad_config)
+
         with open(tmp_path, "rb") as f:
-            tr = client.audio.transcriptions.create(
-                model=os.getenv("OPENAI_STT_MODEL", "whisper-1"),
-                file=f
-            )
+            kwargs = {
+                "model": os.getenv("OPENAI_STT_MODEL", "whisper-1"),
+                "file": f
+            }
+
+            if stt_language:
+                kwargs["language"] = stt_language
+
+            tr = client.audio.transcriptions.create(**kwargs)
 
         text = (tr.text or "").strip()
 
@@ -83,6 +106,7 @@ async def stt(
             text_reason,
             {
                 "text": text,
+                "language_hint": stt_language or "auto",
                 "audio_size": audio_size,
                 "duration": duration,
                 "session_id": session_id
@@ -120,9 +144,9 @@ async def stt(
             ok=False,
             text="",
             reason=str(e),
-            audio_size=0,
+            audio_size=audio_size,
             duration=duration,
-            content_type=file.content_type or "",
+            content_type=content_type,
             session_id=session_id,
             device=device
         )
