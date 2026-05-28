@@ -8,6 +8,7 @@ from fastapi import FastAPI, Form, UploadFile, File, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from core.krxa_router import route_turn
+from core.krxa_translate import translate_only
 from core.krxa_store import (
     clear_history,
     load_history,
@@ -42,7 +43,7 @@ def safe_path(p: str = ""):
 def root():
     return {
         "ok": True,
-        "version": "KRXA_ROUTER_FULLSET_V1"
+        "version": "KRXA_TRANSLATE_ROUTE_V1"
     }
 
 
@@ -56,12 +57,35 @@ def app_ui(service: str = "free"):
     return render_template("app.html", service=service)
 
 
+@app.post("/api/translate")
+async def api_translate(
+    text: str = Form(...),
+    service: str = Form("free"),
+    session_id: str = Form(""),
+    source: str = Form("text"),
+    location_text: str = Form(""),
+    lat: str = Form(""),
+    lng: str = Form(""),
+    device_locale: str = Form("")
+):
+    return translate_only(
+        text=text,
+        session_id=session_id,
+        service=service,
+        source=source,
+        location_text=location_text,
+        lat=lat,
+        lng=lng,
+        device_locale=device_locale
+    )
+
+
 @app.post("/api/turn")
 async def api_turn(
     text: str = Form(...),
     service: str = Form("free"),
     session_id: str = Form(""),
-    mode: str = Form("interpreter"),
+    mode: str = Form("agency"),
     source: str = Form("text"),
     location_text: str = Form(""),
     lat: str = Form(""),
@@ -88,7 +112,7 @@ async def chat(
     text: str = Form(...),
     service: str = Form("free"),
     session_id: str = Form(""),
-    mode: str = Form("interpreter")
+    mode: str = Form("agency")
 ):
     return route_turn(
         text=text,
@@ -102,6 +126,7 @@ async def chat(
 @app.post("/history/clear")
 def history_clear(session_id: str = Form(...)):
     clear_history(session_id)
+    clear_history(session_id + "_translate")
     return {"ok": True, "session_id": session_id}
 
 
@@ -110,7 +135,8 @@ def history(session_id: str):
     return {
         "ok": True,
         "session_id": session_id,
-        "history": load_history(session_id, limit=100)
+        "history": load_history(session_id, limit=100),
+        "translate_history": load_history(session_id + "_translate", limit=100)
     }
 
 
@@ -173,11 +199,15 @@ def state():
 
     return {
         "ok": True,
-        "version": "KRXA_ROUTER_FULLSET_V1",
+        "version": "KRXA_TRANSLATE_ROUTE_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
-        "modes": ["interpreter", "agency"],
+        "modes": ["translate_only", "agency"],
+        "routes": {
+            "translate_only": "/api/translate",
+            "agency": "/api/turn"
+        },
         "config": config,
         "stats": stats(),
         "logs": load_logs(150)
@@ -187,13 +217,17 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {
-        "version": "KRXA_ROUTER_FULLSET_V1",
+        "version": "KRXA_TRANSLATE_ROUTE_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
         "modes": {
-            "interpreter": "free",
+            "translate_only": "free",
             "agency": "paid_later"
+        },
+        "routes": {
+            "translate_only": "/api/translate",
+            "agency": "/api/turn"
         },
         "config": load_config(),
         "stats": stats(),
