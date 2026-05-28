@@ -1,4 +1,5 @@
 import os
+import time
 import tempfile
 
 from fastapi import UploadFile
@@ -25,13 +26,14 @@ def choose_stt_language(config=None):
     return None
 
 
-async def stt(
+async def stt_with_detail(
     file: UploadFile,
     session_id: str = "",
     duration: float = 0,
     device: str = "",
     vad_config=None
 ):
+    started = time.time()
     tmp_path = None
     audio_size = 0
     content_type = file.content_type or ""
@@ -71,7 +73,17 @@ async def stt(
                 device=device,
                 language_hint=language_hint
             )
-            return ""
+
+            return {
+                "ok": False,
+                "text": "",
+                "reason": audio_reason,
+                "audio_size": audio_size,
+                "duration": duration,
+                "content_type": content_type,
+                "language_hint": language_hint,
+                "elapsed": round(time.time() - started, 3)
+            }
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
             tmp.write(audio_bytes)
@@ -123,7 +135,17 @@ async def stt(
                 device=device,
                 language_hint=language_hint
             )
-            return ""
+
+            return {
+                "ok": False,
+                "text": text,
+                "reason": text_reason,
+                "audio_size": audio_size,
+                "duration": duration,
+                "content_type": content_type,
+                "language_hint": language_hint,
+                "elapsed": round(time.time() - started, 3)
+            }
 
         save_stt_result(
             ok=True,
@@ -137,13 +159,24 @@ async def stt(
             language_hint=language_hint
         )
 
-        return text
+        return {
+            "ok": True,
+            "text": text,
+            "reason": "ok",
+            "audio_size": audio_size,
+            "duration": duration,
+            "content_type": content_type,
+            "language_hint": language_hint,
+            "elapsed": round(time.time() - started, 3)
+        }
 
     except Exception as e:
+        reason = str(e)
+
         save_stt_result(
             ok=False,
             text="",
-            reason=str(e),
+            reason=reason,
             audio_size=audio_size,
             duration=duration,
             content_type=content_type,
@@ -151,7 +184,17 @@ async def stt(
             device=device,
             language_hint=language_hint
         )
-        return ""
+
+        return {
+            "ok": False,
+            "text": "",
+            "reason": reason,
+            "audio_size": audio_size,
+            "duration": duration,
+            "content_type": content_type,
+            "language_hint": language_hint,
+            "elapsed": round(time.time() - started, 3)
+        }
 
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -161,10 +204,30 @@ async def stt(
                 pass
 
 
+async def stt(
+    file: UploadFile,
+    session_id: str = "",
+    duration: float = 0,
+    device: str = "",
+    vad_config=None
+):
+    result = await stt_with_detail(
+        file=file,
+        session_id=session_id,
+        duration=duration,
+        device=device,
+        vad_config=vad_config
+    )
+
+    return result.get("text", "") if result.get("ok") else ""
+
+
 def tts_response(
     text: str,
     session_id: str = ""
 ):
+    started = time.time()
+
     try:
         audio = client.audio.speech.create(
             model=os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts"),
@@ -184,7 +247,11 @@ def tts_response(
 
         return Response(
             content=data,
-            media_type="audio/mpeg"
+            media_type="audio/mpeg",
+            headers={
+                "X-KRXA-TTS-Elapsed": str(round(time.time() - started, 3)),
+                "X-KRXA-TTS-Audio-Size": str(len(data))
+            }
         )
 
     except Exception as e:
@@ -199,5 +266,9 @@ def tts_response(
         return Response(
             content=b"",
             media_type="audio/mpeg",
-            status_code=500
+            status_code=500,
+            headers={
+                "X-KRXA-TTS-Elapsed": str(round(time.time() - started, 3)),
+                "X-KRXA-TTS-Error": str(e)
+            }
         )

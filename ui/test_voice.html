@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRXA TEST VOICE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef2f7;font-family:Arial,sans-serif;color:#0f172a}
+.wrap{max-width:520px;margin:auto;min-height:100vh;background:#f8fafc;padding:14px}
+.top{background:#082046;color:white;padding:14px;text-align:center;font-size:18px;font-weight:bold;border-radius:0 0 12px 12px}
+.card{background:white;border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:bold;margin:4px;cursor:pointer}
+.green{background:#16a34a;color:white}
+.blue{background:#2563eb;color:white}
+.gray{background:#64748b;color:white}
+.red{background:#dc2626;color:white}
+pre{white-space:pre-wrap;background:#020617;color:#e5e7eb;padding:12px;border-radius:10px;max-height:360px;overflow:auto}
+textarea{width:100%;height:70px;border:1px solid #bbb;border-radius:10px;padding:10px;font-size:15px}
+.status{background:#e8f8ee;color:#25734d;padding:10px;border-radius:10px;text-align:center;margin:10px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:12px;color:#64748b}
+.metric{background:#f1f5f9;padding:10px;border-radius:10px;margin:6px 0}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="top">KRXA 음성 · 속도 · GPS 진단</div>
+
+<div class="status" id="status">진단 대기 중</div>
+
+<div class="card">
+<h3>1. GPS 진단</h3>
+<button class="blue" onclick="testGPS()">GPS 확인</button>
+<div id="gpsBox" class="metric">아직 확인 전</div>
+</div>
+
+<div class="card">
+<h3>2. 음성 → STT 진단</h3>
+<p class="small">마이크로 5초 녹음 후 STT만 확인합니다. KRXA 대화 엔진은 호출하지 않습니다.</p>
+<button class="green" onclick="recordAndSTT()">🎤 녹음/STT 테스트</button>
+<div id="sttBox" class="metric">아직 테스트 전</div>
+</div>
+
+<div class="card">
+<h3>3. TTS 진단</h3>
+<textarea id="ttsText">안녕하세요. KRXA 음성 출력 테스트입니다.</textarea>
+<br>
+<button class="blue" onclick="testTTS()">🔊 TTS 테스트</button>
+<div id="ttsBox" class="metric">아직 테스트 전</div>
+</div>
+
+<div class="card">
+<h3>4. 전체 진단 로그</h3>
+<button class="gray" onclick="copyLog()">로그 복사</button>
+<button class="red" onclick="clearLog()">로그 초기화</button>
+<pre id="logBox"></pre>
+</div>
+
+<div class="card">
+<p>
+<a href="/app?service=food">APP</a> |
+<a href="/control">CONTROL</a> |
+<a href="/dev">DEV</a> |
+<a href="/api/state">STATE</a>
+</p>
+</div>
+
+</div>
+
+<script>
+let sessionId = localStorage.getItem("krxa_session_id");
+if(!sessionId){
+    sessionId = "session-" + Math.random().toString(16).slice(2,10);
+    localStorage.setItem("krxa_session_id", sessionId);
+}
+
+let currentAudio = null;
+let diag = {
+    session_id: sessionId,
+    user_agent: navigator.userAgent,
+    language: navigator.language,
+    gps: {},
+    stt: {},
+    tts: {},
+    events: []
+};
+
+function now(){
+    return new Date().toISOString();
+}
+
+function setStatus(t){
+    document.getElementById("status").innerText = t;
+}
+
+function logEvent(kind, detail){
+    diag.events.push({
+        time: now(),
+        kind,
+        detail: detail || {}
+    });
+    renderLog();
+}
+
+function renderLog(){
+    document.getElementById("logBox").innerText =
+        JSON.stringify(diag, null, 2);
+}
+
+function setBox(id, data){
+    document.getElementById(id).innerText =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+function clearLog(){
+    diag.events = [];
+    diag.gps = {};
+    diag.stt = {};
+    diag.tts = {};
+    renderLog();
+}
+
+async function copyLog(){
+    const text = JSON.stringify(diag, null, 2);
+    try{
+        await navigator.clipboard.writeText(text);
+        setStatus("진단 로그 복사 완료");
+    }catch(e){
+        setStatus("복사 실패");
+    }
+}
+
+function testGPS(){
+    const started = performance.now();
+
+    if(!navigator.geolocation){
+        const data = {
+            ok:false,
+            reason:"geolocation_not_supported"
+        };
+        diag.gps = data;
+        setBox("gpsBox", data);
+        logEvent("gps_fail", data);
+        return;
+    }
+
+    setStatus("GPS 확인 중...");
+
+    navigator.geolocation.getCurrentPosition(
+        pos=>{
+            const elapsed = Math.round(performance.now() - started);
+
+            const data = {
+                ok:true,
+                elapsed_ms: elapsed,
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy,
+                altitude: pos.coords.altitude,
+                heading: pos.coords.heading,
+                speed: pos.coords.speed
+            };
+
+            diag.gps = data;
+            setBox("gpsBox", data);
+            logEvent("gps_result", data);
+            setStatus("GPS 확인 완료");
+        },
+        err=>{
+            const elapsed = Math.round(performance.now() - started);
+
+            const data = {
+                ok:false,
+                elapsed_ms: elapsed,
+                code: err.code,
+                message: err.message
+            };
+
+            diag.gps = data;
+            setBox("gpsBox", data);
+            logEvent("gps_fail", data);
+            setStatus("GPS 확인 실패");
+        },
+        {
+            enableHighAccuracy:true,
+            timeout:10000,
+            maximumAge:30000
+        }
+    );
+}
+
+function pickMimeType(){
+    const types = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        ""
+    ];
+
+    for(const t of types){
+        if(!t) return "";
+        if(window.MediaRecorder && MediaRecorder.isTypeSupported(t)){
+            return t;
+        }
+    }
+
+    return "";
+}
+
+async function recordAndSTT(){
+    setStatus("마이크 준비 중...");
+    logEvent("stt_test_start", {});
+
+    const totalStart = performance.now();
+
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio:{
+                echoCancellation:true,
+                noiseSuppression:true,
+                autoGainControl:true,
+                channelCount:1
+            }
+        });
+
+        const mimeType = pickMimeType();
+        const options = mimeType ? {mimeType} : {};
+        const mr = new MediaRecorder(stream, options);
+
+        let chunks = [];
+        const recordStart = performance.now();
+
+        mr.ondataavailable = e => {
+            if(e.data && e.data.size > 0){
+                chunks.push(e.data);
+            }
+        };
+
+        mr.onstop = async ()=>{
+            const recordElapsed = Math.round(performance.now() - recordStart);
+            stream.getTracks().forEach(track=>track.stop());
+
+            const blob = new Blob(chunks, {type: mimeType || "audio/webm"});
+            const audioSize = blob.size;
+
+            const base = {
+                mime_type: mimeType || "browser_default",
+                audio_size: audioSize,
+                record_elapsed_ms: recordElapsed,
+                duration: 5
+            };
+
+            if(audioSize < 1500){
+                const data = {
+                    ok:false,
+                    reason:"audio_too_small_client",
+                    ...base
+                };
+                diag.stt = data;
+                setBox("sttBox", data);
+                logEvent("stt_client_fail", data);
+                setStatus("녹음 파일이 너무 작습니다.");
+                return;
+            }
+
+            setStatus("STT 서버 전송 중...");
+
+            const sttStart = performance.now();
+            const fd = new FormData();
+            fd.append("file", blob, "voice.webm");
+            fd.append("session_id", sessionId);
+            fd.append("duration", "5");
+
+            try{
+                const res = await fetch("/api/stt", {
+                    method:"POST",
+                    body:fd
+                });
+
+                const raw = await res.text();
+                const sttElapsed = Math.round(performance.now() - sttStart);
+                const totalElapsed = Math.round(performance.now() - totalStart);
+
+                let parsed = null;
+                try{
+                    parsed = JSON.parse(raw);
+                }catch(e){}
+
+                const data = {
+                    http_ok: res.ok,
+                    http_status: res.status,
+                    stt_elapsed_ms: sttElapsed,
+                    total_elapsed_ms: totalElapsed,
+                    ...base,
+                    response: parsed || raw
+                };
+
+                diag.stt = data;
+                setBox("sttBox", data);
+                logEvent(res.ok ? "stt_response" : "stt_http_fail", data);
+
+                if(parsed && parsed.ok){
+                    setStatus("STT 성공: " + parsed.text);
+                }else{
+                    setStatus("STT 실패");
+                }
+
+            }catch(e){
+                const data = {
+                    ok:false,
+                    reason:"fetch_error",
+                    message:e.message,
+                    ...base
+                };
+                diag.stt = data;
+                setBox("sttBox", data);
+                logEvent("stt_fetch_fail", data);
+                setStatus("STT 요청 실패");
+            }
+        };
+
+        setStatus("5초 녹음 중...");
+        mr.start();
+
+        setTimeout(()=>{
+            if(mr.state !== "inactive"){
+                mr.stop();
+            }
+        },5000);
+
+    }catch(e){
+        const data = {
+            ok:false,
+            reason:"mic_error",
+            message:e.message
+        };
+        diag.stt = data;
+        setBox("sttBox", data);
+        logEvent("mic_fail", data);
+        setStatus("마이크 오류");
+    }
+}
+
+async function testTTS(){
+    const text = document.getElementById("ttsText").value.trim();
+
+    if(!text){
+        setStatus("TTS 텍스트 없음");
+        return;
+    }
+
+    if(currentAudio){
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+
+    setStatus("TTS 요청 중...");
+    const started = performance.now();
+
+    const fd = new FormData();
+    fd.append("text", text);
+    fd.append("session_id", sessionId);
+
+    try{
+        const res = await fetch("/api/tts", {
+            method:"POST",
+            body:fd
+        });
+
+        const blob = await res.blob();
+        const elapsed = Math.round(performance.now() - started);
+
+        const data = {
+            http_ok: res.ok,
+            http_status: res.status,
+            elapsed_ms: elapsed,
+            audio_size: blob.size,
+            text_len: text.length
+        };
+
+        diag.tts = data;
+        setBox("ttsBox", data);
+        logEvent(res.ok ? "tts_response" : "tts_http_fail", data);
+
+        if(res.ok && blob.size > 100){
+            currentAudio = new Audio(URL.createObjectURL(blob));
+            currentAudio.play();
+            setStatus("TTS 재생 중");
+        }else{
+            setStatus("TTS 실패");
+        }
+
+    }catch(e){
+        const data = {
+            ok:false,
+            reason:"fetch_error",
+            message:e.message
+        };
+        diag.tts = data;
+        setBox("ttsBox", data);
+        logEvent("tts_fetch_fail", data);
+        setStatus("TTS 요청 실패");
+    }
+}
+
+renderLog();
+</script>
+</body>
+</html>

@@ -18,7 +18,7 @@ from core.krxa_store import (
     load_config,
     save_config
 )
-from core.krxa_voice import stt, tts_response
+from core.krxa_voice import stt_with_detail, tts_response
 from core.krxa_learning import analyze_stt_logs, apply_learning_to_config
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
@@ -43,7 +43,7 @@ def safe_path(p: str = ""):
 def root():
     return {
         "ok": True,
-        "version": "KRXA_TRANSLATE_ROUTE_V1"
+        "version": "KRXA_TEST_VOICE_V1"
     }
 
 
@@ -55,6 +55,11 @@ def user():
 @app.get("/app", response_class=HTMLResponse)
 def app_ui(service: str = "free"):
     return render_template("app.html", service=service)
+
+
+@app.get("/test_voice", response_class=HTMLResponse)
+def test_voice():
+    return render_template("test_voice.html")
 
 
 @app.post("/api/translate")
@@ -199,14 +204,15 @@ def state():
 
     return {
         "ok": True,
-        "version": "KRXA_TRANSLATE_ROUTE_V1",
+        "version": "KRXA_TEST_VOICE_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
         "modes": ["translate_only", "agency"],
         "routes": {
             "translate_only": "/api/translate",
-            "agency": "/api/turn"
+            "agency": "/api/turn",
+            "test_voice": "/test_voice"
         },
         "config": config,
         "stats": stats(),
@@ -217,7 +223,7 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {
-        "version": "KRXA_TRANSLATE_ROUTE_V1",
+        "version": "KRXA_TEST_VOICE_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
@@ -227,7 +233,8 @@ def control():
         },
         "routes": {
             "translate_only": "/api/translate",
-            "agency": "/api/turn"
+            "agency": "/api/turn",
+            "test_voice": "/test_voice"
         },
         "config": load_config(),
         "stats": stats(),
@@ -344,7 +351,7 @@ async def api_stt(
     device = request.headers.get("user-agent", "")
     config = load_config()
 
-    text = await stt(
+    result = await stt_with_detail(
         file=file,
         session_id=session_id,
         duration=duration,
@@ -352,12 +359,10 @@ async def api_stt(
         vad_config=config
     )
 
-    return {
-        "ok": bool(text),
-        "text": text,
-        "vad_enabled": config.get("vad", {}).get("enabled", False),
-        "language_hint": config.get("learning", {}).get("language_hint", "auto")
-    }
+    result["vad_enabled"] = config.get("vad", {}).get("enabled", False)
+    result["config_language_hint"] = config.get("learning", {}).get("language_hint", "auto")
+
+    return result
 
 
 @app.post("/api/tts")
