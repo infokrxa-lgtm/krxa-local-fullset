@@ -12,18 +12,9 @@ from core.krxa_vad import (
     check_text,
     log_vad_decision
 )
-from core.krxa_learning import build_language_hint_from_config
+from core.krxa_language import decide_stt_language
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
-def choose_stt_language(config=None):
-    hint = build_language_hint_from_config(config)
-
-    if hint in ["ko", "en", "ja", "zh"]:
-        return hint
-
-    return None
 
 
 async def stt_with_detail(
@@ -31,17 +22,30 @@ async def stt_with_detail(
     session_id: str = "",
     duration: float = 0,
     device: str = "",
-    vad_config=None
+    vad_config=None,
+    user_language_mode: str = "auto",
+    lat: str = "",
+    lng: str = "",
+    device_locale: str = ""
 ):
     started = time.time()
     tmp_path = None
     audio_size = 0
     content_type = file.content_type or ""
     language_hint = "auto"
+    language_reason = "none"
 
     try:
         audio_bytes = await file.read()
         audio_size = len(audio_bytes)
+
+        language_hint, language_reason = decide_stt_language(
+            user_language_mode=user_language_mode,
+            lat=lat,
+            lng=lng,
+            device_locale=device_locale,
+            config=vad_config
+        )
 
         ok_audio, audio_reason = check_audio(
             audio_size=audio_size,
@@ -57,7 +61,9 @@ async def stt_with_detail(
                 "audio_size": audio_size,
                 "duration": duration,
                 "content_type": content_type,
-                "session_id": session_id
+                "session_id": session_id,
+                "language_hint": language_hint,
+                "language_reason": language_reason
             }
         )
 
@@ -82,6 +88,7 @@ async def stt_with_detail(
                 "duration": duration,
                 "content_type": content_type,
                 "language_hint": language_hint,
+                "language_reason": language_reason,
                 "elapsed": round(time.time() - started, 3)
             }
 
@@ -89,17 +96,14 @@ async def stt_with_detail(
             tmp.write(audio_bytes)
             tmp_path = tmp.name
 
-        stt_language = choose_stt_language(vad_config)
-        language_hint = stt_language or "auto"
-
         with open(tmp_path, "rb") as f:
             kwargs = {
                 "model": os.getenv("OPENAI_STT_MODEL", "whisper-1"),
                 "file": f
             }
 
-            if stt_language:
-                kwargs["language"] = stt_language
+            if language_hint in ["ko", "en", "ja", "zh"]:
+                kwargs["language"] = language_hint
 
             tr = client.audio.transcriptions.create(**kwargs)
 
@@ -117,6 +121,7 @@ async def stt_with_detail(
             {
                 "text": text,
                 "language_hint": language_hint,
+                "language_reason": language_reason,
                 "audio_size": audio_size,
                 "duration": duration,
                 "session_id": session_id
@@ -144,6 +149,7 @@ async def stt_with_detail(
                 "duration": duration,
                 "content_type": content_type,
                 "language_hint": language_hint,
+                "language_reason": language_reason,
                 "elapsed": round(time.time() - started, 3)
             }
 
@@ -167,6 +173,7 @@ async def stt_with_detail(
             "duration": duration,
             "content_type": content_type,
             "language_hint": language_hint,
+            "language_reason": language_reason,
             "elapsed": round(time.time() - started, 3)
         }
 
@@ -193,6 +200,7 @@ async def stt_with_detail(
             "duration": duration,
             "content_type": content_type,
             "language_hint": language_hint,
+            "language_reason": language_reason,
             "elapsed": round(time.time() - started, 3)
         }
 
@@ -209,14 +217,22 @@ async def stt(
     session_id: str = "",
     duration: float = 0,
     device: str = "",
-    vad_config=None
+    vad_config=None,
+    user_language_mode: str = "auto",
+    lat: str = "",
+    lng: str = "",
+    device_locale: str = ""
 ):
     result = await stt_with_detail(
         file=file,
         session_id=session_id,
         duration=duration,
         device=device,
-        vad_config=vad_config
+        vad_config=vad_config,
+        user_language_mode=user_language_mode,
+        lat=lat,
+        lng=lng,
+        device_locale=device_locale
     )
 
     return result.get("text", "") if result.get("ok") else ""

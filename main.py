@@ -41,10 +41,7 @@ def safe_path(p: str = ""):
 
 @app.get("/")
 def root():
-    return {
-        "ok": True,
-        "version": "KRXA_TEST_VOICE_V1"
-    }
+    return {"ok": True, "version": "KRXA_LANGUAGE_GPS_STT_V1"}
 
 
 @app.get("/user", response_class=HTMLResponse)
@@ -147,10 +144,7 @@ def history(session_id: str):
 
 @app.get("/api/config")
 def api_config():
-    return {
-        "ok": True,
-        "config": load_config()
-    }
+    return {"ok": True, "config": load_config()}
 
 
 @app.post("/api/config/update")
@@ -169,19 +163,13 @@ def api_config_update(
 
     save_config(config)
 
-    return {
-        "ok": True,
-        "config": config
-    }
+    return {"ok": True, "config": config}
 
 
 @app.get("/api/learning/analyze")
 def api_learning_analyze():
     analysis = analyze_stt_logs(limit=500)
-    return {
-        "ok": True,
-        "analysis": analysis
-    }
+    return {"ok": True, "analysis": analysis}
 
 
 @app.post("/api/learning/apply")
@@ -190,12 +178,7 @@ def api_learning_apply():
     analysis = analyze_stt_logs(limit=500)
     config = apply_learning_to_config(config, analysis)
     save_config(config)
-
-    return {
-        "ok": True,
-        "config": config,
-        "analysis": analysis
-    }
+    return {"ok": True, "config": config, "analysis": analysis}
 
 
 @app.get("/api/state")
@@ -204,7 +187,7 @@ def state():
 
     return {
         "ok": True,
-        "version": "KRXA_TEST_VOICE_V1",
+        "version": "KRXA_LANGUAGE_GPS_STT_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
@@ -223,7 +206,7 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {
-        "version": "KRXA_TEST_VOICE_V1",
+        "version": "KRXA_LANGUAGE_GPS_STT_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
@@ -243,9 +226,7 @@ def control():
 
     return render_template(
         "control.html",
-        state=html.escape(
-            json.dumps(payload, ensure_ascii=False, indent=2)
-        )
+        state=html.escape(json.dumps(payload, ensure_ascii=False, indent=2))
     )
 
 
@@ -256,10 +237,7 @@ def dev(path: str = ""):
 
         if target.is_file():
             content = html.escape(
-                target.read_text(
-                    encoding="utf-8",
-                    errors="ignore"
-                )
+                target.read_text(encoding="utf-8", errors="ignore")
             )
 
             return render_template(
@@ -329,7 +307,6 @@ def dev_delete(path: str = Form(...)):
 
     if target.is_file():
         target.unlink()
-
     elif target.is_dir():
         shutil.rmtree(target)
 
@@ -346,7 +323,11 @@ async def api_stt(
     request: Request,
     file: UploadFile = File(...),
     session_id: str = Form(""),
-    duration: float = Form(0)
+    duration: float = Form(0),
+    user_language_mode: str = Form("auto"),
+    lat: str = Form(""),
+    lng: str = Form(""),
+    device_locale: str = Form("")
 ):
     device = request.headers.get("user-agent", "")
     config = load_config()
@@ -356,11 +337,21 @@ async def api_stt(
         session_id=session_id,
         duration=duration,
         device=device,
-        vad_config=config
+        vad_config=config,
+        user_language_mode=user_language_mode,
+        lat=lat,
+        lng=lng,
+        device_locale=device_locale
     )
 
     result["vad_enabled"] = config.get("vad", {}).get("enabled", False)
-    result["config_language_hint"] = config.get("learning", {}).get("language_hint", "auto")
+    result["config_language_hint"] = (
+        config.get("learning", {}).get("language_hint", "auto")
+    )
+    result["user_language_mode"] = user_language_mode
+    result["gps_lat"] = lat
+    result["gps_lng"] = lng
+    result["device_locale"] = device_locale
 
     return result
 
