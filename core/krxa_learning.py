@@ -13,15 +13,21 @@ KOREAN_SHORT_WORDS = [
     "맛집",
     "길찾기",
     "고마워",
-    "감사합니다"
+    "감사합니다",
+    "어디",
+    "가요",
+    "주세요"
 ]
+
 
 JAPANESE_CONFUSION_HINTS = [
     "ね",
     "ねえ",
     "はい",
-    "いいえ"
+    "いいえ",
+    "すみません"
 ]
+
 
 DEFAULT_RECOMMENDATION = {
     "language_hint": "auto",
@@ -41,6 +47,7 @@ def analyze_stt_logs(limit=500):
     ]
 
     total = len(stt_logs)
+
     fail_logs = [
         x for x in stt_logs
         if x.get("kind") == "stt_fail"
@@ -52,34 +59,43 @@ def analyze_stt_logs(limit=500):
     ]
 
     fail_reasons = Counter()
-    suspicious_texts = []
-    japanese_confusions = []
+    language_hints = Counter()
     short_success = []
+    japanese_confusions = []
+    suspicious_texts = []
 
     for item in stt_logs:
         detail = item.get("detail", {}) or {}
+
         reason = detail.get("reason", "")
         text = detail.get("text", "") or ""
         audio_size = detail.get("audio_size", 0)
         duration = detail.get("duration", 0)
+        language_hint = detail.get("language_hint", "auto")
 
         if reason:
             fail_reasons[reason] += 1
 
-        if text:
-            clean = text.strip()
+        if language_hint:
+            language_hints[language_hint] += 1
 
+        clean = text.strip()
+
+        if clean:
             if len(clean) <= 8:
                 short_success.append(clean)
 
             if any(j in clean for j in JAPANESE_CONFUSION_HINTS):
                 japanese_confusions.append(clean)
 
+            lowered = clean.lower()
+
             if (
-                "inaudible" in clean.lower()
-                or "background" in clean.lower()
-                or "chatter" in clean.lower()
-                or "radio" in clean.lower()
+                "inaudible" in lowered
+                or "background" in lowered
+                or "chatter" in lowered
+                or "radio" in lowered
+                or "noise" in lowered
             ):
                 suspicious_texts.append(clean)
 
@@ -103,7 +119,8 @@ def analyze_stt_logs(limit=500):
             "inaudible",
             "background",
             "chatter",
-            "radio"
+            "radio",
+            "noise"
         ]
 
     if fail_rate > 0.4:
@@ -116,6 +133,7 @@ def analyze_stt_logs(limit=500):
         "fail": len(fail_logs),
         "fail_rate": fail_rate,
         "fail_reasons": dict(fail_reasons),
+        "language_hints": dict(language_hints),
         "short_success_samples": short_success[-20:],
         "japanese_confusion_samples": japanese_confusions[-20:],
         "suspicious_text_samples": suspicious_texts[-20:],
@@ -127,26 +145,16 @@ def analyze_stt_logs(limit=500):
     return result
 
 
-def build_language_hint(text, config=None):
+def build_language_hint_from_config(config=None):
     config = config or {}
+    learning = config.get("learning", {}) or {}
 
-    prefer_ko = (
-        config.get("prefer_korean_for_short_utterance", True)
-        or config.get("language_hint") == "ko"
-    )
+    hint = learning.get("language_hint", "auto")
 
-    if not text:
-        return "auto"
+    if hint in ["ko", "en", "ja", "zh"]:
+        return hint
 
-    clean = text.strip()
-
-    if prefer_ko and len(clean) <= 8:
-        return "ko"
-
-    if any(ch in clean for ch in KOREAN_SHORT_WORDS):
-        return "ko"
-
-    return config.get("language_hint", "auto")
+    return "auto"
 
 
 def apply_learning_to_config(config, analysis):
@@ -170,9 +178,12 @@ def apply_learning_to_config(config, analysis):
         "stable_recording"
     )
 
-    log_event("learning_applied", {
-        "language_hint": config["learning"]["language_hint"],
-        "vad_recommendation": config["learning"]["vad_recommendation"]
-    })
+    log_event(
+        "learning_applied",
+        {
+            "language_hint": config["learning"]["language_hint"],
+            "vad_recommendation": config["learning"]["vad_recommendation"]
+        }
+    )
 
     return config

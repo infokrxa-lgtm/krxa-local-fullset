@@ -1,5 +1,6 @@
 from core.krxa_store import log_event
 
+
 VAD_DEFAULT_CONFIG = {
     "enabled": False,
     "mode": "engine",
@@ -10,11 +11,13 @@ VAD_DEFAULT_CONFIG = {
 }
 
 
-NOISE_WORDS = [
+BASE_NOISE_WORDS = [
     "inaudible",
     "background",
     "chatter",
     "radio",
+    "noise",
+    "music",
     "thanks for watching",
     "thank you for watching",
     "시청해주셔서",
@@ -24,7 +27,32 @@ NOISE_WORDS = [
 ]
 
 
-def is_noise_text(text: str) -> bool:
+def get_vad_config(config=None):
+    if not config:
+        return dict(VAD_DEFAULT_CONFIG)
+
+    if "vad" in config:
+        merged = dict(VAD_DEFAULT_CONFIG)
+        merged.update(config.get("vad") or {})
+        return merged
+
+    merged = dict(VAD_DEFAULT_CONFIG)
+    merged.update(config)
+    return merged
+
+
+def get_noise_words(config=None):
+    words = list(BASE_NOISE_WORDS)
+
+    if config and "learning" in config:
+        extra = config.get("learning", {}).get("noise_filter_add", [])
+        if isinstance(extra, list):
+            words.extend(extra)
+
+    return list(dict.fromkeys(words))
+
+
+def is_noise_text(text: str, config=None) -> bool:
     if not text:
         return True
 
@@ -33,11 +61,11 @@ def is_noise_text(text: str) -> bool:
     if len(t) <= 1:
         return True
 
-    return any(w in t for w in NOISE_WORDS)
+    return any(w in t for w in get_noise_words(config))
 
 
 def check_audio(audio_size: int, duration: float, config=None):
-    cfg = config or VAD_DEFAULT_CONFIG
+    cfg = get_vad_config(config)
 
     if audio_size < cfg.get("min_audio_size", 1500):
         return False, "audio_too_small"
@@ -52,12 +80,12 @@ def check_audio(audio_size: int, duration: float, config=None):
 
 
 def check_text(text: str, config=None):
-    cfg = config or VAD_DEFAULT_CONFIG
+    cfg = get_vad_config(config)
 
     if not cfg.get("block_noise_text", True):
         return True, "ok"
 
-    if is_noise_text(text):
+    if is_noise_text(text, config):
         return False, "noise_or_inaudible"
 
     return True, "ok"

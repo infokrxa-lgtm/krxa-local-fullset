@@ -11,18 +11,13 @@ from core.krxa_vad import (
     check_text,
     log_vad_decision
 )
+from core.krxa_learning import build_language_hint_from_config
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def get_learning_config(vad_config=None):
-    vad_config = vad_config or {}
-    return vad_config.get("learning", {}) or {}
-
-
-def choose_stt_language(vad_config=None):
-    learning = get_learning_config(vad_config)
-    hint = learning.get("language_hint", "auto")
+def choose_stt_language(config=None):
+    hint = build_language_hint_from_config(config)
 
     if hint in ["ko", "en", "ja", "zh"]:
         return hint
@@ -40,6 +35,7 @@ async def stt(
     tmp_path = None
     audio_size = 0
     content_type = file.content_type or ""
+    language_hint = "auto"
 
     try:
         audio_bytes = await file.read()
@@ -72,7 +68,8 @@ async def stt(
                 duration=duration,
                 content_type=content_type,
                 session_id=session_id,
-                device=device
+                device=device,
+                language_hint=language_hint
             )
             return ""
 
@@ -81,6 +78,7 @@ async def stt(
             tmp_path = tmp.name
 
         stt_language = choose_stt_language(vad_config)
+        language_hint = stt_language or "auto"
 
         with open(tmp_path, "rb") as f:
             kwargs = {
@@ -106,7 +104,7 @@ async def stt(
             text_reason,
             {
                 "text": text,
-                "language_hint": stt_language or "auto",
+                "language_hint": language_hint,
                 "audio_size": audio_size,
                 "duration": duration,
                 "session_id": session_id
@@ -122,7 +120,8 @@ async def stt(
                 duration=duration,
                 content_type=content_type,
                 session_id=session_id,
-                device=device
+                device=device,
+                language_hint=language_hint
             )
             return ""
 
@@ -134,7 +133,8 @@ async def stt(
             duration=duration,
             content_type=content_type,
             session_id=session_id,
-            device=device
+            device=device,
+            language_hint=language_hint
         )
 
         return text
@@ -148,7 +148,8 @@ async def stt(
             duration=duration,
             content_type=content_type,
             session_id=session_id,
-            device=device
+            device=device,
+            language_hint=language_hint
         )
         return ""
 

@@ -4,65 +4,243 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRXA Voice Travel</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
-.wrap{max-width:420px;margin:auto;height:100vh;background:#f8fafc;display:flex;flex-direction:column;overflow:hidden}
-.top{background:#082046;color:white;padding:10px;text-align:center;font-size:17px;font-weight:bold}
-.modebar{display:flex;gap:8px;padding:8px 12px;background:#f8fafc}
-.modebtn{flex:1;border:0;border-radius:11px;padding:9px;font-weight:bold;background:#e5e7eb;color:#334155}
-.modebtn.active{background:#0ea5e9;color:white}
-.status{margin:0 12px 6px;background:#e8f8ee;color:#25734d;padding:8px;border-radius:10px;text-align:center;font-size:13px}
-.chat{flex:1;overflow-y:auto;padding:10px 12px;background:#f8fafc}
-.me{background:#dbeafe;padding:11px;border-radius:12px;margin-bottom:8px;font-size:15px}
-.bot{background:white;padding:11px;border-radius:12px;margin-bottom:8px;border:1px solid #ddd;font-size:15px}
-.err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:12px;margin-bottom:8px;font-size:14px}
-.bottom{background:#f8fafc;padding:8px 12px;border-top:1px solid #e5e7eb}
-.row{display:flex;gap:10px;margin-bottom:8px}
-.btn{flex:1;border:0;border-radius:14px;padding:12px;color:white;font-size:17px;font-weight:bold}
-.mic{background:#16a34a}
-.map{background:#2563eb}
-textarea{width:100%;height:50px;border-radius:10px;border:1px solid #bbb;padding:8px;font-size:15px}
-.send{margin-top:7px;width:100%;border:0;background:#2563eb;color:white;padding:11px;border-radius:10px;font-size:16px;font-weight:bold}
-.small{font-size:11px;color:#64748b;text-align:center;margin-top:5px}
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#eef2f7;
+    font-family:Arial,sans-serif;
+}
+
+.wrap{
+    max-width:420px;
+    margin:auto;
+    height:100vh;
+    background:#f8fafc;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.top{
+    background:#082046;
+    color:white;
+    padding:10px;
+    text-align:center;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.modebar{
+    display:flex;
+    gap:8px;
+    padding:8px 12px;
+    background:#f8fafc;
+}
+
+.modebtn{
+    flex:1;
+    border:0;
+    border-radius:11px;
+    padding:9px;
+    font-weight:bold;
+    background:#e5e7eb;
+    color:#334155;
+}
+
+.modebtn.active{
+    background:#0ea5e9;
+    color:white;
+}
+
+.status{
+    margin:0 12px 6px;
+    background:#e8f8ee;
+    color:#25734d;
+    padding:8px;
+    border-radius:10px;
+    text-align:center;
+    font-size:13px;
+}
+
+.chat{
+    flex:1;
+    overflow-y:auto;
+    padding:10px 12px 20px;
+    background:#f8fafc;
+}
+
+.me{
+    background:#dbeafe;
+    padding:11px;
+    border-radius:12px;
+    margin-bottom:8px;
+    font-size:15px;
+}
+
+.bot{
+    background:white;
+    padding:11px;
+    border-radius:12px;
+    margin-bottom:8px;
+    border:1px solid #ddd;
+    font-size:15px;
+}
+
+.err{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:10px;
+    border-radius:12px;
+    margin-bottom:8px;
+    font-size:14px;
+}
+
+.bottom{
+    background:#f8fafc;
+    padding:8px 12px;
+    border-top:1px solid #e5e7eb;
+}
+
+.row{
+    display:flex;
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.btn{
+    flex:1;
+    border:0;
+    border-radius:14px;
+    padding:12px;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.mic{
+    background:#16a34a;
+}
+
+.map{
+    background:#2563eb;
+}
+
+textarea{
+    width:100%;
+    height:50px;
+    border-radius:10px;
+    border:1px solid #bbb;
+    padding:8px;
+    font-size:15px;
+}
+
+.send{
+    margin-top:7px;
+    width:100%;
+    border:0;
+    background:#2563eb;
+    color:white;
+    padding:11px;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.small{
+    font-size:11px;
+    color:#64748b;
+    text-align:center;
+    margin-top:5px;
+}
 </style>
 </head>
 
 <body>
-<div class="wrap">
-    <div class="top">KRXA · __SERVICE__ 서비스</div>
 
-    <div class="modebar">
-        <button id="interpreterBtn" class="modebtn active" onclick="setMode('interpreter')">무료 통역</button>
-        <button id="agencyBtn" class="modebtn" onclick="setMode('agency')">여행 에이전시</button>
+<div class="wrap">
+
+    <div class="top">
+        KRXA · __SERVICE__ 서비스
     </div>
 
-    <div class="status" id="status">KRXA 준비됨</div>
+    <div class="modebar">
+        <button id="interpreterBtn"
+                class="modebtn active"
+                onclick="setMode('interpreter')">
+            무료 통역
+        </button>
+
+        <button id="agencyBtn"
+                class="modebtn"
+                onclick="setMode('agency')">
+            여행 에이전시
+        </button>
+    </div>
+
+    <div class="status" id="status">
+        KRXA 준비됨
+    </div>
 
     <div class="chat" id="chat"></div>
 
     <div class="bottom">
+
         <div class="row">
-            <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
-            <button class="btn map" onclick="openMap()">📍 지도 안내</button>
+            <button class="btn mic"
+                    onclick="recordVoice()">
+                🎤 말하기
+            </button>
+
+            <button class="btn map"
+                    onclick="openMap()">
+                📍 지도 안내
+            </button>
         </div>
 
-        <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
-        <button id="sendBtn" class="send" onclick="sendText()">텍스트 전송</button>
-        <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
+        <textarea id="text"
+                  placeholder="말하거나 직접 입력하세요"></textarea>
+
+        <button id="sendBtn"
+                class="send"
+                onclick="sendText()">
+            텍스트 전송
+        </button>
+
+        <div class="small" id="locText">
+            기기 위치 참고 · 사용자가 말한 장소 우선
+        </div>
+
     </div>
+
 </div>
 
 <script>
+
 const SERVICE = "__SERVICE__";
 
-let sessionId = localStorage.getItem("krxa_session_id");
+let sessionId =
+    localStorage.getItem("krxa_session_id");
+
 if(!sessionId){
-    sessionId = "session-" + Math.random().toString(16).slice(2,10);
-    localStorage.setItem("krxa_session_id", sessionId);
+    sessionId =
+        "session-" +
+        Math.random().toString(16).slice(2,10);
+
+    localStorage.setItem(
+        "krxa_session_id",
+        sessionId
+    );
 }
 
-let mode = localStorage.getItem("krxa_mode") || "interpreter";
+let mode =
+    localStorage.getItem("krxa_mode")
+    || "interpreter";
+
 let currentLat = "";
 let currentLng = "";
 let currentPlace = "";
@@ -74,12 +252,33 @@ function setStatus(t){
 }
 
 function setMode(m){
+
     mode = m;
-    localStorage.setItem("krxa_mode", mode);
-    document.getElementById("interpreterBtn").classList.toggle("active", mode === "interpreter");
-    document.getElementById("agencyBtn").classList.toggle("active", mode === "agency");
-    setStatus(mode === "interpreter" ? "무료 통역 모드" : "여행 에이전시 모드");
+
+    localStorage.setItem(
+        "krxa_mode",
+        mode
+    );
+
+    document.getElementById("interpreterBtn")
+        .classList.toggle(
+            "active",
+            mode === "interpreter"
+        );
+
+    document.getElementById("agencyBtn")
+        .classList.toggle(
+            "active",
+            mode === "agency"
+        );
+
+    setStatus(
+        mode === "interpreter"
+        ? "무료 통역 모드"
+        : "여행 에이전시 모드"
+    );
 }
+
 setTimeout(()=>setMode(mode),0);
 
 function escapeHtml(text){
@@ -92,18 +291,39 @@ function escapeHtml(text){
 }
 
 function scrollToBottom(){
-    const chat = document.getElementById("chat");
+
+    const chat =
+        document.getElementById("chat");
+
     requestAnimationFrame(()=>{
-        chat.scrollTop = chat.scrollHeight;
-        setTimeout(()=>{ chat.scrollTop = chat.scrollHeight; }, 80);
+
+        chat.scrollTop =
+            chat.scrollHeight;
+
+        setTimeout(()=>{
+
+            chat.scrollTop =
+                chat.scrollHeight;
+
+        },100);
+
     });
 }
 
 function addMessage(type,title,text){
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
+
+    const chat =
+        document.getElementById("chat");
+
+    const div =
+        document.createElement("div");
+
     div.className = type;
-    div.innerHTML = "<b>" + title + "</b><br>" + escapeHtml(text);
+
+    div.innerHTML =
+        "<b>" + title + "</b><br>" +
+        escapeHtml(text);
+
     chat.appendChild(div);
 
     while(chat.children.length > 4){
@@ -114,15 +334,26 @@ function addMessage(type,title,text){
 }
 
 function addError(text){
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
+
+    const chat =
+        document.getElementById("chat");
+
+    const div =
+        document.createElement("div");
+
     div.className = "err";
-    div.innerHTML = "<b>오류</b><br>" + escapeHtml(text);
+
+    div.innerHTML =
+        "<b>오류</b><br>" +
+        escapeHtml(text);
+
     chat.appendChild(div);
+
     scrollToBottom();
 }
 
 function stopAudio(){
+
     try{
         if(currentAudio){
             currentAudio.pause();
@@ -132,228 +363,496 @@ function stopAudio(){
     }catch(e){}
 }
 
-async function sendToServer(message, source="text"){
-    const clean = (message || "").trim();
+async function sendToServer(
+    message,
+    source="text"
+){
+
+    const clean =
+        (message || "").trim();
 
     if(!clean){
-        setStatus("입력 내용이 없습니다.");
+
+        setStatus(
+            "입력 내용이 없습니다."
+        );
+
         return;
     }
 
     if(sending){
-        setStatus("이전 요청 처리 중입니다.");
+
+        setStatus(
+            "이전 요청 처리 중..."
+        );
+
         return;
     }
 
     sending = true;
-    document.getElementById("sendBtn").disabled = true;
 
-    addMessage("me","나",clean);
-    setStatus(source === "voice" ? "음성 인식 완료 · KRXA 처리 중..." : "텍스트 전송 중...");
+    document.getElementById(
+        "sendBtn"
+    ).disabled = true;
 
-    const fd = new FormData();
+    addMessage(
+        "me",
+        "나",
+        clean
+    );
+
+    setStatus(
+        source === "voice"
+        ? "음성 인식 완료 · KRXA 처리 중..."
+        : "텍스트 전송 중..."
+    );
+
+    const fd =
+        new FormData();
+
     fd.append("text", clean);
     fd.append("service", SERVICE);
     fd.append("session_id", sessionId);
     fd.append("mode", mode);
+    fd.append("source", source);
+    fd.append("location_text", currentPlace);
+    fd.append("lat", currentLat);
+    fd.append("lng", currentLng);
+    fd.append(
+        "device_locale",
+        navigator.language || ""
+    );
 
     try{
-        const res = await fetch("/chat", {
-            method:"POST",
-            body:fd
-        });
 
-        const raw = await res.text();
+        const res =
+            await fetch(
+                "/api/turn",
+                {
+                    method:"POST",
+                    body:fd
+                }
+            );
+
+        const raw =
+            await res.text();
 
         if(!res.ok){
-            addError("/chat 오류: " + raw);
-            setStatus("서버 오류");
+
+            addError(
+                "/api/turn 오류: " + raw
+            );
+
+            setStatus(
+                "서버 오류"
+            );
+
             return;
         }
 
         let data;
+
         try{
             data = JSON.parse(raw);
         }catch(e){
-            addError("JSON 파싱 오류: " + raw);
-            setStatus("응답 형식 오류");
+
+            addError(
+                "JSON 파싱 오류"
+            );
+
+            setStatus(
+                "응답 형식 오류"
+            );
+
             return;
         }
 
         if(data.session_id){
-            sessionId = data.session_id;
-            localStorage.setItem("krxa_session_id", sessionId);
+
+            sessionId =
+                data.session_id;
+
+            localStorage.setItem(
+                "krxa_session_id",
+                sessionId
+            );
         }
 
         if(data.result){
-            addMessage("bot","KRXA",data.result);
-            setStatus("응답 완료");
+
+            addMessage(
+                "bot",
+                "KRXA",
+                data.result
+            );
+
+            setStatus(
+                "다음 말을 해주세요."
+            );
+
             playTTS(data.result);
+
         }else{
-            addError("응답 결과가 비어 있습니다.");
-            setStatus("응답 없음");
+
+            addError(
+                "응답 결과 없음"
+            );
+
+            setStatus(
+                "응답 없음"
+            );
         }
 
     }catch(e){
-        addError("전송 실패: " + e.message);
-        setStatus("전송 실패");
+
+        addError(
+            "전송 실패: " + e.message
+        );
+
+        setStatus(
+            "전송 실패"
+        );
+
     }finally{
+
         sending = false;
-        document.getElementById("sendBtn").disabled = false;
+
+        document.getElementById(
+            "sendBtn"
+        ).disabled = false;
+
         scrollToBottom();
     }
 }
 
 async function recordVoice(){
+
     stopAudio();
 
     try{
-        setStatus("5초 동안 말해주세요...");
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio:{
-                echoCancellation:true,
-                noiseSuppression:true,
-                autoGainControl:true,
-                channelCount:1
-            }
-        });
+        setStatus(
+            "5초 동안 말해주세요..."
+        );
 
-        const mr = new MediaRecorder(stream);
+        const stream =
+            await navigator
+            .mediaDevices
+            .getUserMedia({
+                audio:{
+                    echoCancellation:true,
+                    noiseSuppression:true,
+                    autoGainControl:true,
+                    channelCount:1
+                }
+            });
+
+        const mr =
+            new MediaRecorder(stream);
+
         let chunks = [];
 
-        mr.ondataavailable = e => chunks.push(e.data);
+        mr.ondataavailable =
+            e => chunks.push(e.data);
 
         mr.onstop = async ()=>{
-            stream.getTracks().forEach(track=>track.stop());
 
-            const blob = new Blob(chunks,{type:"audio/webm"});
+            stream.getTracks()
+                .forEach(
+                    track=>track.stop()
+                );
+
+            const blob =
+                new Blob(
+                    chunks,
+                    {
+                        type:"audio/webm"
+                    }
+                );
 
             if(blob.size < 1500){
-                setStatus("음성이 너무 짧습니다.");
+
+                setStatus(
+                    "음성이 너무 짧습니다."
+                );
+
                 return;
             }
 
-            setStatus("음성 인식 중...");
+            setStatus(
+                "음성 인식 중..."
+            );
 
-            const fd = new FormData();
-            fd.append("file", blob, "voice.webm");
-            fd.append("session_id", sessionId);
-            fd.append("duration", "5");
+            const fd =
+                new FormData();
+
+            fd.append(
+                "file",
+                blob,
+                "voice.webm"
+            );
+
+            fd.append(
+                "session_id",
+                sessionId
+            );
+
+            fd.append(
+                "duration",
+                "5"
+            );
 
             try{
-                const res = await fetch("/api/stt", {
-                    method:"POST",
-                    body:fd
-                });
 
-                const raw = await res.text();
+                const res =
+                    await fetch(
+                        "/api/stt",
+                        {
+                            method:"POST",
+                            body:fd
+                        }
+                    );
+
+                const raw =
+                    await res.text();
 
                 if(!res.ok){
-                    addError("/api/stt 오류: " + raw);
-                    setStatus("STT 오류");
+
+                    addError(
+                        "/api/stt 오류: " + raw
+                    );
+
+                    setStatus(
+                        "STT 오류"
+                    );
+
                     return;
                 }
 
                 let data;
+
                 try{
                     data = JSON.parse(raw);
                 }catch(e){
-                    addError("STT JSON 오류: " + raw);
-                    setStatus("STT 응답 오류");
+
+                    addError(
+                        "STT JSON 오류"
+                    );
+
+                    setStatus(
+                        "STT 응답 오류"
+                    );
+
                     return;
                 }
 
-                if(data.ok && data.text){
-                    await sendToServer(data.text, "voice");
+                if(
+                    data.ok &&
+                    data.text
+                ){
+
+                    await sendToServer(
+                        data.text,
+                        "voice"
+                    );
+
                 }else{
-                    setStatus("음성 인식 실패 · 다시 말해주세요.");
+
+                    setStatus(
+                        "음성 인식 실패 · 다시 말해주세요."
+                    );
                 }
 
             }catch(e){
-                addError("STT 실패: " + e.message);
-                setStatus("STT 실패");
+
+                addError(
+                    "STT 실패: " + e.message
+                );
+
+                setStatus(
+                    "STT 실패"
+                );
             }
         };
 
         mr.start();
+
         setTimeout(()=>{
-            if(mr.state !== "inactive"){
+
+            if(
+                mr.state !==
+                "inactive"
+            ){
                 mr.stop();
             }
+
         },5000);
 
     }catch(e){
-        addError("마이크 오류: " + e.message);
-        setStatus("마이크 권한 필요");
+
+        addError(
+            "마이크 오류: " + e.message
+        );
+
+        setStatus(
+            "마이크 권한 필요"
+        );
     }
 }
 
 async function playTTS(text){
+
     try{
-        const fd = new FormData();
-        fd.append("text", text);
-        fd.append("session_id", sessionId);
 
-        const res = await fetch("/api/tts", {
-            method:"POST",
-            body:fd
-        });
+        const fd =
+            new FormData();
 
-        const blob = await res.blob();
+        fd.append(
+            "text",
+            text
+        );
 
-        if(blob.size < 100){ return; }
+        fd.append(
+            "session_id",
+            sessionId
+        );
 
-        currentAudio = new Audio(URL.createObjectURL(blob));
+        const res =
+            await fetch(
+                "/api/tts",
+                {
+                    method:"POST",
+                    body:fd
+                }
+            );
+
+        const blob =
+            await res.blob();
+
+        if(blob.size < 100){
+            return;
+        }
+
+        currentAudio =
+            new Audio(
+                URL.createObjectURL(blob)
+            );
+
         currentAudio.play();
 
     }catch(e){
-        setStatus("TTS 실패");
+
+        setStatus(
+            "TTS 실패"
+        );
     }
 }
 
 function sendText(){
-    const el = document.getElementById("text");
-    const text = el.value.trim();
+
+    const el =
+        document.getElementById("text");
+
+    const text =
+        el.value.trim();
+
     el.value = "";
-    sendToServer(text, "text");
+
+    sendToServer(
+        text,
+        "text"
+    );
 }
 
-document.getElementById("text").addEventListener("keydown", function(e){
-    if(e.key === "Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendText();
+document.getElementById("text")
+.addEventListener(
+    "keydown",
+    function(e){
+
+        if(
+            e.key === "Enter"
+            && !e.shiftKey
+        ){
+
+            e.preventDefault();
+
+            sendText();
+        }
     }
-});
+);
 
 function openMap(){
-    let url = "https://www.google.com/maps";
+
+    let url =
+        "https://www.google.com/maps";
 
     if(currentPlace){
-        url = "https://www.google.com/maps/search/" + encodeURIComponent(currentPlace);
-    }else if(currentLat && currentLng){
-        url = "https://www.google.com/maps/search/travel+nearby/@" + currentLat + "," + currentLng + ",15z";
+
+        url =
+            "https://www.google.com/maps/search/"
+            + encodeURIComponent(
+                currentPlace
+            );
+
+    }else if(
+        currentLat &&
+        currentLng
+    ){
+
+        url =
+            "https://www.google.com/maps/search/travel+nearby/@"
+            + currentLat + ","
+            + currentLng +
+            ",15z";
     }
 
-    window.open(url,"_blank");
+    window.open(
+        url,
+        "_blank"
+    );
 }
 
 function requestDeviceLocation(){
-    if(!navigator.geolocation){ return; }
+
+    if(!navigator.geolocation){
+        return;
+    }
 
     navigator.geolocation.getCurrentPosition(
+
         pos=>{
-            currentLat = pos.coords.latitude;
-            currentLng = pos.coords.longitude;
-            document.getElementById("locText").innerText = "기기 위치 확인됨";
+
+            currentLat =
+                pos.coords.latitude;
+
+            currentLng =
+                pos.coords.longitude;
+
+            document.getElementById(
+                "locText"
+            ).innerText =
+                "기기 위치 확인됨";
         },
+
         err=>{
-            document.getElementById("locText").innerText = "위치 권한 없음";
+
+            document.getElementById(
+                "locText"
+            ).innerText =
+                "위치 권한 없음";
         },
-        {enableHighAccuracy:true,timeout:8000,maximumAge:30000}
+
+        {
+            enableHighAccuracy:true,
+            timeout:8000,
+            maximumAge:30000
+        }
     );
 }
+
 requestDeviceLocation();
+
 </script>
+
 </body>
 </html>

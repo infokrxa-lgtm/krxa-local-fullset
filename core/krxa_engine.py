@@ -4,6 +4,7 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4o-mini")
 
+
 BASE_PROMPT = """
 [KRXA 통역 시발점]
 
@@ -41,7 +42,7 @@ KRXA는 대화 당사자가 아니다.
 
 한국어 입력 → 외국인이 들을 자연스러운 영어.
 영어 입력 → 한국 현장에서 들려줄 자연스러운 한국어.
-기타 언어 → history와 상황을 보고 상대방 언어로 자연 통역.
+일본어/중국어 등 기타 언어 → history와 상황을 보고 상대방 언어로 자연 통역.
 
 출력은 상대에게 바로 들려줄 문장만.
 최대 1~2문장.
@@ -78,12 +79,15 @@ def build_messages(user_text, history=None, service="free", mode="interpreter"):
         for h in history[-6:]:
             u = h.get("user", "")
             k = h.get("krxa", "")
+
             if u:
                 messages.append({"role": "user", "content": u})
+
             if k:
                 messages.append({"role": "assistant", "content": k})
 
     messages.append({"role": "user", "content": user_text})
+
     return messages
 
 
@@ -94,10 +98,16 @@ def process(text, history=None, service="free", mode="interpreter"):
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            messages=build_messages(text, history, service, mode),
+            messages=build_messages(
+                user_text=text,
+                history=history,
+                service=service,
+                mode=mode
+            ),
             temperature=0.2 if mode == "interpreter" else 0.35,
             max_tokens=90 if mode == "interpreter" else 120
         )
+
         return response.choices[0].message.content.strip()
 
     except Exception as e:
