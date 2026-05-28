@@ -1,134 +1,194 @@
 import json
-import time
-import uuid
 from pathlib import Path
+from datetime import datetime
+from uuid import uuid4
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-STORAGE_DIR = BASE_DIR / "storage"
-HISTORY_DIR = STORAGE_DIR / "history"
-LOG_FILE = STORAGE_DIR / "krxa_logs.json"
+BASE = Path("storage")
+HISTORY_DIR = BASE / "history"
+LOG_DIR = Path("logs")
+SYSTEM_LOG = LOG_DIR / "system.log"
 
-STORAGE_DIR.mkdir(exist_ok=True)
-HISTORY_DIR.mkdir(exist_ok=True)
-
-DEFAULT_MEMORY = {
-    "product": "KRXA 여행 웹/앱",
-    "visible_main": "여행서비스",
-    "hidden_engine": "자연 말대말 통역",
-    "principles": [
-        "사용자에게 보이는 주연은 여행서비스다.",
-        "말대말 통역은 숨은 엔진으로 자연스럽게 작동한다.",
-        "현재 사용자 입력이 최종 판단 기준이다.",
-        "서비스는 시작 맥락이고, 카드는 사용자 질문 기반으로 동적으로 제공한다.",
-        "단기 기억은 초기화 가능하지만 기본 기억은 유지한다."
-    ]
-}
+HISTORY_DIR.mkdir(parents=True, exist_ok=True)
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def new_id(prefix="session"):
-    return f"{prefix}-{uuid.uuid4().hex[:8]}"
+def new_id(prefix="id"):
+    return f"{prefix}-{uuid4().hex[:12]}"
 
 
-def safe_id(value):
-    if not value:
-        return new_id("session")
-    return "".join(c for c in value if c.isalnum() or c in "-_")[:80]
+def history_path(session_id):
+    safe = session_id.replace("/", "_").replace("\\", "_")
+    return HISTORY_DIR / f"{safe}.json"
 
 
-def history_file(session_id):
-    return HISTORY_DIR / f"{safe_id(session_id)}.json"
+def read_json(path, default):
+    try:
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return default
 
 
-def load_history(session_id, limit=12):
-    path = history_file(session_id)
-    if not path.exists():
+def write_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+
+def log_event(kind, detail=None):
+    item = {
+        "time": now(),
+        "kind": kind,
+        "detail": detail or {}
+    }
+
+    with SYSTEM_LOG.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+    return item
+
+
+def load_logs(limit=100):
+    if not SYSTEM_LOG.exists():
         return []
 
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
+    lines = SYSTEM_LOG.read_text(encoding="utf-8", errors="ignore").splitlines()
+    rows = []
+
+    for line in lines[-limit:]:
+        try:
+            rows.append(json.loads(line))
+        except Exception:
+            rows.append({"time": now(), "kind": "raw", "detail": line})
+
+    return rows
+
+
+def load_history(session_id, limit=20):
+    path = history_path(session_id)
+    data = read_json(path, [])
+
+    if not isinstance(data, list):
         return []
 
     return data[-limit:]
 
 
-def save_turn(session_id, user_text, krxa_text, service="free", cards=None):
-    path = history_file(session_id)
+def save_turn(
+    session_id,
+    user_text=None,
+    krxa_text=None,
+    service="free",
+    cards=None,
+    mode="interpreter",
+    **kwargs
+):
+    if user_text is None:
+        user_text = kwargs.get("text", "")
 
-    history = []
-    if path.exists():
-        try:
-            history = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            history = []
+    if krxa_text is None:
+        krxa_text = kwargs.get("result", "")
+
+    path = history_path(session_id)
+    data = read_json(path, [])
+
+    if not isinstance(data, list):
+        data = []
 
     item = {
         "time": now(),
-        "session_id": safe_id(session_id),
+        "session_id": session_id,
         "service": service,
+        "mode": mode,
         "user": user_text,
         "krxa": krxa_text,
         "cards": cards or []
     }
 
-    history.append(item)
-    path.write_text(
-        json.dumps(history[-100:], ensure_ascii=False, indent=2),
-        encoding="utf-8"
-    )
+    data.append(item)
+    write_json(path, data)
 
     log_event("turn_saved", {
-        "session_id": safe_id(session_id),
-        "service": service
+        "session_id": session_id,
+        "service": service,
+        "mode": mode,
+        "user_len": len(user_text or ""),
+        "krxa_len": len(krxa_text or "")
     })
 
     return item
 
 
 def clear_history(session_id):
-    path = history_file(session_id)
+    path = history_path(session_id)
+
     if path.exists():
         path.unlink()
 
-    log_event("short_history_cleared", {
-        "session_id": safe_id(session_id)
+    log_event("history_cleared", {
+        "session_id": session_id
     })
 
-    return True
 
+def save_stt_result(
+    ok,
+    text="",
+    reason="",
+    audio_size=0,
+    duration=0,
+    content_type="",
+    session_id="",
+    device=""
+):
+    kind = "stt_result" if ok else "stt_fail"
 
-def log_event(kind, detail=None):
-    logs = []
-
-    if LOG_FILE.exists():
-        try:
-            logs = json.loads(LOG_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            logs = []
-
-    logs.append({
-        "time": now(),
-        "kind": kind,
-        "detail": detail or {}
+    return log_event(kind, {
+        "ok": ok,
+        "text": text,
+        "reason": reason,
+        "audio_size": audio_size,
+        "duration": duration,
+        "content_type": content_type,
+        "session_id": session_id,
+        "device": device
     })
 
-    LOG_FILE.write_text(
-        json.dumps(logs[-300:], ensure_ascii=False, indent=2),
-        encoding="utf-8"
-    )
+
+def save_tts_result(
+    ok,
+    text_len=0,
+    audio_size=0,
+    reason="",
+    session_id=""
+):
+    kind = "tts_result" if ok else "tts_fail"
+
+    return log_event(kind, {
+        "ok": ok,
+        "text_len": text_len,
+        "audio_size": audio_size,
+        "reason": reason,
+        "session_id": session_id
+    })
 
 
-def load_logs(limit=80):
-    if not LOG_FILE.exists():
-        return []
+def stats():
+    logs = load_logs(500)
 
-    try:
-        logs = json.loads(LOG_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return []
+    total_stt = len([x for x in logs if x.get("kind") in ["stt_result", "stt_fail"]])
+    stt_fail = len([x for x in logs if x.get("kind") == "stt_fail"])
+    turns = len([x for x in logs if x.get("kind") == "turn_saved"])
 
-    return logs[-limit:]
+    return {
+        "turns": turns,
+        "stt_total": total_stt,
+        "stt_fail": stt_fail,
+        "stt_fail_rate": round(stt_fail / total_stt, 3) if total_stt else 0
+    }

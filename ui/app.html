@@ -21,6 +21,7 @@ body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .row{display:flex;gap:10px;margin-bottom:10px}
 .btn{flex:1;border:0;border-radius:14px;padding:16px;color:white;font-size:20px;font-weight:bold}
 .mic{background:#16a34a}
+.mic.recording{background:#dc2626}
 .map{background:#2563eb}
 textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding:10px;font-size:15px}
 .send{margin-top:10px;width:100%;border:0;background:#2563eb;color:white;padding:15px;border-radius:10px;font-size:17px;font-weight:bold}
@@ -43,7 +44,7 @@ textarea{width:100%;height:64px;border-radius:10px;border:1px solid #bbb;padding
 
     <div class="bottom">
         <div class="row">
-            <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
+            <button id="micBtn" class="btn mic" onclick="startSmartVoice()">🎤 말하기</button>
             <button class="btn map" onclick="openMap()">📍 지도 안내</button>
         </div>
 
@@ -68,6 +69,23 @@ let currentLng = "";
 let currentPlace = "";
 let deviceLocale = navigator.language || "ko-KR";
 
+let mediaRecorder = null;
+let audioContext = null;
+let analyser = null;
+let streamRef = null;
+let chunks = [];
+let vadTimer = null;
+let recordStartAt = 0;
+let speechStarted = false;
+let lastVoiceAt = 0;
+let currentAudio = null;
+
+const START_THRESHOLD = 0.035;
+const SILENCE_THRESHOLD = 0.018;
+const SILENCE_MS = 1400;
+const MAX_RECORD_MS = 9000;
+const MIN_RECORD_MS = 700;
+
 function setMode(m){
     mode = m;
     localStorage.setItem("krxa_mode", mode);
@@ -75,7 +93,6 @@ function setMode(m){
     document.getElementById("agencyBtn").classList.toggle("active", mode === "agency");
     setStatus(mode === "interpreter" ? "KRXA 준비됨 · 무료 통역 모드" : "KRXA 준비됨 · 여행 에이전시 모드");
 }
-
 setTimeout(()=>setMode(mode),0);
 
 function setStatus(t){ document.getElementById("status").innerText = t; }
@@ -145,7 +162,6 @@ function requestDeviceLocation(){
         {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
     );
 }
-
 requestDeviceLocation();
 
 function isNoise(text){
@@ -155,6 +171,7 @@ function isNoise(text){
     if(t.includes("inaudible")) return true;
     if(t.includes("background")) return true;
     if(t.includes("chatter")) return true;
+    if(t.includes("radio")) return true;
 
     const noise = [
         "thanks for watching",
@@ -224,52 +241,58 @@ async function sendToServer(message){
     }
 }
 
-async function recordVoice(){
+function stopCurrentAudio(){
     try{
-        setStatus("듣는 중... 5초 동안 말하세요");
+        if(currentAudio){
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+        }
+    }catch(e){}
+}
 
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        const mr = new MediaRecorder(stream);
-        let chunks = [];
+async function startSmartVoice(){
+    stopCurrentAudio();
 
-        mr.ondataavailable = e => chunks.push(e.data);
+    if(mediaRecorder && mediaRecorder.state === "recording"){
+        stopRecording("사용자 종료");
+        return;
+    }
 
-        mr.onstop = async () => {
-            stream.getTracks().forEach(track => track.stop());
-            setStatus("음성 인식 중...");
+    try{
+        setStatus("마이크 준비 중...");
 
-            const blob = new Blob(chunks, {type:"audio/webm"});
-            const fd = new FormData();
-            fd.append("file", blob, "voice.webm");
-
-            try{
-                const res = await fetch("/api/stt", {method:"POST", body:fd});
-                const raw = await res.text();
-
-                if(!res.ok){
-                    addError("/api/stt 오류: " + raw);
-                    setStatus("음성 인식 실패");
-                    return;
-                }
-
-                const data = JSON.parse(raw);
-
-                if(data.ok && data.text && !isNoise(data.text)){
-                    await sendToServer(data.text);
-                }else{
-                    setStatus("음성이 너무 짧거나 불명확합니다. 다시 말해주세요.");
-                }
-
-            }catch(e){
-                addError(e.message);
-                setStatus("음성 인식 오류");
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio:{
+                echoCancellation:true,
+                noiseSuppression:true,
+                autoGainControl:true,
+                channelCount:1
             }
-        };
+        });
 
-        mr.start();
-        setTimeout(() => {
-            if(mr.state !== "inactive"){ mr.stop(); }
-        }, 5000);
+        streamRef = stream;
+        chunks = [];
+        speechStarted = false;
+        lastVoiceAt = Date.now();
+        recordStartAt = Date.now();
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        source.connect(analyser);
+
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = onRecordingStop;
+
+        mediaRecorder.start();
+
+        document.getElementById("micBtn").classList.add("recording");
+        setStatus("듣는 중... 말하면 자동으로 종료됩니다.");
+
+        monitorVoice();
 
     }catch(e){
         setStatus("마이크 권한 필요");
@@ -277,18 +300,128 @@ async function recordVoice(){
     }
 }
 
+function getVolume(){
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+
+    let sum = 0;
+    for(let i=0;i<data.length;i++){
+        const v = (data[i] - 128) / 128;
+        sum += v * v;
+    }
+    return Math.sqrt(sum / data.length);
+}
+
+function monitorVoice(){
+    if(!mediaRecorder || mediaRecorder.state !== "recording") return;
+
+    const now = Date.now();
+    const volume = getVolume();
+
+    if(volume > START_THRESHOLD){
+        speechStarted = true;
+        lastVoiceAt = now;
+        setStatus("말소리 감지됨...");
+    }
+
+    if(speechStarted && volume > SILENCE_THRESHOLD){
+        lastVoiceAt = now;
+    }
+
+    if(speechStarted && now - lastVoiceAt > SILENCE_MS && now - recordStartAt > MIN_RECORD_MS){
+        stopRecording("침묵 감지 종료");
+        return;
+    }
+
+    if(now - recordStartAt > MAX_RECORD_MS){
+        stopRecording("최대 시간 종료");
+        return;
+    }
+
+    vadTimer = requestAnimationFrame(monitorVoice);
+}
+
+function stopRecording(reason){
+    try{
+        if(vadTimer){ cancelAnimationFrame(vadTimer); }
+        if(mediaRecorder && mediaRecorder.state === "recording"){
+            setStatus(reason + " · 음성 인식 중...");
+            mediaRecorder.stop();
+        }
+    }catch(e){
+        setStatus("녹음 종료 오류");
+    }
+}
+
+async function onRecordingStop(){
+    document.getElementById("micBtn").classList.remove("recording");
+
+    if(streamRef){
+        streamRef.getTracks().forEach(track => track.stop());
+        streamRef = null;
+    }
+
+    if(audioContext){
+        try{ audioContext.close(); }catch(e){}
+        audioContext = null;
+    }
+
+    const duration = (Date.now() - recordStartAt) / 1000;
+
+    if(!speechStarted){
+        setStatus("말소리가 감지되지 않았습니다. 다시 말해주세요.");
+        return;
+    }
+
+    const blob = new Blob(chunks, {type:"audio/webm"});
+
+    if(blob.size < 1500){
+        setStatus("녹음이 너무 짧습니다. 다시 말해주세요.");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", blob, "voice.webm");
+    fd.append("session_id", sessionId);
+    fd.append("duration", duration.toFixed(2));
+
+    try{
+        const res = await fetch("/api/stt", {method:"POST", body:fd});
+        const raw = await res.text();
+
+        if(!res.ok){
+            addError("/api/stt 오류: " + raw);
+            setStatus("음성 인식 실패");
+            return;
+        }
+
+        const data = JSON.parse(raw);
+
+        if(data.ok && data.text && !isNoise(data.text)){
+            await sendToServer(data.text);
+        }else{
+            setStatus("음성이 불명확합니다. 다시 말해주세요.");
+        }
+
+    }catch(e){
+        addError(e.message);
+        setStatus("음성 인식 오류");
+    }
+}
+
 async function playServerTTS(text){
     try{
         const fd = new FormData();
         fd.append("text", text);
+        fd.append("session_id", sessionId);
 
         const res = await fetch("/api/tts", {method:"POST", body:fd});
         const blob = await res.blob();
 
         if(blob.size < 100){ return; }
 
-        const audio = new Audio(URL.createObjectURL(blob));
-        audio.play();
+        currentAudio = new Audio(URL.createObjectURL(blob));
+        currentAudio.play();
 
     }catch(e){
         setStatus("스피커 재생 실패");

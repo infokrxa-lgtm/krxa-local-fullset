@@ -1,31 +1,122 @@
-<html>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRXA CONTROL</title>
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0;padding:20px}
-.card{background:#1e293b;padding:16px;border-radius:12px;margin:12px 0}
+*{box-sizing:border-box}
+body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:18px}
+h1{margin:0 0 12px}
+.card{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.metric{background:#020617;padding:14px;border-radius:12px}
+.metric b{font-size:24px;display:block;margin-top:6px}
+pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px;max-height:480px;overflow:auto}
 a{color:#93c5fd}
-pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#334155;margin:4px}
+.ok{background:#166534}
+.warn{background:#92400e}
 </style>
 </head>
+
 <body>
+<div class="wrap">
 <h1>KRXA CONTROL</h1>
 
 <div class="card">
 <p>운영 관제 UI</p>
-<p>접속 상태 / 세션 / 로그 / 오류 / 서비스 상태 확인</p>
-<p>현재 회원 기능은 비활성입니다. guest/session 기준으로 운영됩니다.</p>
-</div>
-
-<div class="card">
+<p>접속 상태 / 세션 / 로그 / STT 실패율 / 오류 / 모드 상태 확인</p>
+<p>
 <a href="/user">USER</a> |
+<a href="/app?service=food">APP</a> |
 <a href="/dev">DEV</a> |
 <a href="/api/state">STATE JSON</a>
+</p>
 </div>
 
 <div class="card">
-<h3>상태</h3>
-<pre>__STATE__</pre>
+<h3>상태 요약</h3>
+<div id="summary" class="grid">
+<div class="metric">로드 중...</div>
 </div>
+</div>
+
+<div class="card">
+<h3>최근 로그</h3>
+<div id="logs"></div>
+</div>
+
+<div class="card">
+<h3>원본 상태 JSON</h3>
+<pre id="raw">__STATE__</pre>
+</div>
+</div>
+
+<script>
+let state = null;
+
+try{
+    state = JSON.parse(document.getElementById("raw").innerText);
+}catch(e){
+    state = null;
+}
+
+function safe(v){
+    if(v === undefined || v === null) return "-";
+    return v;
+}
+
+function renderSummary(){
+    const box = document.getElementById("summary");
+
+    if(!state){
+        box.innerHTML = "<div class='metric'>상태 JSON 파싱 실패</div>";
+        return;
+    }
+
+    const stats = state.stats || {};
+    const openai = state.openai_key ? "연결됨" : "없음";
+
+    box.innerHTML = `
+        <div class="metric">Version<b>${safe(state.version)}</b></div>
+        <div class="metric">OpenAI<b>${openai}</b></div>
+        <div class="metric">Turns<b>${safe(stats.turns)}</b></div>
+        <div class="metric">STT Total<b>${safe(stats.stt_total)}</b></div>
+        <div class="metric">STT Fail<b>${safe(stats.stt_fail)}</b></div>
+        <div class="metric">Fail Rate<b>${safe(stats.stt_fail_rate)}</b></div>
+    `;
+}
+
+function renderLogs(){
+    const box = document.getElementById("logs");
+
+    if(!state || !state.logs){
+        box.innerHTML = "<p>로그 없음</p>";
+        return;
+    }
+
+    let html = "";
+
+    state.logs.slice().reverse().forEach(function(log){
+        let cls = "badge";
+        if(log.kind && log.kind.includes("fail")) cls += " warn";
+        if(log.kind && (log.kind.includes("result") || log.kind === "turn_saved")) cls += " ok";
+
+        html += `
+        <div class="card">
+            <span class="${cls}">${log.kind}</span>
+            <p>${log.time || ""}</p>
+            <pre>${JSON.stringify(log.detail || {}, null, 2)}</pre>
+        </div>`;
+    });
+
+    box.innerHTML = html;
+}
+
+renderSummary();
+renderLogs();
+</script>
 </body>
 </html>
