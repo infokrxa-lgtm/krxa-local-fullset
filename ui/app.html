@@ -9,9 +9,9 @@
 body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .wrap{max-width:420px;margin:auto;height:100vh;background:#f8fafc;display:flex;flex-direction:column;overflow:hidden}
 .top{background:#082046;color:white;padding:10px;text-align:center;font-size:17px;font-weight:bold}
-.modebar{display:flex;gap:8px;padding:8px 12px;background:#f8fafc}
-.modebtn{flex:1;border:0;border-radius:11px;padding:9px;font-weight:bold;background:#e5e7eb;color:#334155}
-.modebtn.active{background:#0ea5e9;color:white}
+.modebar,.langbar{display:flex;gap:8px;padding:8px 12px;background:#f8fafc}
+.modebtn,.langbtn{flex:1;border:0;border-radius:11px;padding:9px;font-weight:bold;background:#e5e7eb;color:#334155}
+.modebtn.active,.langbtn.active{background:#0ea5e9;color:white}
 .status{margin:0 12px 6px;background:#e8f8ee;color:#25734d;padding:8px;border-radius:10px;text-align:center;font-size:13px}
 .chat{flex:1;overflow-y:auto;padding:10px 12px 20px;background:#f8fafc}
 .me{background:#dbeafe;padding:11px;border-radius:12px;margin-bottom:8px;font-size:15px}
@@ -33,8 +33,16 @@ textarea{width:100%;height:50px;border-radius:10px;border:1px solid #bbb;padding
     <div class="top">KRXA · __SERVICE__ 서비스</div>
 
     <div class="modebar">
-        <button id="interpreterBtn" class="modebtn active" onclick="setMode('interpreter')">무료 통역</button>
+        <button id="interpreterBtn" class="modebtn" onclick="setMode('interpreter')">무료 통역</button>
         <button id="agencyBtn" class="modebtn" onclick="setMode('agency')">여행 에이전시</button>
+    </div>
+
+    <div class="langbar">
+        <button id="langAuto" class="langbtn" onclick="setLang('auto')">자동</button>
+        <button id="langGps" class="langbtn" onclick="setLang('gps')">GPS</button>
+        <button id="langKo" class="langbtn" onclick="setLang('ko')">KO</button>
+        <button id="langEn" class="langbtn" onclick="setLang('en')">EN</button>
+        <button id="langJa" class="langbtn" onclick="setLang('ja')">JA</button>
     </div>
 
     <div class="status" id="status">KRXA 준비됨</div>
@@ -48,7 +56,7 @@ textarea{width:100%;height:50px;border-radius:10px;border:1px solid #bbb;padding
 
         <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
         <button id="sendBtn" class="send" onclick="sendText()">텍스트 전송</button>
-        <div class="small" id="locText">기기 위치 참고 · 사용자가 말한 장소 우선</div>
+        <div class="small" id="locText">기기 위치 참고 · 사용자 언어 선택/GPS 반영</div>
     </div>
 </div>
 
@@ -62,6 +70,8 @@ if(!sessionId){
 }
 
 let mode = localStorage.getItem("krxa_mode") || "agency";
+let selectedLanguageMode = localStorage.getItem("krxa_language_mode") || "gps";
+
 let currentLat = "";
 let currentLng = "";
 let currentPlace = "";
@@ -82,7 +92,24 @@ function setMode(m){
     setStatus(mode === "interpreter" ? "무료 통역 전용 루트" : "여행 에이전시 모드");
 }
 
-setTimeout(()=>setMode(mode),0);
+function setLang(l){
+    selectedLanguageMode = l;
+    localStorage.setItem("krxa_language_mode", selectedLanguageMode);
+
+    ["Auto","Gps","Ko","En","Ja"].forEach(x=>{
+        document.getElementById("lang"+x).classList.remove("active");
+    });
+
+    const map = {auto:"langAuto",gps:"langGps",ko:"langKo",en:"langEn",ja:"langJa"};
+    document.getElementById(map[l]).classList.add("active");
+
+    setStatus("STT 언어 기준: " + l.toUpperCase());
+}
+
+setTimeout(()=>{
+    setMode(mode);
+    setLang(selectedLanguageMode);
+},0);
 
 function escapeHtml(text){
     return String(text)
@@ -154,11 +181,7 @@ async function sendToServer(message, source="text"){
 
     const apiUrl = mode === "interpreter" ? "/api/translate" : "/api/turn";
 
-    setStatus(
-        mode === "interpreter"
-        ? "무료 통역 처리 중..."
-        : "여행 에이전시 처리 중..."
-    );
+    setStatus(mode === "interpreter" ? "무료 통역 처리 중..." : "여행 에이전시 처리 중...");
 
     const fd = new FormData();
     fd.append("text", clean);
@@ -175,11 +198,7 @@ async function sendToServer(message, source="text"){
     }
 
     try{
-        const res = await fetch(apiUrl, {
-            method:"POST",
-            body:fd
-        });
-
+        const res = await fetch(apiUrl, {method:"POST", body:fd});
         const raw = await res.text();
 
         if(!res.ok){
@@ -188,14 +207,7 @@ async function sendToServer(message, source="text"){
             return;
         }
 
-        let data;
-        try{
-            data = JSON.parse(raw);
-        }catch(e){
-            addError("JSON 파싱 오류");
-            setStatus("응답 형식 오류");
-            return;
-        }
+        let data = JSON.parse(raw);
 
         if(data.session_id){
             sessionId = data.session_id;
@@ -257,13 +269,13 @@ async function recordVoice(){
             fd.append("file", blob, "voice.webm");
             fd.append("session_id", sessionId);
             fd.append("duration", "5");
+            fd.append("user_language_mode", selectedLanguageMode);
+            fd.append("lat", currentLat);
+            fd.append("lng", currentLng);
+            fd.append("device_locale", navigator.language || "");
 
             try{
-                const res = await fetch("/api/stt", {
-                    method:"POST",
-                    body:fd
-                });
-
+                const res = await fetch("/api/stt", {method:"POST", body:fd});
                 const raw = await res.text();
 
                 if(!res.ok){
@@ -272,19 +284,12 @@ async function recordVoice(){
                     return;
                 }
 
-                let data;
-                try{
-                    data = JSON.parse(raw);
-                }catch(e){
-                    addError("STT JSON 오류");
-                    setStatus("STT 응답 오류");
-                    return;
-                }
+                let data = JSON.parse(raw);
 
                 if(data.ok && data.text){
                     await sendToServer(data.text, "voice");
                 }else{
-                    setStatus("음성 인식 실패 · 다시 말해주세요.");
+                    setStatus("음성 인식 실패 · " + (data.reason || "다시 말해주세요."));
                 }
 
             }catch(e){
@@ -313,16 +318,10 @@ async function playTTS(text){
         fd.append("text", text);
         fd.append("session_id", sessionId);
 
-        const res = await fetch("/api/tts", {
-            method:"POST",
-            body:fd
-        });
-
+        const res = await fetch("/api/tts", {method:"POST", body:fd});
         const blob = await res.blob();
 
-        if(blob.size < 100){
-            return;
-        }
+        if(blob.size < 100){ return; }
 
         currentAudio = new Audio(URL.createObjectURL(blob));
         currentAudio.play();
@@ -360,6 +359,7 @@ function openMap(){
 
 function requestDeviceLocation(){
     if(!navigator.geolocation){
+        document.getElementById("locText").innerText = "GPS 미지원 · 언어 선택값 사용";
         return;
     }
 
@@ -367,10 +367,11 @@ function requestDeviceLocation(){
         pos=>{
             currentLat = pos.coords.latitude;
             currentLng = pos.coords.longitude;
-            document.getElementById("locText").innerText = "기기 위치 확인됨";
+            document.getElementById("locText").innerText =
+                "기기 위치 확인됨 · 언어 기준: " + selectedLanguageMode.toUpperCase();
         },
         err=>{
-            document.getElementById("locText").innerText = "위치 권한 없음";
+            document.getElementById("locText").innerText = "위치 권한 없음 · 언어 선택값 사용";
         },
         {enableHighAccuracy:true,timeout:8000,maximumAge:30000}
     );
