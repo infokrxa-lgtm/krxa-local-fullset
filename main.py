@@ -23,6 +23,12 @@ from core.krxa_store import (
 from core.krxa_voice import stt_with_detail, tts_response
 from core.krxa_learning import analyze_stt_logs, apply_learning_to_config
 from core.krxa_autoloop import analyze_logs_for_candidates, load_candidates
+from core.krxa_links import (
+    list_categories,
+    add_user_link,
+    delete_user_link,
+    all_links_for_category
+)
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
 ROOT = Path(".").resolve()
@@ -308,7 +314,38 @@ def api_learning_apply():
     save_config(config)
     return {"ok": True, "config": config, "analysis": analysis}
 
+@app.get("/api/travel-links")
+def api_travel_links():
+    return list_categories()
 
+
+@app.get("/api/travel-links/{category}")
+def api_travel_links_category(category: str):
+    return all_links_for_category(category)
+
+
+@app.post("/api/travel-links/add")
+def api_travel_links_add(
+    category: str = Form(...),
+    name: str = Form(...),
+    url: str = Form(...)
+):
+    return add_user_link(
+        category=category,
+        name=name,
+        url=url
+    )
+
+
+@app.post("/api/travel-links/delete")
+def api_travel_links_delete(
+    category: str = Form(...),
+    index: int = Form(...)
+):
+    return delete_user_link(
+        category=category,
+        index=index
+    )
 @app.get("/api/state")
 def state():
     config = load_config()
