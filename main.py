@@ -85,23 +85,27 @@ def test_voice():
 @app.post("/api/translate")
 async def api_translate(
     text: str = Form(...),
-    service: str = Form("free"),
+    service: str = Form("travel"),
     session_id: str = Form(""),
     source: str = Form("text"),
+    device_locale: str = Form(""),
     location_text: str = Form(""),
     lat: str = Form(""),
     lng: str = Form(""),
-    device_locale: str = Form("")
+    target_language: str = Form("auto")
 ):
+    from core.krxa_translate import translate_only
+
     return translate_only(
         text=text,
         session_id=session_id,
         service=service,
         source=source,
+        device_locale=device_locale,
         location_text=location_text,
         lat=lat,
         lng=lng,
-        device_locale=device_locale
+        target_language=target_language
     )
 
 

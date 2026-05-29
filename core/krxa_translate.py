@@ -14,28 +14,66 @@ MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4o-mini")
 
 
 TRANSLATE_ONLY_PROMPT = """
-[KRXA 오직 통역 루트]
+[KRXA TRAVEL V1 - TRANSLATE ONLY MODE]
 
-너는 KRXA 무료 통역 전용 엔진이다.
+You are not a travel agent.
+You are not an assistant.
+You do not recommend places.
+You do not answer questions as KRXA.
+You do not explain.
+You only translate the user's utterance into the counterpart language.
 
-절대 원칙:
-- 답변하지 않는다.
-- 추천하지 않는다.
-- 설명하지 않는다.
-- 여행 에이전시처럼 행동하지 않는다.
-- 사용자의 말을 상대방이 이해할 언어로만 바꾼다.
+Core rule:
+- Output translation only.
+- Do not add greetings unless they are in the source.
+- Do not add advice.
+- Do not add recommendations.
+- Do not answer the question.
+- Translate the question itself.
 
-방향:
-- 한국어 입력 → 자연스러운 영어.
-- 영어 입력 → 자연스러운 한국어.
-- 일본어/중국어/기타 언어 → 대화 흐름상 상대방 언어로 자연스럽게 통역.
-- 짧은 말도 그대로 자연스럽게 통역.
+Direction rule:
+- If input is Korean, translate naturally into the selected target language.
+- If input is the selected target language, translate naturally into Korean.
+- If input is another language, translate naturally into Korean unless target language is clearer.
+- Short phrases must be translated naturally.
 
-출력:
-- 통역문만 출력.
-- “KRXA”, “입력”, “출력”, “번역:” 같은 라벨 금지.
-- 최대 1~2문장.
+Important examples:
+Input Korean: 맛집이 어디야?
+Output English: Where is a good restaurant?
+
+Input Korean: 호텔 예약을 확인하고 싶어요.
+Output English: I would like to check my hotel reservation.
+
+Input English: Where is the nearest station?
+Output Korean: 가장 가까운 역이 어디인가요?
+
+Do not output:
+- "Here are some restaurants..."
+- "I recommend..."
+- "KRXA says..."
+- "As a travel assistant..."
+- Any explanation.
+
+Output length:
+- 1 to 2 sentences only.
 """
+
+
+LANGUAGE_NAMES = {
+    "auto": "the counterpart language",
+    "en": "English",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "it": "Italian",
+    "vi": "Vietnamese",
+    "th": "Thai",
+    "id": "Indonesian",
+    "ru": "Russian",
+    "ko": "Korean"
+}
 
 
 def translate_only(
@@ -46,41 +84,55 @@ def translate_only(
     device_locale="",
     location_text="",
     lat="",
-    lng=""
+    lng="",
+    target_language="auto"
 ):
     started = time.time()
 
     if not session_id:
         session_id = new_id("session")
 
+    target_language = (target_language or "auto").strip().lower()
+    target_name = LANGUAGE_NAMES.get(target_language, target_language)
+
     history = load_history(
         session_id + "_translate",
-        limit=6
+        limit=4
     )
 
     messages = [
-        {"role": "system", "content": TRANSLATE_ONLY_PROMPT}
+        {"role": "system", "content": TRANSLATE_ONLY_PROMPT},
+        {
+            "role": "system",
+            "content": (
+                "Selected counterpart language: "
+                + target_name
+                + ". If the user's input is Korean, translate to this language. "
+                + "If the user's input is this language, translate to Korean. "
+                + "Never answer the question. Translate only."
+            )
+        }
     ]
 
     if device_locale:
         messages.append({
             "role": "system",
-            "content": f"device_locale: {device_locale}"
+            "content": f"device_locale_reference_only: {device_locale}"
         })
 
     if location_text:
         messages.append({
             "role": "system",
-            "content": f"user_spoken_location_reference: {location_text}"
+            "content": f"user_spoken_location_reference_only: {location_text}"
         })
 
     if lat and lng:
         messages.append({
             "role": "system",
-            "content": f"gps_reference_only: {lat},{lng}"
+            "content": f"gps_reference_only_do_not_recommend_places: {lat},{lng}"
         })
 
-    for h in history[-4:]:
+    for h in history[-2:]:
         u = h.get("user", "")
         k = h.get("krxa", "")
 
@@ -93,18 +145,18 @@ def translate_only(
 
     try:
         if not os.getenv("OPENAI_API_KEY"):
-            result = "KRXA 테스트 통역: " + text
+            result = text
         else:
             response = client.chat.completions.create(
                 model=MODEL,
                 messages=messages,
-                temperature=0.15,
+                temperature=0.0,
                 max_tokens=80
             )
             result = response.choices[0].message.content.strip()
 
     except Exception as e:
-        result = "KRXA 통역 연결 오류: " + str(e)
+        result = "Translation error: " + str(e)
 
     save_turn(
         session_id=session_id + "_translate",
@@ -122,6 +174,7 @@ def translate_only(
         {
             "session_id": session_id,
             "source": source,
+            "target_language": target_language,
             "elapsed": elapsed
         }
     )
@@ -133,5 +186,6 @@ def translate_only(
         "session_id": session_id,
         "mode": "translate_only",
         "source": source,
+        "target_language": target_language,
         "elapsed": elapsed
     }
