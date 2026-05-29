@@ -16,13 +16,20 @@ from core.krxa_store import (
     stats,
     log_event,
     load_config,
-    save_config
+    save_config,
+    read_json,
+    write_json
 )
 from core.krxa_voice import stt_with_detail, tts_response
 from core.krxa_learning import analyze_stt_logs, apply_learning_to_config
+from core.krxa_autoloop import analyze_logs_for_candidates, load_candidates
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
 ROOT = Path(".").resolve()
+
+VOICE_FILTER_PATH = "storage/voice_filter_config.json"
+TURN_CONFIG_PATH = "storage/turn_config.json"
+FLOW_SIGNAL_PATH = "storage/flow_signal_config.json"
 
 
 def render_template(name: str, **kwargs):
@@ -39,9 +46,19 @@ def safe_path(p: str = ""):
     return target
 
 
+def read_config_file(path, default):
+    return read_json(path, default)
+
+
+def save_config_file(path, data):
+    write_json(path, data)
+    log_event("control_config_saved", {"path": path, "data": data})
+    return data
+
+
 @app.get("/")
 def root():
-    return {"ok": True, "version": "KRXA_LANGUAGE_GPS_STT_V1"}
+    return {"ok": True, "version": "KRXA_FLOW_SIGNAL_CONTROL_V1"}
 
 
 @app.get("/user", response_class=HTMLResponse)
@@ -166,6 +183,117 @@ def api_config_update(
     return {"ok": True, "config": config}
 
 
+@app.get("/api/voice-filter")
+def api_voice_filter():
+    data = read_config_file(VOICE_FILTER_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "background_patterns": []
+    })
+    return {"ok": True, "config": data}
+
+
+@app.post("/api/voice-filter/mode")
+def api_voice_filter_mode(mode: str = Form("monitor_only")):
+    data = read_config_file(VOICE_FILTER_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "background_patterns": []
+    })
+
+    if mode not in ["monitor_only", "block"]:
+        mode = "monitor_only"
+
+    data["mode"] = mode
+    save_config_file(VOICE_FILTER_PATH, data)
+
+    return {"ok": True, "config": data}
+
+
+@app.post("/api/voice-filter/enabled")
+def api_voice_filter_enabled(enabled: str = Form("true")):
+    data = read_config_file(VOICE_FILTER_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "background_patterns": []
+    })
+
+    data["enabled"] = enabled == "true"
+    save_config_file(VOICE_FILTER_PATH, data)
+
+    return {"ok": True, "config": data}
+
+
+@app.get("/api/turn-config")
+def api_turn_config():
+    data = read_config_file(TURN_CONFIG_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "min_text_length": 2,
+        "continue_patterns": [],
+        "complete_patterns": []
+    })
+    return {"ok": True, "config": data}
+
+
+@app.post("/api/turn-config/mode")
+def api_turn_config_mode(mode: str = Form("monitor_only")):
+    data = read_config_file(TURN_CONFIG_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "min_text_length": 2,
+        "continue_patterns": [],
+        "complete_patterns": []
+    })
+
+    if mode not in ["monitor_only", "block"]:
+        mode = "monitor_only"
+
+    data["mode"] = mode
+    save_config_file(TURN_CONFIG_PATH, data)
+
+    return {"ok": True, "config": data}
+
+
+@app.post("/api/turn-config/enabled")
+def api_turn_config_enabled(enabled: str = Form("true")):
+    data = read_config_file(TURN_CONFIG_PATH, {
+        "enabled": True,
+        "mode": "monitor_only",
+        "min_text_length": 2,
+        "continue_patterns": [],
+        "complete_patterns": []
+    })
+
+    data["enabled"] = enabled == "true"
+    save_config_file(TURN_CONFIG_PATH, data)
+
+    return {"ok": True, "config": data}
+
+
+@app.get("/api/flow-signal-config")
+def api_flow_signal_config():
+    data = read_config_file(FLOW_SIGNAL_PATH, {
+        "enabled": True,
+        "show_listening": True,
+        "show_thinking": True,
+        "show_waiting": True,
+        "show_processing": True,
+        "default_message": "흐름 유지 중"
+    })
+    return {"ok": True, "config": data}
+
+
+@app.get("/api/autoloop/analyze")
+def api_autoloop_analyze():
+    return analyze_logs_for_candidates(limit=500)
+
+
+@app.get("/api/autoloop/candidates")
+def api_autoloop_candidates():
+    return {"ok": True, "candidates": load_candidates()}
+
+
 @app.get("/api/learning/analyze")
 def api_learning_analyze():
     analysis = analyze_stt_logs(limit=500)
@@ -187,7 +315,7 @@ def state():
 
     return {
         "ok": True,
-        "version": "KRXA_LANGUAGE_GPS_STT_V1",
+        "version": "KRXA_FLOW_SIGNAL_CONTROL_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "planned_for_app_release",
@@ -197,6 +325,9 @@ def state():
             "agency": "/api/turn",
             "test_voice": "/test_voice"
         },
+        "voice_filter": read_config_file(VOICE_FILTER_PATH, {}),
+        "turn_config": read_config_file(TURN_CONFIG_PATH, {}),
+        "flow_signal": read_config_file(FLOW_SIGNAL_PATH, {}),
         "config": config,
         "stats": stats(),
         "logs": load_logs(150)
@@ -206,7 +337,7 @@ def state():
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {
-        "version": "KRXA_LANGUAGE_GPS_STT_V1",
+        "version": "KRXA_FLOW_SIGNAL_CONTROL_V1",
         "openai_key": bool(os.getenv("OPENAI_API_KEY")),
         "guest_session_mode": True,
         "membership": "inactive_now / planned_at_app_install",
@@ -219,6 +350,9 @@ def control():
             "agency": "/api/turn",
             "test_voice": "/test_voice"
         },
+        "voice_filter": read_config_file(VOICE_FILTER_PATH, {}),
+        "turn_config": read_config_file(TURN_CONFIG_PATH, {}),
+        "flow_signal": read_config_file(FLOW_SIGNAL_PATH, {}),
         "config": load_config(),
         "stats": stats(),
         "logs": load_logs(150)

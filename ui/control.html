@@ -4,26 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRXA CONTROL</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
-.wrap{max-width:960px;margin:auto;padding:18px}
-h1{margin:0 0 12px}
+.wrap{max-width:980px;margin:auto;padding:18px}
 .card{background:#1e293b;padding:16px;border-radius:14px;margin:12px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .metric{background:#020617;padding:14px;border-radius:12px}
-.metric b{font-size:24px;display:block;margin-top:6px}
-pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px;max-height:480px;overflow:auto}
+.metric b{font-size:22px;display:block;margin-top:6px}
+pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px;max-height:420px;overflow:auto}
 a{color:#93c5fd}
-.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#334155;margin:4px}
-.ok{background:#166534}
-.warn{background:#92400e}
 button{padding:11px 15px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
 .on{background:#16a34a;color:white}
 .off{background:#dc2626;color:white}
 .mode{background:#2563eb;color:white}
-select{padding:10px;border-radius:8px;margin:4px}
+.warn{background:#92400e;color:white}
+select,input{padding:10px;border-radius:8px;margin:4px}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#334155;margin:4px}
+.ok{background:#166534}
+.bad{background:#92400e}
 .small{font-size:13px;color:#cbd5e1}
 </style>
 </head>
@@ -35,19 +34,19 @@ select{padding:10px;border-radius:8px;margin:4px}
 
 <div class="card">
 <p>운영 관제 UI</p>
-<p>VAD / STT 실패율 / 자동학습 분석 / language hint / Router / 로그 / 모드 상태 확인</p>
+<p>Voice Filter / Turn Engine / Flow Signal / AutoLoop / STT / TTS / Router 상태 확인</p>
 <p>
 <a href="/user">USER</a> |
 <a href="/app?service=food">APP</a> |
+<a href="/test_voice">TEST VOICE</a> |
 <a href="/dev">DEV</a> |
 <a href="/api/state">STATE JSON</a> |
-<a href="/api/config">CONFIG JSON</a> |
-<a href="/api/learning/analyze">LEARNING JSON</a>
+<a href="/api/config">CONFIG JSON</a>
 </p>
 </div>
 
 <div class="card">
-<h3>VAD / Voice / Language 설정</h3>
+<h3>1. Voice / Language 설정</h3>
 <p id="vadState">로드 중...</p>
 
 <button class="on" onclick="updateConfig(true,'vad_engine')">VAD ON</button>
@@ -62,35 +61,59 @@ select{padding:10px;border-radius:8px;margin:4px}
 <option value="ja">ja</option>
 <option value="zh">zh</option>
 </select>
-
 <button class="mode" onclick="saveLanguageHint()">언어힌트 저장</button>
-
-<p class="small">
-현재 권장: VAD OFF + 안정형 녹음 + learning 분석 기반 language hint.
-</p>
+<p class="small">사용자 화면에서는 자동/GPS/KO/EN/JA 선택값이 STT에 전달됩니다.</p>
 </div>
 
 <div class="card">
-<h3>자동 학습 분석</h3>
-<button class="mode" onclick="analyzeLearning()">학습 분석</button>
-<button class="on" onclick="applyLearning()">추천값 적용</button>
-<pre id="learningBox">아직 분석 전입니다.</pre>
+<h3>2. Voice Filter 관제</h3>
+<p class="small">배경음/TV/유튜브성 문구를 감시 또는 차단합니다. 초기 권장값은 monitor_only입니다.</p>
+<div id="voiceFilterBox">로드 전</div>
+<button class="mode" onclick="loadVoiceFilter()">필터 설정 읽기</button>
+<button class="on" onclick="setVoiceFilterMode('monitor_only')">Monitor Only</button>
+<button class="warn" onclick="setVoiceFilterMode('block')">Block</button>
+<button class="off" onclick="setVoiceFilterEnabled(false)">Filter OFF</button>
+<button class="on" onclick="setVoiceFilterEnabled(true)">Filter ON</button>
 </div>
 
 <div class="card">
-<h3>상태 요약</h3>
-<div id="summary" class="grid">
-<div class="metric">로드 중...</div>
-</div>
+<h3>3. Turn Engine 관제</h3>
+<p class="small">멈칫/진행중/발화완료/호출보류 판단 설정입니다.</p>
+<div id="turnConfigBox">로드 전</div>
+<button class="mode" onclick="loadTurnConfig()">Turn 설정 읽기</button>
+<button class="on" onclick="setTurnMode('monitor_only')">Monitor Only</button>
+<button class="warn" onclick="setTurnMode('block')">Call Gate 적용</button>
+<button class="off" onclick="setTurnEnabled(false)">Turn OFF</button>
+<button class="on" onclick="setTurnEnabled(true)">Turn ON</button>
 </div>
 
 <div class="card">
-<h3>최근 로그</h3>
+<h3>4. Flow Signal 관제</h3>
+<p class="small">듣는 중 / 판단 중 / 계속 듣는 중 / 응답 준비 중 상태 표시용입니다.</p>
+<div id="flowConfigBox">로드 전</div>
+<button class="mode" onclick="loadFlowConfig()">Flow 설정 읽기</button>
+</div>
+
+<div class="card">
+<h3>5. Auto-Programming Loop</h3>
+<p class="small">오류·오호출·배경음·발화판단 불확실성을 분석해 개선 후보를 만듭니다.</p>
+<button class="mode" onclick="analyzeAutoLoop()">AutoLoop 분석</button>
+<button class="mode" onclick="loadCandidates()">개선 후보 보기</button>
+<pre id="autoLoopBox">아직 분석 전입니다.</pre>
+</div>
+
+<div class="card">
+<h3>6. 상태 요약</h3>
+<div id="summary" class="grid"><div class="metric">로드 중...</div></div>
+</div>
+
+<div class="card">
+<h3>7. 최근 로그</h3>
 <div id="logs"></div>
 </div>
 
 <div class="card">
-<h3>원본 상태 JSON</h3>
+<h3>8. 원본 상태 JSON</h3>
 <pre id="raw">__STATE__</pre>
 </div>
 
@@ -168,13 +191,14 @@ function renderLogs(){
             log.kind.includes("block") ||
             log.kind.includes("error")
         )){
-            cls += " warn";
+            cls += " bad";
         }
 
         if(log.kind && (
             log.kind.includes("result") ||
             log.kind === "turn_saved" ||
             log.kind === "turn_routed" ||
+            log.kind === "turn_analyzed" ||
             log.kind.includes("pass") ||
             log.kind.includes("applied")
         )){
@@ -201,19 +225,11 @@ async function updateConfig(vadEnabled, voiceMode){
     fd.append("language_hint", lang);
     fd.append("learning_auto_apply", "false");
 
-    const r = await fetch("/api/config/update", {
-        method:"POST",
-        body:fd
-    });
-
+    const r = await fetch("/api/config/update", {method:"POST", body:fd});
     const j = await r.json();
 
-    if(j.ok){
-        alert("설정 저장 완료");
-        location.reload();
-    }else{
-        alert("설정 저장 실패");
-    }
+    if(j.ok){ alert("설정 저장 완료"); location.reload(); }
+    else{ alert("설정 저장 실패"); }
 }
 
 async function saveLanguageHint(){
@@ -228,45 +244,82 @@ async function saveLanguageHint(){
     fd.append("language_hint", lang);
     fd.append("learning_auto_apply", "false");
 
-    const r = await fetch("/api/config/update", {
-        method:"POST",
-        body:fd
-    });
-
+    const r = await fetch("/api/config/update", {method:"POST", body:fd});
     const j = await r.json();
 
-    if(j.ok){
-        alert("언어힌트 저장 완료");
-        location.reload();
-    }else{
-        alert("저장 실패");
-    }
+    if(j.ok){ alert("언어힌트 저장 완료"); location.reload(); }
+    else{ alert("저장 실패"); }
 }
 
-async function analyzeLearning(){
-    const r = await fetch("/api/learning/analyze");
+async function loadVoiceFilter(){
+    const r = await fetch("/api/voice-filter");
     const j = await r.json();
-
-    document.getElementById("learningBox").innerText =
-        JSON.stringify(j.analysis || j, null, 2);
+    document.getElementById("voiceFilterBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
 }
 
-async function applyLearning(){
-    const r = await fetch("/api/learning/apply", {
-        method:"POST"
-    });
-
+async function setVoiceFilterMode(mode){
+    const fd = new FormData();
+    fd.append("mode", mode);
+    const r = await fetch("/api/voice-filter/mode", {method:"POST", body:fd});
     const j = await r.json();
+    document.getElementById("voiceFilterBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
 
-    document.getElementById("learningBox").innerText =
+async function setVoiceFilterEnabled(enabled){
+    const fd = new FormData();
+    fd.append("enabled", enabled ? "true" : "false");
+    const r = await fetch("/api/voice-filter/enabled", {method:"POST", body:fd});
+    const j = await r.json();
+    document.getElementById("voiceFilterBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
+
+async function loadTurnConfig(){
+    const r = await fetch("/api/turn-config");
+    const j = await r.json();
+    document.getElementById("turnConfigBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
+
+async function setTurnMode(mode){
+    const fd = new FormData();
+    fd.append("mode", mode);
+    const r = await fetch("/api/turn-config/mode", {method:"POST", body:fd});
+    const j = await r.json();
+    document.getElementById("turnConfigBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
+
+async function setTurnEnabled(enabled){
+    const fd = new FormData();
+    fd.append("enabled", enabled ? "true" : "false");
+    const r = await fetch("/api/turn-config/enabled", {method:"POST", body:fd});
+    const j = await r.json();
+    document.getElementById("turnConfigBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
+
+async function loadFlowConfig(){
+    const r = await fetch("/api/flow-signal-config");
+    const j = await r.json();
+    document.getElementById("flowConfigBox").innerHTML =
+        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+}
+
+async function analyzeAutoLoop(){
+    const r = await fetch("/api/autoloop/analyze");
+    const j = await r.json();
+    document.getElementById("autoLoopBox").innerText =
         JSON.stringify(j, null, 2);
+}
 
-    if(j.ok){
-        alert("추천값 적용 완료");
-        location.reload();
-    }else{
-        alert("적용 실패");
-    }
+async function loadCandidates(){
+    const r = await fetch("/api/autoloop/candidates");
+    const j = await r.json();
+    document.getElementById("autoLoopBox").innerText =
+        JSON.stringify(j, null, 2);
 }
 
 renderSummary();
