@@ -13,6 +13,7 @@ from core.krxa_vad import (
     log_vad_decision
 )
 from core.krxa_language import decide_stt_language
+from core.krxa_turn import analyze_turn
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -89,6 +90,9 @@ async def stt_with_detail(
                 "content_type": content_type,
                 "language_hint": language_hint,
                 "language_reason": language_reason,
+                "turn_analysis": None,
+                "should_call_llm": False,
+                "flow_signal": "음성 입력 부족",
                 "elapsed": round(time.time() - started, 3)
             }
 
@@ -128,6 +132,19 @@ async def stt_with_detail(
             }
         )
 
+        turn_analysis = analyze_turn(
+            text=text,
+            session_id=session_id,
+            source="stt",
+            context={
+                "language_hint": language_hint,
+                "language_reason": language_reason,
+                "audio_size": audio_size,
+                "duration": duration,
+                "content_type": content_type
+            }
+        )
+
         if not ok_text:
             save_stt_result(
                 ok=False,
@@ -150,6 +167,9 @@ async def stt_with_detail(
                 "content_type": content_type,
                 "language_hint": language_hint,
                 "language_reason": language_reason,
+                "turn_analysis": turn_analysis,
+                "should_call_llm": False,
+                "flow_signal": turn_analysis.get("flow_signal", "STT 텍스트 불안정"),
                 "elapsed": round(time.time() - started, 3)
             }
 
@@ -174,6 +194,9 @@ async def stt_with_detail(
             "content_type": content_type,
             "language_hint": language_hint,
             "language_reason": language_reason,
+            "turn_analysis": turn_analysis,
+            "should_call_llm": turn_analysis.get("should_call_llm", True),
+            "flow_signal": turn_analysis.get("flow_signal", "발화 완료 · 응답 준비"),
             "elapsed": round(time.time() - started, 3)
         }
 
@@ -201,6 +224,9 @@ async def stt_with_detail(
             "content_type": content_type,
             "language_hint": language_hint,
             "language_reason": language_reason,
+            "turn_analysis": None,
+            "should_call_llm": False,
+            "flow_signal": "STT 오류",
             "elapsed": round(time.time() - started, 3)
         }
 
