@@ -20,8 +20,8 @@ body{margin:0;background:#eaf1f8;font-family:Arial,sans-serif;color:#0f172a}
 .status{margin:0 12px 6px;background:#e8f8ee;color:#25734d;padding:8px;border-radius:10px;text-align:center;font-size:13px}
 .flow{margin:0 12px 8px;background:#dbeafe;color:#1e3a8a;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:bold}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:9px 12px}
-.tab{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:11px 4px;text-align:center;font-weight:bold;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.07)}
-.tab span{display:block;font-size:23px;margin-bottom:5px}
+.tab{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:10px 3px;text-align:center;font-weight:bold;font-size:12px;box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.tab span{display:block;font-size:22px;margin-bottom:4px}
 .panel{padding:0 12px 8px;max-height:178px;overflow:auto}
 .card{background:white;border:1px solid #ddd;border-radius:12px;padding:10px;margin:7px 0}
 .card b{font-size:15px}
@@ -30,15 +30,11 @@ body{margin:0;background:#eaf1f8;font-family:Arial,sans-serif;color:#0f172a}
 .chat{flex:1;overflow-y:auto;padding:8px 12px 16px;background:#f8fafc}
 .me{background:#dbeafe;padding:10px;border-radius:12px;margin-bottom:8px;font-size:15px}
 .bot{background:white;padding:10px;border-radius:12px;margin-bottom:8px;border:1px solid #ddd;font-size:15px}
-.hold{background:#fef3c7;color:#92400e;padding:10px;border-radius:12px;margin-bottom:8px;font-size:14px}
 .err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:12px;margin-bottom:8px;font-size:14px}
 .bottom{background:#f8fafc;padding:8px 12px;border-top:1px solid #e5e7eb}
 .row{display:flex;gap:10px;margin-bottom:8px}
 .btn{flex:1;border:0;border-radius:14px;padding:12px;color:white;font-size:17px;font-weight:bold}
-.mic{background:#16a34a}
-.map{background:#2563eb}
-.sos{background:#dc2626}
-.memory{background:#7c3aed}
+.mic{background:#16a34a}.map{background:#2563eb}.sos{background:#dc2626}.memory{background:#7c3aed}
 textarea{width:100%;height:48px;border-radius:10px;border:1px solid #bbb;padding:8px;font-size:15px}
 .send{margin-top:7px;width:100%;border:0;background:#2563eb;color:white;padding:11px;border-radius:10px;font-size:16px;font-weight:bold}
 .small{font-size:11px;color:#64748b;text-align:center;margin-top:5px}
@@ -87,6 +83,10 @@ textarea{width:100%;height:48px;border-radius:10px;border:1px solid #bbb;padding
   <div class="tab" onclick="openTravelCategory('tour')"><span>📷</span>관광</div>
   <div class="tab" onclick="openTravelCategory('shopping')"><span>🛍️</span>쇼핑</div>
   <div class="tab" onclick="openSOS()"><span>🆘</span>SOS</div>
+  <div class="tab" onclick="openTravelCategory('fun')"><span>🎬</span>재미</div>
+  <div class="tab" onclick="openTravelCategory('game')"><span>🎮</span>게임</div>
+  <div class="tab" onclick="showMemory()"><span>🧠</span>KRXAI</div>
+  <div class="tab" onclick="openMap()"><span>🗺️</span>지도</div>
 </div>
 
 <div class="panel" id="linkPanel">
@@ -129,7 +129,6 @@ let currentLat = "";
 let currentLng = "";
 let currentAudio = null;
 let sending = false;
-let pendingSpeech = "";
 
 function setStatus(t){document.getElementById("status").innerText=t;}
 function setFlow(t){document.getElementById("flowSignal").innerText=t||"흐름 유지 중";}
@@ -144,15 +143,14 @@ function remember(kind, detail){
 }
 
 function setLang(l){
-  selectedLanguageMode = l;
   if(l !== "other"){
+    selectedLanguageMode = l;
     localStorage.setItem("krxa_language_mode", l);
     document.getElementById("otherLangBox").style.display="none";
   }else{
     document.getElementById("otherLangBox").style.display="block";
-    const v = document.getElementById("otherLangSelect").value || "fr";
-    selectedLanguageMode = v;
-    localStorage.setItem("krxa_language_mode", v);
+    selectedLanguageMode = document.getElementById("otherLangSelect").value || "fr";
+    localStorage.setItem("krxa_language_mode", selectedLanguageMode);
   }
 
   ["Auto","En","Ja","Zh","Other"].forEach(x=>document.getElementById("lang"+x).classList.remove("active"));
@@ -194,8 +192,8 @@ function addMessage(type,title,text){
   while(chat.children.length>6){chat.removeChild(chat.children[0]);}
   scrollToBottom();
 }
+
 function addError(t){addMessage("err","오류",t);}
-function addHold(t){addMessage("hold","KRXA",t);}
 
 function openInterpreter(){
   document.getElementById("linkPanel").innerHTML=`
@@ -208,14 +206,6 @@ async function openTravelCategory(category){
   remember("tab_opened",{category});
   const panel=document.getElementById("linkPanel");
   panel.innerHTML="<div class='card'>링크 불러오는 중...</div>";
-
-  if(category==="airport"){
-    panel.innerHTML=`
-      <div class="card"><b>Incheon Airport</b><br><small>https://www.airport.kr</small><button onclick="openExternal('https://www.airport.kr','Incheon Airport')">새 창에서 열기</button></div>
-      <div class="card"><b>Skyscanner</b><br><small>https://www.skyscanner.co.kr</small><button onclick="openExternal('https://www.skyscanner.co.kr','Skyscanner')">새 창에서 열기</button></div>
-      <div class="card"><b>Trip.com</b><br><small>https://www.trip.com</small><button onclick="openExternal('https://www.trip.com','Trip.com')">새 창에서 열기</button></div>`;
-    return;
-  }
 
   try{
     const r=await fetch("/api/travel-links/"+encodeURIComponent(category));
@@ -271,6 +261,7 @@ async function sendToServer(message, source="text"){
     if(!res.ok){addError("/api/translate 오류: "+raw);return;}
 
     const data=JSON.parse(raw);
+
     if(data.session_id){
       sessionId=data.session_id;
       localStorage.setItem("krxa_session_id",sessionId);
@@ -320,7 +311,13 @@ async function recordVoice(){
       fd.append("file",blob,"voice.webm");
       fd.append("session_id",sessionId);
       fd.append("duration","3");
-      fd.append("user_language_mode",selectedLanguageMode);
+
+      // 중요:
+      // STT 입력 언어는 상대언어가 아니라 auto로 둡니다.
+      // 상대언어는 번역 단계에서만 target_language로 사용합니다.
+      fd.append("user_language_mode","auto");
+      fd.append("target_language",selectedLanguageMode);
+
       fd.append("lat",currentLat);
       fd.append("lng",currentLng);
       fd.append("device_locale",navigator.language||"");
@@ -340,15 +337,13 @@ async function recordVoice(){
         const bg=data.turn_analysis&&data.turn_analysis.background?data.turn_analysis.background:{};
 
         if(bg.is_background && bg.action==="block"){
-          addHold("배경음으로 판단되어 통역을 보류했습니다.");
+          addMessage("err","배경음","배경음으로 판단되어 통역을 보류했습니다.");
           setStatus("배경음 감지");
           remember("background_block",{text:data.text});
           return;
         }
 
-        const finalText=(pendingSpeech?pendingSpeech+" ":"")+data.text;
-        pendingSpeech="";
-        await sendToServer(finalText,"voice");
+        await sendToServer(data.text,"voice");
 
       }catch(e){
         addError("STT 실패: "+e.message);
