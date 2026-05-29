@@ -13,9 +13,11 @@ body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .modebtn,.langbtn{flex:1;border:0;border-radius:11px;padding:9px;font-weight:bold;background:#e5e7eb;color:#334155}
 .modebtn.active,.langbtn.active{background:#0ea5e9;color:white}
 .status{margin:0 12px 6px;background:#e8f8ee;color:#25734d;padding:8px;border-radius:10px;text-align:center;font-size:13px}
+.flow{margin:0 12px 6px;background:#dbeafe;color:#1e3a8a;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:bold}
 .chat{flex:1;overflow-y:auto;padding:10px 12px 20px;background:#f8fafc}
 .me{background:#dbeafe;padding:11px;border-radius:12px;margin-bottom:8px;font-size:15px}
 .bot{background:white;padding:11px;border-radius:12px;margin-bottom:8px;border:1px solid #ddd;font-size:15px}
+.hold{background:#fef3c7;color:#92400e;padding:10px;border-radius:12px;margin-bottom:8px;font-size:14px}
 .err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:12px;margin-bottom:8px;font-size:14px}
 .bottom{background:#f8fafc;padding:8px 12px;border-top:1px solid #e5e7eb}
 .row{display:flex;gap:10px;margin-bottom:8px}
@@ -46,6 +48,8 @@ textarea{width:100%;height:50px;border-radius:10px;border:1px solid #bbb;padding
     </div>
 
     <div class="status" id="status">KRXA 준비됨</div>
+    <div class="flow" id="flowSignal">흐름 대기 중</div>
+
     <div class="chat" id="chat"></div>
 
     <div class="bottom">
@@ -78,8 +82,14 @@ let currentPlace = "";
 let currentAudio = null;
 let sending = false;
 
+let pendingSpeech = "";
+
 function setStatus(t){
     document.getElementById("status").innerText = t;
+}
+
+function setFlow(t){
+    document.getElementById("flowSignal").innerText = t || "흐름 유지 중";
 }
 
 function setMode(m){
@@ -135,7 +145,7 @@ function addMessage(type,title,text){
     div.innerHTML = "<b>" + title + "</b><br>" + escapeHtml(text);
     chat.appendChild(div);
 
-    while(chat.children.length > 4){
+    while(chat.children.length > 5){
         chat.removeChild(chat.children[0]);
     }
 
@@ -143,12 +153,11 @@ function addMessage(type,title,text){
 }
 
 function addError(text){
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
-    div.className = "err";
-    div.innerHTML = "<b>오류</b><br>" + escapeHtml(text);
-    chat.appendChild(div);
-    scrollToBottom();
+    addMessage("err","오류",text);
+}
+
+function addHold(text){
+    addMessage("hold","KRXA",text);
 }
 
 function stopAudio(){
@@ -182,6 +191,7 @@ async function sendToServer(message, source="text"){
     const apiUrl = mode === "interpreter" ? "/api/translate" : "/api/turn";
 
     setStatus(mode === "interpreter" ? "무료 통역 처리 중..." : "여행 에이전시 처리 중...");
+    setFlow("응답 준비 중");
 
     const fd = new FormData();
     fd.append("text", clean);
@@ -204,6 +214,7 @@ async function sendToServer(message, source="text"){
         if(!res.ok){
             addError(apiUrl + " 오류: " + raw);
             setStatus("서버 오류");
+            setFlow("오류 발생");
             return;
         }
 
@@ -217,15 +228,18 @@ async function sendToServer(message, source="text"){
         if(data.result){
             addMessage("bot","KRXA",data.result);
             setStatus("다음 말을 해주세요.");
+            setFlow("흐름 유지 중");
             playTTS(data.result);
         }else{
             addError("응답 결과 없음");
             setStatus("응답 없음");
+            setFlow("응답 없음");
         }
 
     }catch(e){
         addError("전송 실패: " + e.message);
         setStatus("전송 실패");
+        setFlow("전송 실패");
     }finally{
         sending = false;
         document.getElementById("sendBtn").disabled = false;
@@ -238,6 +252,7 @@ async function recordVoice(){
 
     try{
         setStatus("5초 동안 말해주세요...");
+        setFlow("듣는 중");
 
         const stream = await navigator.mediaDevices.getUserMedia({
             audio:{
@@ -251,7 +266,11 @@ async function recordVoice(){
         const mr = new MediaRecorder(stream);
         let chunks = [];
 
-        mr.ondataavailable = e => chunks.push(e.data);
+        mr.ondataavailable = e => {
+            if(e.data && e.data.size > 0){
+                chunks.push(e.data);
+            }
+        };
 
         mr.onstop = async ()=>{
             stream.getTracks().forEach(track=>track.stop());
@@ -260,10 +279,12 @@ async function recordVoice(){
 
             if(blob.size < 1500){
                 setStatus("음성이 너무 짧습니다.");
+                setFlow("음성 입력 부족");
                 return;
             }
 
             setStatus("음성 인식 중...");
+            setFlow("판단 중");
 
             const fd = new FormData();
             fd.append("file", blob, "voice.webm");
@@ -281,20 +302,46 @@ async function recordVoice(){
                 if(!res.ok){
                     addError("/api/stt 오류: " + raw);
                     setStatus("STT 오류");
+                    setFlow("STT 오류");
                     return;
                 }
 
                 let data = JSON.parse(raw);
 
-                if(data.ok && data.text){
-                    await sendToServer(data.text, "voice");
-                }else{
+                setFlow(data.flow_signal || "흐름 유지 중");
+
+                if(!data.ok || !data.text){
                     setStatus("음성 인식 실패 · " + (data.reason || "다시 말해주세요."));
+                    return;
                 }
+
+                const turn = data.turn_analysis && data.turn_analysis.turn ? data.turn_analysis.turn : {};
+                const bg = data.turn_analysis && data.turn_analysis.background ? data.turn_analysis.background : {};
+
+                if(bg.is_background && bg.action === "block"){
+                    setStatus("배경음으로 판단되어 호출 보류");
+                    setFlow(data.flow_signal || "배경음 차단");
+                    addHold("배경음으로 판단되어 대화 엔진 호출을 보류했습니다.");
+                    return;
+                }
+
+                if(data.should_call_llm === false){
+                    pendingSpeech = (pendingSpeech + " " + data.text).trim();
+                    setStatus("발화가 이어지는 중으로 판단 · 계속 말해주세요.");
+                    setFlow(data.flow_signal || "계속 듣는 중");
+                    addHold("아직 말이 끝나지 않은 것으로 판단했습니다: " + pendingSpeech);
+                    return;
+                }
+
+                const finalText = (pendingSpeech ? pendingSpeech + " " : "") + data.text;
+                pendingSpeech = "";
+
+                await sendToServer(finalText, "voice");
 
             }catch(e){
                 addError("STT 실패: " + e.message);
                 setStatus("STT 실패");
+                setFlow("STT 실패");
             }
         };
 
@@ -309,6 +356,7 @@ async function recordVoice(){
     }catch(e){
         addError("마이크 오류: " + e.message);
         setStatus("마이크 권한 필요");
+        setFlow("마이크 오류");
     }
 }
 
