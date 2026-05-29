@@ -14,16 +14,18 @@ body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
 .metric b{font-size:22px;display:block;margin-top:6px}
 pre{white-space:pre-wrap;background:#020617;padding:14px;border-radius:10px;max-height:420px;overflow:auto}
 a{color:#93c5fd}
-button{padding:11px 15px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
+button{padding:10px 14px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
 .on{background:#16a34a;color:white}
 .off{background:#dc2626;color:white}
 .mode{background:#2563eb;color:white}
 .warn{background:#92400e;color:white}
-select,input{padding:10px;border-radius:8px;margin:4px}
+select,input{padding:10px;border-radius:8px;margin:4px;border:0}
+input{min-width:220px}
 .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#334155;margin:4px}
 .ok{background:#166534}
 .bad{background:#92400e}
 .small{font-size:13px;color:#cbd5e1}
+.linkrow{background:#020617;padding:10px;border-radius:10px;margin:6px 0}
 </style>
 </head>
 
@@ -34,21 +36,20 @@ select,input{padding:10px;border-radius:8px;margin:4px}
 
 <div class="card">
 <p>운영 관제 UI</p>
-<p>Voice Filter / Turn Engine / Flow Signal / AutoLoop / STT / TTS / Router 상태 확인</p>
+<p>Voice Filter / Turn Engine / Flow Signal / AutoLoop / Travel Link HUB</p>
 <p>
 <a href="/user">USER</a> |
 <a href="/app?service=food">APP</a> |
 <a href="/test_voice">TEST VOICE</a> |
 <a href="/dev">DEV</a> |
 <a href="/api/state">STATE JSON</a> |
-<a href="/api/config">CONFIG JSON</a>
+<a href="/api/travel-links">TRAVEL LINKS</a>
 </p>
 </div>
 
 <div class="card">
 <h3>1. Voice / Language 설정</h3>
 <p id="vadState">로드 중...</p>
-
 <button class="on" onclick="updateConfig(true,'vad_engine')">VAD ON</button>
 <button class="off" onclick="updateConfig(false,'stable_recording')">VAD OFF</button>
 <button class="mode" onclick="updateConfig(false,'stable_recording')">안정형 녹음</button>
@@ -62,12 +63,10 @@ select,input{padding:10px;border-radius:8px;margin:4px}
 <option value="zh">zh</option>
 </select>
 <button class="mode" onclick="saveLanguageHint()">언어힌트 저장</button>
-<p class="small">사용자 화면에서는 자동/GPS/KO/EN/JA 선택값이 STT에 전달됩니다.</p>
 </div>
 
 <div class="card">
 <h3>2. Voice Filter 관제</h3>
-<p class="small">배경음/TV/유튜브성 문구를 감시 또는 차단합니다. 초기 권장값은 monitor_only입니다.</p>
 <div id="voiceFilterBox">로드 전</div>
 <button class="mode" onclick="loadVoiceFilter()">필터 설정 읽기</button>
 <button class="on" onclick="setVoiceFilterMode('monitor_only')">Monitor Only</button>
@@ -78,7 +77,6 @@ select,input{padding:10px;border-radius:8px;margin:4px}
 
 <div class="card">
 <h3>3. Turn Engine 관제</h3>
-<p class="small">멈칫/진행중/발화완료/호출보류 판단 설정입니다.</p>
 <div id="turnConfigBox">로드 전</div>
 <button class="mode" onclick="loadTurnConfig()">Turn 설정 읽기</button>
 <button class="on" onclick="setTurnMode('monitor_only')">Monitor Only</button>
@@ -89,31 +87,55 @@ select,input{padding:10px;border-radius:8px;margin:4px}
 
 <div class="card">
 <h3>4. Flow Signal 관제</h3>
-<p class="small">듣는 중 / 판단 중 / 계속 듣는 중 / 응답 준비 중 상태 표시용입니다.</p>
 <div id="flowConfigBox">로드 전</div>
 <button class="mode" onclick="loadFlowConfig()">Flow 설정 읽기</button>
 </div>
 
 <div class="card">
-<h3>5. Auto-Programming Loop</h3>
-<p class="small">오류·오호출·배경음·발화판단 불확실성을 분석해 개선 후보를 만듭니다.</p>
+<h3>5. Travel Link HUB 관제</h3>
+<p class="small">여행 V1의 외부 사이트 연결 관리입니다. 기본 링크 + 사용자 추가 링크를 관리합니다.</p>
+
+<select id="linkCategory">
+<option value="hotel">호텔</option>
+<option value="food">맛집</option>
+<option value="tour">관광</option>
+<option value="transport">이동</option>
+<option value="shopping">쇼핑</option>
+</select>
+<button class="mode" onclick="loadTravelLinks()">전체 링크 보기</button>
+<button class="mode" onclick="loadCategoryLinks()">선택 카테고리 보기</button>
+
+<h4>사용자 링크 추가</h4>
+<input id="linkName" placeholder="사이트명 예: Trip.com">
+<input id="linkUrl" placeholder="URL 예: https://www.trip.com">
+<button class="on" onclick="addTravelLink()">추가</button>
+
+<h4>사용자 링크 삭제</h4>
+<input id="deleteIndex" placeholder="삭제할 user_links 번호 예: 0">
+<button class="off" onclick="deleteTravelLink()">삭제</button>
+
+<pre id="travelLinksBox">아직 로드 전입니다.</pre>
+</div>
+
+<div class="card">
+<h3>6. Auto-Programming Loop</h3>
 <button class="mode" onclick="analyzeAutoLoop()">AutoLoop 분석</button>
 <button class="mode" onclick="loadCandidates()">개선 후보 보기</button>
 <pre id="autoLoopBox">아직 분석 전입니다.</pre>
 </div>
 
 <div class="card">
-<h3>6. 상태 요약</h3>
+<h3>7. 상태 요약</h3>
 <div id="summary" class="grid"><div class="metric">로드 중...</div></div>
 </div>
 
 <div class="card">
-<h3>7. 최근 로그</h3>
+<h3>8. 최근 로그</h3>
 <div id="logs"></div>
 </div>
 
 <div class="card">
-<h3>8. 원본 상태 JSON</h3>
+<h3>9. 원본 상태 JSON</h3>
 <pre id="raw">__STATE__</pre>
 </div>
 
@@ -166,44 +188,22 @@ function renderSummary(){
         <div class="metric">Turns<b>${safe(stats.turns)}</b></div>
         <div class="metric">STT Total<b>${safe(stats.stt_total)}</b></div>
         <div class="metric">STT Fail<b>${safe(stats.stt_fail)}</b></div>
-        <div class="metric">STT Fail Rate<b>${safe(stats.stt_fail_rate)}</b></div>
         <div class="metric">TTS Total<b>${safe(stats.tts_total)}</b></div>
-        <div class="metric">TTS Fail<b>${safe(stats.tts_fail)}</b></div>
-        <div class="metric">TTS Fail Rate<b>${safe(stats.tts_fail_rate)}</b></div>
     `;
 }
 
 function renderLogs(){
     const box = document.getElementById("logs");
-
     if(!state || !state.logs){
         box.innerHTML = "<p>로그 없음</p>";
         return;
     }
 
     let html = "";
-
     state.logs.slice().reverse().forEach(function(log){
         let cls = "badge";
-
-        if(log.kind && (
-            log.kind.includes("fail") ||
-            log.kind.includes("block") ||
-            log.kind.includes("error")
-        )){
-            cls += " bad";
-        }
-
-        if(log.kind && (
-            log.kind.includes("result") ||
-            log.kind === "turn_saved" ||
-            log.kind === "turn_routed" ||
-            log.kind === "turn_analyzed" ||
-            log.kind.includes("pass") ||
-            log.kind.includes("applied")
-        )){
-            cls += " ok";
-        }
+        if(log.kind && (log.kind.includes("fail") || log.kind.includes("block") || log.kind.includes("error"))){ cls += " bad"; }
+        if(log.kind && (log.kind.includes("result") || log.kind.includes("saved") || log.kind.includes("routed") || log.kind.includes("analyzed"))){ cls += " ok"; }
 
         html += `
         <div class="card">
@@ -218,7 +218,6 @@ function renderLogs(){
 
 async function updateConfig(vadEnabled, voiceMode){
     const lang = document.getElementById("languageHint").value || "auto";
-
     const fd = new FormData();
     fd.append("vad_enabled", vadEnabled ? "true" : "false");
     fd.append("voice_mode", voiceMode);
@@ -227,9 +226,7 @@ async function updateConfig(vadEnabled, voiceMode){
 
     const r = await fetch("/api/config/update", {method:"POST", body:fd});
     const j = await r.json();
-
     if(j.ok){ alert("설정 저장 완료"); location.reload(); }
-    else{ alert("설정 저장 실패"); }
 }
 
 async function saveLanguageHint(){
@@ -246,80 +243,111 @@ async function saveLanguageHint(){
 
     const r = await fetch("/api/config/update", {method:"POST", body:fd});
     const j = await r.json();
-
     if(j.ok){ alert("언어힌트 저장 완료"); location.reload(); }
-    else{ alert("저장 실패"); }
 }
 
 async function loadVoiceFilter(){
     const r = await fetch("/api/voice-filter");
-    const j = await r.json();
-    document.getElementById("voiceFilterBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("voiceFilterBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function setVoiceFilterMode(mode){
     const fd = new FormData();
     fd.append("mode", mode);
     const r = await fetch("/api/voice-filter/mode", {method:"POST", body:fd});
-    const j = await r.json();
-    document.getElementById("voiceFilterBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("voiceFilterBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function setVoiceFilterEnabled(enabled){
     const fd = new FormData();
     fd.append("enabled", enabled ? "true" : "false");
     const r = await fetch("/api/voice-filter/enabled", {method:"POST", body:fd});
-    const j = await r.json();
-    document.getElementById("voiceFilterBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("voiceFilterBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function loadTurnConfig(){
     const r = await fetch("/api/turn-config");
-    const j = await r.json();
-    document.getElementById("turnConfigBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("turnConfigBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function setTurnMode(mode){
     const fd = new FormData();
     fd.append("mode", mode);
     const r = await fetch("/api/turn-config/mode", {method:"POST", body:fd});
-    const j = await r.json();
-    document.getElementById("turnConfigBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("turnConfigBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function setTurnEnabled(enabled){
     const fd = new FormData();
     fd.append("enabled", enabled ? "true" : "false");
     const r = await fetch("/api/turn-config/enabled", {method:"POST", body:fd});
-    const j = await r.json();
-    document.getElementById("turnConfigBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("turnConfigBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
 }
 
 async function loadFlowConfig(){
     const r = await fetch("/api/flow-signal-config");
+    document.getElementById("flowConfigBox").innerHTML = "<pre>" + JSON.stringify(await r.json(), null, 2) + "</pre>";
+}
+
+async function loadTravelLinks(){
+    const r = await fetch("/api/travel-links");
     const j = await r.json();
-    document.getElementById("flowConfigBox").innerHTML =
-        "<pre>" + JSON.stringify(j, null, 2) + "</pre>";
+    document.getElementById("travelLinksBox").innerText = JSON.stringify(j, null, 2);
+}
+
+async function loadCategoryLinks(){
+    const c = document.getElementById("linkCategory").value;
+    const r = await fetch("/api/travel-links/" + encodeURIComponent(c));
+    const j = await r.json();
+    document.getElementById("travelLinksBox").innerText = JSON.stringify(j, null, 2);
+}
+
+async function addTravelLink(){
+    const c = document.getElementById("linkCategory").value;
+    const name = document.getElementById("linkName").value.trim();
+    const url = document.getElementById("linkUrl").value.trim();
+
+    if(!name || !url){
+        alert("사이트명과 URL을 입력하세요.");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("category", c);
+    fd.append("name", name);
+    fd.append("url", url);
+
+    const r = await fetch("/api/travel-links/add", {method:"POST", body:fd});
+    const j = await r.json();
+    document.getElementById("travelLinksBox").innerText = JSON.stringify(j, null, 2);
+}
+
+async function deleteTravelLink(){
+    const c = document.getElementById("linkCategory").value;
+    const idx = document.getElementById("deleteIndex").value.trim();
+
+    if(idx === ""){
+        alert("삭제할 번호를 입력하세요.");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("category", c);
+    fd.append("index", idx);
+
+    const r = await fetch("/api/travel-links/delete", {method:"POST", body:fd});
+    const j = await r.json();
+    document.getElementById("travelLinksBox").innerText = JSON.stringify(j, null, 2);
 }
 
 async function analyzeAutoLoop(){
     const r = await fetch("/api/autoloop/analyze");
-    const j = await r.json();
-    document.getElementById("autoLoopBox").innerText =
-        JSON.stringify(j, null, 2);
+    document.getElementById("autoLoopBox").innerText = JSON.stringify(await r.json(), null, 2);
 }
 
 async function loadCandidates(){
     const r = await fetch("/api/autoloop/candidates");
-    const j = await r.json();
-    document.getElementById("autoLoopBox").innerText =
-        JSON.stringify(j, null, 2);
+    document.getElementById("autoLoopBox").innerText = JSON.stringify(await r.json(), null, 2);
 }
 
 renderSummary();
