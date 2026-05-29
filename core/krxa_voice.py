@@ -18,6 +18,22 @@ from core.krxa_turn import analyze_turn
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
+def should_accept_by_turn(text, turn_analysis):
+    if not text:
+        return False
+
+    bg = turn_analysis.get("background", {}) if turn_analysis else {}
+    turn = turn_analysis.get("turn", {}) if turn_analysis else {}
+
+    if bg.get("is_background") and bg.get("action") == "block":
+        return False
+
+    if turn.get("turn_state") == "complete":
+        return True
+
+    return False
+
+
 async def stt_with_detail(
     file: UploadFile,
     session_id: str = "",
@@ -69,18 +85,6 @@ async def stt_with_detail(
         )
 
         if not ok_audio:
-            save_stt_result(
-                ok=False,
-                text="",
-                reason=audio_reason,
-                audio_size=audio_size,
-                duration=duration,
-                content_type=content_type,
-                session_id=session_id,
-                device=device,
-                language_hint=language_hint
-            )
-
             return {
                 "ok": False,
                 "text": "",
@@ -118,20 +122,6 @@ async def stt_with_detail(
             config=vad_config
         )
 
-        log_vad_decision(
-            ok_text,
-            "text",
-            text_reason,
-            {
-                "text": text,
-                "language_hint": language_hint,
-                "language_reason": language_reason,
-                "audio_size": audio_size,
-                "duration": duration,
-                "session_id": session_id
-            }
-        )
-
         turn_analysis = analyze_turn(
             text=text,
             session_id=session_id,
@@ -145,38 +135,33 @@ async def stt_with_detail(
             }
         )
 
-        if not ok_text:
-            save_stt_result(
-                ok=False,
-                text=text,
-                reason=text_reason,
-                audio_size=audio_size,
-                duration=duration,
-                content_type=content_type,
-                session_id=session_id,
-                device=device,
-                language_hint=language_hint
-            )
+        turn_accept = should_accept_by_turn(text, turn_analysis)
 
-            return {
-                "ok": False,
+        final_ok = ok_text or turn_accept
+        final_reason = "ok" if ok_text else (
+            "ok_turn_override" if turn_accept else text_reason
+        )
+
+        log_vad_decision(
+            final_ok,
+            "text",
+            final_reason,
+            {
                 "text": text,
-                "reason": text_reason,
-                "audio_size": audio_size,
-                "duration": duration,
-                "content_type": content_type,
+                "raw_text_reason": text_reason,
+                "turn_accept": turn_accept,
                 "language_hint": language_hint,
                 "language_reason": language_reason,
-                "turn_analysis": turn_analysis,
-                "should_call_llm": False,
-                "flow_signal": turn_analysis.get("flow_signal", "STT 텍스트 불안정"),
-                "elapsed": round(time.time() - started, 3)
+                "audio_size": audio_size,
+                "duration": duration,
+                "session_id": session_id
             }
+        )
 
         save_stt_result(
-            ok=True,
+            ok=final_ok,
             text=text,
-            reason="ok",
+            reason=final_reason,
             audio_size=audio_size,
             duration=duration,
             content_type=content_type,
@@ -186,17 +171,23 @@ async def stt_with_detail(
         )
 
         return {
-            "ok": True,
+            "ok": final_ok,
             "text": text,
-            "reason": "ok",
+            "reason": final_reason,
+            "raw_text_reason": text_reason,
             "audio_size": audio_size,
             "duration": duration,
             "content_type": content_type,
             "language_hint": language_hint,
             "language_reason": language_reason,
             "turn_analysis": turn_analysis,
-            "should_call_llm": turn_analysis.get("should_call_llm", True),
-            "flow_signal": turn_analysis.get("flow_signal", "발화 완료 · 응답 준비"),
+            "should_call_llm": bool(
+                turn_analysis.get("should_call_llm", False)
+            ),
+            "flow_signal": turn_analysis.get(
+                "flow_signal",
+                "발화 완료 · 응답 준비"
+            ),
             "elapsed": round(time.time() - started, 3)
         }
 
@@ -264,10 +255,7 @@ async def stt(
     return result.get("text", "") if result.get("ok") else ""
 
 
-def tts_response(
-    text: str,
-    session_id: str = ""
-):
+def tts_response(text: str, session_id: str = ""):
     started = time.time()
 
     try:
