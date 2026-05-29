@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#eef2f7;font-family:Arial,sans-serif;color:#0f172a}
-.wrap{max-width:520px;margin:auto;min-height:100vh;background:#f8fafc;padding:14px}
+.wrap{max-width:560px;margin:auto;min-height:100vh;background:#f8fafc;padding:14px}
 .top{background:#082046;color:white;padding:14px;text-align:center;font-size:18px;font-weight:bold;border-radius:0 0 12px 12px}
 .card{background:white;border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}
 button{border:0;border-radius:12px;padding:12px 14px;font-weight:bold;margin:4px;cursor:pointer}
@@ -23,13 +23,16 @@ textarea{width:100%;height:70px;border:1px solid #bbb;border-radius:10px;padding
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .small{font-size:12px;color:#64748b}
 .metric{background:#f1f5f9;padding:10px;border-radius:10px;margin:6px 0;white-space:pre-wrap}
+.metric.strong{background:#dbeafe}
+.metric.warn{background:#fee2e2;color:#991b1b}
+.metric.ok{background:#dcfce7;color:#166534}
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
-<div class="top">KRXA 음성 · 속도 · GPS 진단</div>
+<div class="top">KRXA 음성 · 속도 · GPS · Turn 진단</div>
 
 <div class="status" id="status">진단 대기 중</div>
 
@@ -53,13 +56,23 @@ textarea{width:100%;height:70px;border:1px solid #bbb;border-radius:10px;padding
 
 <div class="card">
 <h3>2. 음성 → STT 진단</h3>
-<p class="small">마이크로 5초 녹음 후 STT만 확인합니다. KRXA 대화 엔진은 호출하지 않습니다.</p>
+<p class="small">마이크로 5초 녹음 후 STT와 Turn 판단만 확인합니다. KRXA 대화 엔진은 호출하지 않습니다.</p>
 <button class="green" onclick="recordAndSTT()">🎤 녹음/STT 테스트</button>
 <div id="sttBox" class="metric">아직 테스트 전</div>
 </div>
 
 <div class="card">
-<h3>3. TTS 진단</h3>
+<h3>3. KRXA Voice Loop 진단</h3>
+<div id="soundState" class="metric">Sound State : -</div>
+<div id="voiceState" class="metric">Voice State : -</div>
+<div id="turnState" class="metric">Turn State : -</div>
+<div id="pauseState" class="metric">Pause State : -</div>
+<div id="callState" class="metric">Call State : -</div>
+<div id="flowSignal" class="metric strong">Flow Signal : -</div>
+</div>
+
+<div class="card">
+<h3>4. TTS 진단</h3>
 <textarea id="ttsText">안녕하세요. KRXA 음성 출력 테스트입니다.</textarea>
 <br>
 <button class="blue" onclick="testTTS()">🔊 TTS 테스트</button>
@@ -67,7 +80,7 @@ textarea{width:100%;height:70px;border:1px solid #bbb;border-radius:10px;padding
 </div>
 
 <div class="card">
-<h3>4. 전체 진단 로그</h3>
+<h3>5. 전체 진단 로그</h3>
 <button class="gray" onclick="copyLog()">로그 복사</button>
 <button class="red" onclick="clearLog()">로그 초기화</button>
 <pre id="logBox"></pre>
@@ -103,12 +116,19 @@ let diag = {
     selected_language_mode: selectedLanguageMode,
     gps: {},
     stt: {},
+    voice_loop: {},
     tts: {},
     events: []
 };
 
 function now(){ return new Date().toISOString(); }
 function setStatus(t){ document.getElementById("status").innerText = t; }
+
+function setMetric(id, text, cls){
+    const el = document.getElementById(id);
+    el.className = "metric" + (cls ? " " + cls : "");
+    el.innerText = text;
+}
 
 function setLang(l){
     selectedLanguageMode = l;
@@ -148,8 +168,16 @@ function clearLog(){
     diag.events = [];
     diag.gps = {};
     diag.stt = {};
+    diag.voice_loop = {};
     diag.tts = {};
     renderLog();
+
+    setBox("gpsBox", "아직 확인 전");
+    setBox("sttBox", "아직 테스트 전");
+    setBox("ttsBox", "아직 테스트 전");
+
+    resetVoiceLoopView();
+    setStatus("진단 로그 초기화 완료");
 }
 
 async function copyLog(){
@@ -160,6 +188,65 @@ async function copyLog(){
     }catch(e){
         setStatus("복사 실패");
     }
+}
+
+function resetVoiceLoopView(){
+    setMetric("soundState", "Sound State : -");
+    setMetric("voiceState", "Voice State : -");
+    setMetric("turnState", "Turn State : -");
+    setMetric("pauseState", "Pause State : -");
+    setMetric("callState", "Call State : -");
+    setMetric("flowSignal", "Flow Signal : -", "strong");
+}
+
+function renderVoiceLoop(parsed){
+    const ta = parsed && parsed.turn_analysis ? parsed.turn_analysis : null;
+
+    if(!ta){
+        diag.voice_loop = {
+            ok:false,
+            reason:"turn_analysis_missing"
+        };
+
+        setMetric("soundState", "Sound State : detected", "ok");
+        setMetric("voiceState", "Voice State : unknown", "warn");
+        setMetric("turnState", "Turn State : -");
+        setMetric("pauseState", "Pause State : -");
+        setMetric("callState", "Call State : -");
+        setMetric("flowSignal", "Flow Signal : turn_analysis 없음", "warn");
+        return;
+    }
+
+    const bg = ta.background || {};
+    const turn = ta.turn || {};
+
+    let soundClass = parsed.ok ? "ok" : "warn";
+    let voiceText = bg.is_background ? "Voice State : background" : "Voice State : user_voice_candidate";
+    let voiceClass = bg.is_background ? "warn" : "ok";
+    let callText = parsed.should_call_llm ? "Call State : READY" : "Call State : HOLD";
+    let callClass = parsed.should_call_llm ? "ok" : "warn";
+
+    const loop = {
+        sound_state: parsed.ok ? "detected" : "failed_or_uncertain",
+        voice_state: bg.is_background ? "background" : "user_voice_candidate",
+        background: bg,
+        turn_state: turn.turn_state || "-",
+        pause_state: turn.pause_state || "-",
+        call_state: parsed.should_call_llm ? "READY" : "HOLD",
+        should_call_llm: parsed.should_call_llm,
+        flow_signal: parsed.flow_signal || "-"
+    };
+
+    diag.voice_loop = loop;
+
+    setMetric("soundState", "Sound State : " + loop.sound_state, soundClass);
+    setMetric("voiceState", voiceText + "\nmatched: " + (bg.matched || "-") + "\naction: " + (bg.action || "-"), voiceClass);
+    setMetric("turnState", "Turn State : " + loop.turn_state + "\nreason: " + (turn.reason || "-") + "\nscore: " + (turn.score ?? "-"));
+    setMetric("pauseState", "Pause State : " + loop.pause_state);
+    setMetric("callState", callText, callClass);
+    setMetric("flowSignal", "Flow Signal : " + loop.flow_signal, parsed.should_call_llm ? "ok" : "strong");
+
+    logEvent("voice_loop_rendered", loop);
 }
 
 function testGPS(){
@@ -230,6 +317,7 @@ function pickMimeType(){
 }
 
 async function recordAndSTT(){
+    resetVoiceLoopView();
     setStatus("마이크 준비 중...");
     logEvent("stt_test_start", {
         selected_language_mode:selectedLanguageMode,
@@ -285,6 +373,7 @@ async function recordAndSTT(){
                 setBox("sttBox", data);
                 logEvent("stt_client_fail", data);
                 setStatus("녹음 파일이 너무 작습니다.");
+                setMetric("flowSignal", "Flow Signal : 음성 입력 부족", "warn");
                 return;
             }
 
@@ -322,6 +411,10 @@ async function recordAndSTT(){
                 setBox("sttBox", data);
                 logEvent(res.ok ? "stt_response" : "stt_http_fail", data);
 
+                if(parsed){
+                    renderVoiceLoop(parsed);
+                }
+
                 if(parsed && parsed.ok){
                     setStatus("STT 성공: " + parsed.text);
                 }else{
@@ -334,6 +427,7 @@ async function recordAndSTT(){
                 setBox("sttBox", data);
                 logEvent("stt_fetch_fail", data);
                 setStatus("STT 요청 실패");
+                setMetric("flowSignal", "Flow Signal : STT 요청 실패", "warn");
             }
         };
 
@@ -350,6 +444,7 @@ async function recordAndSTT(){
         setBox("sttBox", data);
         logEvent("mic_fail", data);
         setStatus("마이크 오류");
+        setMetric("flowSignal", "Flow Signal : 마이크 오류", "warn");
     }
 }
 
@@ -409,6 +504,7 @@ async function testTTS(){
 }
 
 setLang(selectedLanguageMode);
+resetVoiceLoopView();
 renderLog();
 </script>
 </body>
