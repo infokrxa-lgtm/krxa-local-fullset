@@ -8,10 +8,10 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f1f5f9;color:#0f172a;font-family:Arial,sans-serif}
-.wrap{max-width:1100px;margin:auto;padding:18px}
+.wrap{max-width:1180px;margin:auto;padding:18px}
 h1{margin:0 0 12px}
 .card{background:white;padding:16px;border-radius:14px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.grid{display:grid;grid-template-columns:280px 1fr;gap:14px}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:14px}
 ul{padding-left:18px}
 li{margin:6px 0}
 a{color:#2563eb;text-decoration:none}
@@ -22,9 +22,16 @@ button{padding:10px 14px;border:0;border-radius:9px;font-weight:bold;margin:4px 
 .create{background:#16a34a;color:white}
 .delete{background:#dc2626;color:white}
 .gray{background:#64748b;color:white}
-pre{background:#0f172a;color:white;padding:12px;border-radius:10px;white-space:pre-wrap}
+.warn{background:#f59e0b;color:#111827}
+pre{background:#0f172a;color:white;padding:12px;border-radius:10px;white-space:pre-wrap;overflow:auto}
 .small{font-size:13px;color:#64748b}
-@media(max-width:800px){
+.badge{display:inline-block;background:#e0f2fe;color:#075985;padding:5px 9px;border-radius:999px;margin:3px;font-size:12px;font-weight:bold}
+.badge.ok{background:#dcfce7;color:#166534}
+.badge.warn{background:#fef3c7;color:#92400e}
+.badge.danger{background:#fee2e2;color:#991b1b}
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.quick a{display:block;background:#eff6ff;border:1px solid #bfdbfe;padding:10px;border-radius:10px;font-weight:bold}
+@media(max-width:850px){
     .grid{grid-template-columns:1fr}
     textarea{height:50vh}
 }
@@ -37,25 +44,58 @@ pre{background:#0f172a;color:white;padding:12px;border-radius:10px;white-space:p
 <h1>KRXA DEV</h1>
 
 <div class="card">
-<p>개발자 UI</p>
-<p>파일 목록 / 신규 생성 / 수정 / 저장 / 삭제 / 적용 안내 / Render 배포 흐름 관리</p>
+<p><b>개발자 UI</b></p>
+<p>현재 목표: <b>KRXA_LOCAL_FULLSET 완성 → Voice Loop 안정화 → 여행 UI 연결</b></p>
 <p>
 <a href="/user">USER</a> |
 <a href="/app?service=food">APP</a> |
+<a href="/test_voice">TEST VOICE</a> |
 <a href="/control">CONTROL</a> |
 <a href="/api/state">STATE</a>
 </p>
 <p class="small">
-현재 구조 기준: /api/turn + core/krxa_router.py 중심.
+기준 호출문: <b>GO = KRXA_VOICE_LOOP_V1</b><br>
+핵심 원칙: 흐름은 멈추지 않고, 호출만 늦춘다.
 </p>
+</div>
+
+<div class="card">
+<h3>현재 LOCAL_FULLSET 핵심 구조</h3>
+<div>
+<span class="badge ok">STT</span>
+<span class="badge ok">TTS</span>
+<span class="badge ok">GPS</span>
+<span class="badge ok">Language</span>
+<span class="badge ok">Translate Route</span>
+<span class="badge ok">Agency Route</span>
+<span class="badge warn">Turn Engine</span>
+<span class="badge warn">Flow Signal</span>
+<span class="badge warn">AutoLoop</span>
+<span class="badge danger">Travel UI Later</span>
+</div>
+</div>
+
+<div class="card">
+<h3>빠른 확인 링크</h3>
+<div class="quick">
+<a href="/api/state">STATE JSON</a>
+<a href="/api/config">CONFIG JSON</a>
+<a href="/api/voice-filter">Voice Filter JSON</a>
+<a href="/api/turn-config">Turn Config JSON</a>
+<a href="/api/flow-signal-config">Flow Signal JSON</a>
+<a href="/api/autoloop/analyze">AutoLoop Analyze</a>
+<a href="/api/autoloop/candidates">Improve Candidates</a>
+<a href="/test_voice">TEST VOICE</a>
+</div>
 </div>
 
 <div class="card">
 <h3>신규 파일 생성</h3>
 <form method="post" action="/dev/create">
-<input name="path" placeholder="예: core/krxa_new.py 또는 ui/new.html">
+<input name="path" placeholder="예: core/krxa_new.py 또는 ui/new.html 또는 storage/new_config.json">
 <button class="create" type="submit">CREATE</button>
 </form>
+<p class="small">주의: LOCAL_FULLSET은 이미 살아있는 구조입니다. 새 파일 생성 전 기존 역할을 먼저 확인합니다.</p>
 </div>
 
 <div class="grid">
@@ -87,54 +127,96 @@ __FILE_LIST__
 </div>
 
 <div class="card">
+<h3>현재 수정 우선순위</h3>
+<pre>
+1. test_voice에서 turn_analysis 확인
+2. app에서 should_call_llm=false 호출보류 확인
+3. control에서 Voice Filter / Turn Engine / Flow Signal ON/OFF 확인
+4. AutoLoop 개선 후보 생성 확인
+5. 그 다음 여행 UI 연결
+</pre>
+</div>
+
+<div class="card">
+<h3>핵심 파일 역할</h3>
+<pre>
+main.py
+- FastAPI 라우터
+- /api/stt, /api/tts, /api/translate, /api/turn
+- /api/voice-filter, /api/turn-config, /api/flow-signal-config
+- /api/autoloop/analyze, /api/autoloop/candidates
+
+core/krxa_voice.py
+- STT/TTS 담당
+- language hint 적용
+- krxa_turn.py 연결
+
+core/krxa_turn.py
+- 배경음 감시
+- 멈칫/진행중/완료 판단
+- should_call_llm 결정
+- flow_signal 생성
+
+core/krxa_autoloop.py
+- 로그 분석
+- 개선 후보 생성
+- 승인/보류용 기초 구조
+
+core/krxa_translate.py
+- 무료 통역 전용 루트
+
+core/krxa_router.py
+- 여행 에이전시 루트
+
+core/krxa_travel.py
+- 여행 카드/사이트 추천 계층
+
+ui/test_voice.html
+- GPS/STT/TTS/Turn 진단
+
+ui/app.html
+- 실제 사용자 음성/텍스트 화면
+- Flow Signal 표시
+- Call Gate 적용
+
+ui/control.html
+- 관제 ON/OFF
+- Voice Filter / Turn Engine / Flow Signal / AutoLoop
+
+ui/dev.html
+- 개발자 파일 편집 및 구조 확인
+</pre>
+</div>
+
+<div class="card">
 <h3>적용 / 배포 명령</h3>
 <pre>
-로컬 기준:
-
-cd C:\Users\aaa\KRXA_LOCAL_FULLSET
-
 git status
 git add .
-git commit -m "update krxa router fullset"
+git commit -m "update krxa local fullset"
 git push
 
 Render:
 - Git push 후 자동 배포 확인
-- Logs에서 Build successful / Your service is live 확인
+- Build successful
+- Your service is live 확인
 </pre>
 </div>
 
 <div class="card">
-<h3>현재 핵심 파일 구조</h3>
+<h3>다음 단계</h3>
 <pre>
-main.py
-core/krxa_router.py
-core/krxa_engine.py
-core/krxa_voice.py
-core/krxa_vad.py
-core/krxa_learning.py
-core/krxa_store.py
-core/krxa_travel.py
+TEST VOICE에서 아래 결과 확인:
 
-ui/user.html
-ui/app.html
-ui/control.html
-ui/dev.html
-</pre>
-</div>
+1. GPS 정상
+2. STT text 정상
+3. turn_analysis 존재
+4. background 감시 동작
+5. turn_state = complete / continue / uncertain
+6. should_call_llm = true / false
+7. flow_signal 표시
 
-<div class="card">
-<h3>9단계 완성 구조</h3>
-<pre>
-1. STT 안정화
-2. 텍스트 전송 안정화
-3. 대화 흐름 유지
-4. 최신 대화 하단 고정
-5. language hint 구조
-6. krxa_router.py 분리
-7. 자동 학습 루프
-8. control/dev 자동 운영
-9. KRXA 통합관제 연결 준비
+이후 app.html에서 실제 음성 대화 흐름 검증.
 </pre>
 </div>
 
