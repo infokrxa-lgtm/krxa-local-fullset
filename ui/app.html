@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KRXA Travel V1</title>
+<title>말대말 Travel V1</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
+body{margin:0;background:#eaf1f8;font-family:Arial,sans-serif;color:#0f172a}
 .wrap{max-width:430px;margin:auto;height:100vh;background:#f8fafc;display:flex;flex-direction:column;overflow:hidden}
-.hero{background:#0b4ea2;color:white;padding:18px 16px 16px;text-align:center}
-.hero h1{margin:0;font-size:30px}
-.hero p{margin:6px 0 12px;font-size:15px}
-.search{background:white;border-radius:999px;padding:12px;color:#64748b;text-align:left}
-.langbar{display:flex;gap:8px;padding:10px 12px;background:#f8fafc}
-.langbtn{flex:1;border:0;border-radius:11px;padding:10px;font-weight:bold;background:#e5e7eb;color:#334155}
+.hero{background:linear-gradient(180deg,#0b5bbb,#0b3b7a);color:white;padding:22px 18px 16px;text-align:center}
+.hero h1{margin:0;font-size:34px}
+.hero p{margin:6px 0 14px;font-size:15px}
+.search{background:white;color:#64748b;border-radius:999px;padding:13px 16px;text-align:left}
+.langbar{display:flex;gap:8px;padding:10px 12px}
+.langbtn{flex:1;border:0;border-radius:12px;padding:11px;font-weight:bold;background:#e5e7eb;color:#334155}
 .langbtn.active{background:#0ea5e9;color:white}
 .status{margin:0 12px 6px;background:#e8f8ee;color:#25734d;padding:8px;border-radius:10px;text-align:center;font-size:13px}
-.flow{margin:0 12px 6px;background:#dbeafe;color:#1e3a8a;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:bold}
+.flow{margin:0 12px 8px;background:#dbeafe;color:#1e3a8a;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:bold}
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px 12px}
-.tab{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:14px 6px;text-align:center;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.tab span{display:block;font-size:24px;margin-bottom:6px}
-.panel{padding:0 12px 8px;max-height:180px;overflow:auto}
+.tab{background:white;border:1px solid #e5e7eb;border-radius:15px;padding:15px 6px;text-align:center;font-weight:bold;box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.tab span{display:block;font-size:26px;margin-bottom:6px}
+.panel{padding:0 12px 8px;max-height:190px;overflow:auto}
 .card{background:white;border:1px solid #ddd;border-radius:12px;padding:10px;margin:7px 0}
 .card b{font-size:15px}
-.card small{color:#64748b}
+.card small{color:#64748b;word-break:break-all}
 .card button{margin-top:7px;width:100%;border:0;border-radius:10px;padding:9px;background:#2563eb;color:white;font-weight:bold}
 .chat{flex:1;overflow-y:auto;padding:8px 12px 16px;background:#f8fafc}
 .me{background:#dbeafe;padding:10px;border-radius:12px;margin-bottom:8px;font-size:15px}
@@ -35,6 +35,7 @@ body{margin:0;background:#eef2f7;font-family:Arial,sans-serif}
 .btn{flex:1;border:0;border-radius:14px;padding:12px;color:white;font-size:17px;font-weight:bold}
 .mic{background:#16a34a}
 .map{background:#2563eb}
+.sos{background:#dc2626}
 textarea{width:100%;height:48px;border-radius:10px;border:1px solid #bbb;padding:8px;font-size:15px}
 .send{margin-top:7px;width:100%;border:0;background:#2563eb;color:white;padding:11px;border-radius:10px;font-size:16px;font-weight:bold}
 .small{font-size:11px;color:#64748b;text-align:center;margin-top:5px}
@@ -47,7 +48,7 @@ textarea{width:100%;height:48px;border-radius:10px;border:1px solid #bbb;padding
 <div class="hero">
   <h1>말대말</h1>
   <p>여행이 쉬워지는 순간</p>
-  <div class="search">어디로 떠나시나요?</div>
+  <div class="search" onclick="openMap()">어디로 떠나시나요?</div>
 </div>
 
 <div class="langbar">
@@ -69,14 +70,22 @@ textarea{width:100%;height:48px;border-radius:10px;border:1px solid #bbb;padding
   <div class="tab" onclick="openTravelCategory('shopping')"><span>🛍️</span>쇼핑</div>
 </div>
 
-<div class="panel" id="linkPanel"></div>
+<div class="panel" id="linkPanel">
+  <div class="card">
+    <b>Travel V1</b><br>
+    <small>카테고리를 선택하면 관련 사이트를 새 창에서 열 수 있습니다.</small>
+  </div>
+</div>
 
 <div class="chat" id="chat"></div>
 
 <div class="bottom">
   <div class="row">
     <button class="btn mic" onclick="recordVoice()">🎤 말하기</button>
-    <button class="btn map" onclick="openMap()">📍 지도 안내</button>
+    <button class="btn map" onclick="openMap()">📍 지도</button>
+  </div>
+  <div class="row">
+    <button class="btn sos" onclick="openSOS()">🆘 SOS</button>
   </div>
 
   <textarea id="text" placeholder="말하거나 직접 입력하세요"></textarea>
@@ -113,7 +122,6 @@ function setLang(l){
   document.getElementById(map[l]).classList.add("active");
   setStatus("상대언어 기준: " + l.toUpperCase());
 }
-
 setTimeout(()=>setLang(selectedLanguageMode),0);
 
 function escapeHtml(text){
@@ -134,7 +142,6 @@ function addMessage(type,title,text){
   while(chat.children.length>5){chat.removeChild(chat.children[0]);}
   scrollToBottom();
 }
-
 function addError(t){addMessage("err","오류",t);}
 function addHold(t){addMessage("hold","KRXA",t);}
 
@@ -144,8 +151,9 @@ async function openTravelCategory(category){
 
   if(category==="airport"){
     panel.innerHTML=`
-      <div class="card"><b>Incheon Airport</b><br><small>공항 정보</small><button onclick="window.open('https://www.airport.kr','_blank')">열기</button></div>
-      <div class="card"><b>Skyscanner</b><br><small>항공권 검색</small><button onclick="window.open('https://www.skyscanner.co.kr','_blank')">열기</button></div>`;
+      <div class="card"><b>Incheon Airport</b><br><small>https://www.airport.kr</small><button onclick="window.open('https://www.airport.kr','_blank')">새 창에서 열기</button></div>
+      <div class="card"><b>Skyscanner</b><br><small>https://www.skyscanner.co.kr</small><button onclick="window.open('https://www.skyscanner.co.kr','_blank')">새 창에서 열기</button></div>
+      <div class="card"><b>Trip.com</b><br><small>https://www.trip.com</small><button onclick="window.open('https://www.trip.com','_blank')">새 창에서 열기</button></div>`;
     return;
   }
 
@@ -194,7 +202,6 @@ async function sendToServer(message, source="text"){
   try{
     const res=await fetch("/api/translate",{method:"POST",body:fd});
     const raw=await res.text();
-
     if(!res.ok){addError("/api/translate 오류: "+raw);return;}
 
     const data=JSON.parse(raw);
@@ -231,7 +238,6 @@ async function recordVoice(){
 
     const mr=new MediaRecorder(stream);
     let chunks=[];
-
     mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunks.push(e.data);};
 
     mr.onstop=async()=>{
@@ -329,6 +335,15 @@ function openMap(){
     url="https://www.google.com/maps/search/travel+nearby/@"+currentLat+","+currentLng+",15z";
   }
   window.open(url,"_blank");
+}
+
+function openSOS(){
+  document.getElementById("linkPanel").innerHTML=`
+    <div class="card"><b>🆘 SOS</b><br><small>긴급 상황에서는 현지 긴급번호와 대사관 정보를 확인하세요.</small></div>
+    <div class="card"><b>Google Maps - Hospital</b><br><small>주변 병원 검색</small><button onclick="window.open('https://www.google.com/maps/search/hospital','_blank')">병원 찾기</button></div>
+    <div class="card"><b>Google Maps - Pharmacy</b><br><small>주변 약국 검색</small><button onclick="window.open('https://www.google.com/maps/search/pharmacy','_blank')">약국 찾기</button></div>
+    <div class="card"><b>Embassy Search</b><br><small>대사관 검색</small><button onclick="window.open('https://www.google.com/search?q=nearest+embassy','_blank')">대사관 찾기</button></div>
+  `;
 }
 
 function requestDeviceLocation(){
