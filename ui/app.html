@@ -71,6 +71,58 @@ body{
   padding:22px;
 }
 
+.homePage{
+  background:
+    linear-gradient(rgba(7,38,92,.25), rgba(7,38,92,.55)),
+    url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80");
+  background-size:cover;
+  background-position:center;
+  color:white;
+  border-radius:0;
+  box-shadow:none;
+}
+
+.homeOverlay{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:24px;
+}
+
+.homeOverlay h1{
+  font-size:54px;
+  margin:0 0 18px;
+  letter-spacing:-2px;
+}
+
+.homeOverlay p{
+  color:white;
+  font-size:21px;
+  line-height:1.45;
+  margin-bottom:36px;
+}
+
+.startBtn{
+  border:0;
+  border-radius:999px;
+  background:#2563eb;
+  color:white;
+  padding:16px 34px;
+  font-size:19px;
+  font-weight:bold;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+
+.swipeGuide{
+  margin-top:18px;
+  font-size:13px;
+  opacity:.9;
+}
+
 h1{
   font-size:36px;
   margin:10px 0;
@@ -161,11 +213,13 @@ p{
     <div class="pages" id="pages">
 
       <section class="page">
-        <div class="pageInner">
-          <div class="icon">🌍</div>
-          <h1>PAGE 1</h1>
-          <h2>말대말 HOME</h2>
-          <p>여행 감성 첫 화면이 들어갈 자리입니다.</p>
+        <div class="pageInner homePage">
+          <div class="homeOverlay">
+            <h1>말대말</h1>
+            <p>어디서든, 누구와도<br>바로 통역하고 연결합니다</p>
+            <button class="startBtn" onclick="goPage(2)">통역 시작하기</button>
+            <div class="swipeGuide">좌우로 밀어 여행 기능 보기</div>
+          </div>
         </div>
       </section>
 
@@ -248,6 +302,11 @@ function render(){
     };
     dots.appendChild(d);
   }
+}
+
+function goPage(index){
+  currentPage = index;
+  render();
 }
 
 function nextPage(){
