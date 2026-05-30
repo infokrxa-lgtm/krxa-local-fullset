@@ -309,35 +309,149 @@ function sendText(){
 async function recordVoice(){
   try{
     go("talk");
-    status("2초 동안 말해주세요...");
+    status("말씀하세요. 끝나면 자동으로 통역합니다...");
     flow("듣는 중");
 
-    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    const mr=new MediaRecorder(stream);
-    let chunks=[];
-    mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
-    mr.onstop=async()=>{
-      stream.getTracks().forEach(t=>t.stop());
-      const blob=new Blob(chunks,{type:"audio/webm"});
-      const fd=new FormData();
-      fd.append("file",blob,"voice.webm");
-      fd.append("session_id",sessionId);
-      fd.append("duration","2");
-      fd.append("user_language_mode","auto");
-      fd.append("target_language",selectedLanguageMode);
-      fd.append("lat",currentLat);
-      fd.append("lng",currentLng);
-      fd.append("device_locale",navigator.language||"");
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:true,
+        noiseSuppression:true,
+        autoGainControl:true
+      }
+    });
 
-      const r=await fetch("/api/stt",{method:"POST",body:fd});
-      const j=await r.json();
-      flow(j.flow_signal||"흐름 유지 중");
-      if(j.ok&&j.text)sendToServer(j.text,"voice");
-      else status("음성 인식 실패");
+    const audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.fftSize);
+
+    const mr = new MediaRecorder(stream);
+    let chunks = [];
+
+    let speechStarted = false;
+    let lastVoiceTime = Date.now();
+    let startTime = Date.now();
+
+    const voiceThreshold = 18;
+    const minRecordMs = 900;
+    const silenceEndMs = 1200;
+
+    mr.ondataavailable = e => {
+      if(e.data && e.data.size > 0){
+        chunks.push(e.data);
+      }
     };
-    mr.start();
-    setTimeout(()=>{if(mr.state!=="inactive")mr.stop()},2000);
-  }catch(e){addMsg("","마이크 오류",e.message)}
+
+    mr.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      try{ audioContext.close(); }catch(e){}
+
+      const blob = new Blob(chunks, {type:"audio/webm"});
+
+      if(blob.size < 1200){
+        status("음성이 너무 짧습니다.");
+        flow("음성 입력 부족");
+        return;
+      }
+
+      status("음성 인식 중...");
+      flow("STT 처리 중");
+
+      const recordSeconds = Math.max(
+        1,
+        Math.round((Date.now() - startTime) / 1000)
+      );
+
+      const fd = new FormData();
+      fd.append("file", blob, "voice.webm");
+      fd.append("session_id", sessionId);
+      fd.append("duration", String(recordSeconds));
+
+      // STT는 상대언어가 아니라 자동 인식
+      fd.append("user_language_mode", "auto");
+
+      // 번역 목표언어는 사용자가 고른 상대언어
+      fd.append("target_language", selectedLanguageMode);
+
+      fd.append("lat", currentLat);
+      fd.append("lng", currentLng);
+      fd.append("device_locale", navigator.language || "");
+
+      try{
+        const r = await fetch("/api/stt", {
+          method:"POST",
+          body:fd
+        });
+
+        const j = await r.json();
+
+        flow(j.flow_signal || "흐름 유지 중");
+
+        if(j.ok && j.text){
+          status("통역 처리 중...");
+          await sendToServer(j.text, "voice");
+        }else{
+          status("음성 인식 실패 · 다시 말해주세요.");
+          remember("stt_fail", {
+            reason:j.reason,
+            text:j.text
+          });
+        }
+      }catch(e){
+        addMsg("", "STT 오류", e.message);
+      }
+    };
+
+    mr.start(250);
+
+    function detectVoice(){
+      analyser.getByteTimeDomainData(dataArray);
+
+      let sum = 0;
+      for(let i=0; i<dataArray.length; i++){
+        const v = dataArray[i] - 128;
+        sum += Math.abs(v);
+      }
+
+      const volume = sum / dataArray.length;
+      const now = Date.now();
+
+      if(volume > voiceThreshold){
+        speechStarted = true;
+        lastVoiceTime = now;
+        flow("말소리 감지 중");
+      }
+
+      const elapsed = now - startTime;
+      const silenceElapsed = now - lastVoiceTime;
+
+      if(
+        speechStarted &&
+        elapsed > minRecordMs &&
+        silenceElapsed > silenceEndMs
+      ){
+        flow("발화 종료 판단 · 통역 준비");
+        if(mr.state !== "inactive"){
+          mr.stop();
+        }
+        return;
+      }
+
+      if(mr.state !== "inactive"){
+        requestAnimationFrame(detectVoice);
+      }
+    }
+
+    detectVoice();
+
+  }catch(e){
+    addMsg("", "마이크 오류", e.message);
+    status("마이크 권한 필요");
+  }
 }
 
 async function playTTS(text){
