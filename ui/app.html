@@ -3,18 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-<title>말대말 Travel V1</stitle>
+<title>말대말 Travel V1</title>
 
-</style>
-.modal{
-  position:absolute;inset:0;background:rgba(15,23,42,.45);
-  z-index:50;display:none;align-items:center;justify-content:center;padding:18px
-}
-.modalBox{
-  width:100%;max-height:86%;overflow:auto;background:white;border-radius:22px;padding:18px
-}
-.modalHead{display:flex;justify-content:space-between;align-items:center}
-.closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
+<style>
 *{box-sizing:border-box}
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
 .app{width:100vw;max-width:430px;height:100dvh;margin:auto;background:#fff;overflow:hidden;position:relative}
@@ -25,7 +16,6 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1}
 .dot.active{background:#2563eb;width:22px;border-radius:99px}
 
-/* PAGE 1 */
 .home{
   background:
     linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.38)),
@@ -41,7 +31,6 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .homeNav{position:absolute;left:18px;right:18px;bottom:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:white;border-radius:18px;padding:10px;color:#64748b;text-align:center;font-size:12px}
 .homeNav b{display:block;color:#0f172a;font-size:18px}
 
-/* COMMON */
 .header{padding:16px;display:flex;align-items:center;gap:10px}
 .back{border:0;background:#f1f5f9;border-radius:12px;width:38px;height:38px;font-size:22px}
 .title{flex:1;text-align:center;font-size:20px;font-weight:bold}
@@ -52,12 +41,10 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .card small{display:block;color:#64748b;font-size:12px;margin-top:4px}
 .wide{grid-column:1/3}
 
-/* PAGE 2 */
 .hubHero{padding:20px 18px 8px;text-align:left}
 .hubHero h2{margin:0;font-size:25px}
 .hubHero p{margin:6px 0 0;color:#64748b;font-size:14px}
 
-/* PAGE 3 TRANSLATE */
 .lang{display:flex;gap:7px;margin-bottom:8px}
 .lang button{flex:1;border:0;background:#e5e7eb;border-radius:11px;padding:9px 2px;font-weight:bold;font-size:13px}
 .lang button.active{background:#2563eb;color:white}
@@ -87,7 +74,6 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
 .btn{border:0;border-radius:13px;padding:12px;font-size:16px;font-weight:bold;color:white}
 .green{background:#16a34a}.blue{background:#2563eb}.red{background:#dc2626}
 
-/* PAGE 4 */
 .tabs{display:flex;background:#f1f5f9;border-radius:14px;padding:4px;margin-bottom:14px}
 .tabs button{flex:1;border:0;border-radius:10px;background:transparent;padding:10px;font-weight:bold}
 .tabs button.active{background:white;color:#2563eb}
@@ -98,16 +84,19 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
 .contactInfo small{color:#64748b}
 .callBtn{border:0;background:#16a34a;color:white;border-radius:50%;width:42px;height:42px;font-size:20px}
 
-/* PAGE 5 */
 .historyItem{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:10px 0;text-align:left}
 .historyItem b{display:block}
 .historyItem small{color:#64748b}
 
-/* PAGE 6 */
 .sosTop{background:#dc2626;color:white;padding:32px 20px;text-align:center;border-radius:0 0 28px 28px}
 .sosTop h2{font-size:34px;margin:0}
 .offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:14px;margin-top:14px}
 .phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:11px;margin:8px 0;text-align:left}
+
+.modal{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
+.modalBox{width:100%;max-height:86%;overflow:auto;background:white;border-radius:22px;padding:18px}
+.modalHead{display:flex;justify-content:space-between;align-items:center}
+.closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
 </style>
 </head>
 
@@ -243,26 +232,28 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
     </section>
 
   </div>
-<div class="modal" id="linkModal">
-  <div class="modalBox">
-    <div class="modalHead">
-      <h3 id="linkModalTitle">연결</h3>
-      <button class="closeBtn" onclick="closeLinkModal()">닫기</button>
+
+  <div class="modal" id="linkModal">
+    <div class="modalBox">
+      <div class="modalHead">
+        <h3 id="linkModalTitle">연결</h3>
+        <button class="closeBtn" onclick="closeLinkModal()">닫기</button>
+      </div>
+
+      <div id="linkModalList"></div>
+
+      <hr>
+
+      <b>내 링크 추가</b>
+      <input id="userLinkName" placeholder="사이트명">
+      <input id="userLinkUrl" placeholder="https://...">
+      <button class="btn blue" style="width:100%;margin-top:6px" onclick="addUserLink()">추가</button>
+
+      <input id="deleteLinkIndex" placeholder="삭제 번호 예: 0">
+      <button class="btn red" style="width:100%;margin-top:6px" onclick="deleteUserLink()">삭제</button>
     </div>
-
-    <div id="linkModalList"></div>
-
-    <hr>
-
-    <b>내 링크 추가</b>
-    <input id="userLinkName" placeholder="사이트명">
-    <input id="userLinkUrl" placeholder="https://...">
-    <button class="btn blue" style="width:100%;margin-top:6px" onclick="addUserLink()">추가</button>
-
-    <input id="deleteLinkIndex" placeholder="삭제 번호 예: 0">
-    <button class="btn red" style="width:100%;margin-top:6px" onclick="deleteUserLink()">삭제</button>
   </div>
-</div>
+
   <div class="dots" id="dots"></div>
 </div>
 
@@ -271,8 +262,9 @@ let currentPage=0,totalPages=6,startX=0,lastAudioText="",autoConversation=false,
 let sessionId=localStorage.getItem("krxa_session_id")||("session-"+Math.random().toString(16).slice(2,10));
 localStorage.setItem("krxa_session_id",sessionId);
 let targetLang=localStorage.getItem("krxa_language_mode")||"auto";
-let lat="",lng="";
+let lat="",lng="",currentLinkCategory="";
 
+const CATEGORY_LABELS={food:"맛집",route:"길찾기",hotel:"호텔",taxi:"교통",tour:"관광",shopping:"쇼핑",music:"음악",game:"게임",sos:"SOS"};
 const LANGS=[
 ["af","Afrikaans"],["sq","Albanian"],["am","Amharic"],["ar","Arabic"],["hy","Armenian"],["az","Azerbaijani"],["eu","Basque"],["be","Belarusian"],["bn","Bengali"],["bs","Bosnian"],["bg","Bulgarian"],["ca","Catalan"],["ceb","Cebuano"],["zh","Chinese"],["co","Corsican"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["en","English"],["eo","Esperanto"],["et","Estonian"],["fi","Finnish"],["fr","French"],["fy","Frisian"],["gl","Galician"],["ka","Georgian"],["de","German"],["el","Greek"],["gu","Gujarati"],["ht","Haitian Creole"],["ha","Hausa"],["haw","Hawaiian"],["he","Hebrew"],["hi","Hindi"],["hmn","Hmong"],["hu","Hungarian"],["is","Icelandic"],["ig","Igbo"],["id","Indonesian"],["ga","Irish"],["it","Italian"],["ja","Japanese"],["jv","Javanese"],["kn","Kannada"],["kk","Kazakh"],["km","Khmer"],["ko","Korean"],["ku","Kurdish"],["ky","Kyrgyz"],["lo","Lao"],["la","Latin"],["lv","Latvian"],["lt","Lithuanian"],["lb","Luxembourgish"],["mk","Macedonian"],["mg","Malagasy"],["ms","Malay"],["ml","Malayalam"],["mt","Maltese"],["mi","Maori"],["mr","Marathi"],["mn","Mongolian"],["my","Myanmar"],["ne","Nepali"],["no","Norwegian"],["ny","Nyanja"],["or","Odia"],["ps","Pashto"],["fa","Persian"],["pl","Polish"],["pt","Portuguese"],["pa","Punjabi"],["ro","Romanian"],["ru","Russian"],["sm","Samoan"],["gd","Scots Gaelic"],["sr","Serbian"],["st","Sesotho"],["sn","Shona"],["sd","Sindhi"],["si","Sinhala"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["es","Spanish"],["su","Sundanese"],["sw","Swahili"],["sv","Swedish"],["tg","Tajik"],["ta","Tamil"],["te","Telugu"],["th","Thai"],["tr","Turkish"],["uk","Ukrainian"],["ur","Urdu"],["ug","Uyghur"],["uz","Uzbek"],["vi","Vietnamese"],["cy","Welsh"],["xh","Xhosa"],["yi","Yiddish"],["yo","Yoruba"],["zu","Zulu"]
 ];
@@ -309,34 +301,53 @@ function renderHistory(){
  let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}
  const box=document.getElementById("historyList");box.innerHTML="";
  if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}
- d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.lang||""}</small>`;box.appendChild(div)})
+ d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.lang||x.detail?.category||""}</small>`;box.appendChild(div)})
 }
-let currentLinkCategory = "";
-
-const CATEGORY_LABELS = {
-  food:"맛집",
-  route:"길찾기",
-  hotel:"호텔",
-  taxi:"교통",
-  tour:"관광",
-  shopping:"쇼핑",
-  music:"음악",
-  game:"게임",
-  sos:"SOS"
-};
 
 async function openHub(cat){
-  currentLinkCategory = cat;
-  remember("카테고리 선택",{category:cat});
-
-  if(cat === "call"){
-    goPage(3);
-    return;
-  }
-
-  await openLinkModal(cat);
+ currentLinkCategory=cat;
+ remember("카테고리 선택",{category:cat});
+ if(cat==="call"){goPage(3);return}
+ await openLinkModal(cat);
 }
-function openMap(){let url="https://www.google.com/maps";if(lat&&lng)url=`https://www.google.com/maps/search/travel+nearby/@${lat},${lng},15z`;window.open(url,"_blank")}
+async function openLinkModal(cat){
+ document.getElementById("linkModal").style.display="flex";
+ document.getElementById("linkModalTitle").innerText=CATEGORY_LABELS[cat]||cat;
+ const box=document.getElementById("linkModalList");
+ box.innerHTML='<div class="historyItem"><b>불러오는 중...</b></div>';
+ try{
+  const r=await fetch("/api/travel-links/"+encodeURIComponent(cat));
+  const j=await r.json();
+  if(!j.ok||!j.links||!j.links.length){box.innerHTML='<div class="historyItem"><b>등록된 링크 없음</b><small>사용자 링크를 추가하세요.</small></div>';return}
+  box.innerHTML="";
+  j.links.forEach((link,i)=>{
+   const div=document.createElement("div");
+   div.className="historyItem";
+   div.innerHTML=`<b>${i}. ${link.name}</b><small>${link.url}</small><button class="btn blue" style="width:100%;margin-top:8px">열기</button>`;
+   div.querySelector("button").onclick=()=>{remember("링크 열기",{category:cat,name:link.name});window.open(link.url,"_blank")};
+   box.appendChild(div);
+  });
+ }catch(e){box.innerHTML='<div class="historyItem"><b>링크 로드 실패</b></div>'}
+}
+function closeLinkModal(){document.getElementById("linkModal").style.display="none"}
+async function addUserLink(){
+ const name=document.getElementById("userLinkName").value.trim();
+ const url=document.getElementById("userLinkUrl").value.trim();
+ if(!currentLinkCategory||!name||!url){alert("카테고리, 사이트명, URL을 확인하세요.");return}
+ const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("name",name);fd.append("url",url);
+ await fetch("/api/travel-links/add",{method:"POST",body:fd});
+ document.getElementById("userLinkName").value="";document.getElementById("userLinkUrl").value="";
+ openLinkModal(currentLinkCategory);
+}
+async function deleteUserLink(){
+ const idx=document.getElementById("deleteLinkIndex").value.trim();
+ if(!currentLinkCategory||idx===""){alert("삭제 번호를 입력하세요.");return}
+ const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("index",idx);
+ await fetch("/api/travel-links/delete",{method:"POST",body:fd});
+ document.getElementById("deleteLinkIndex").value="";
+ openLinkModal(currentLinkCategory);
+}
+
 function callNumber(n){window.location.href="tel:"+n}
 function callDirect(){callNumber(document.getElementById("phoneInput").value.trim())}
 function manageContact(){alert("연락처 등록/삭제는 다음 단계에서 연결합니다.")}
