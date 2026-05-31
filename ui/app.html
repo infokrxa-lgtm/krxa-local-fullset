@@ -4,97 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
 <title>말대말 Travel V1</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
-.app{width:100vw;max-width:430px;height:100dvh;margin:auto;background:#fff;overflow:hidden;position:relative}
+.app{width:100vw;max-width:430px;height:100dvh;margin:auto;background:white;overflow:hidden;position:relative}
 .pages{display:flex;width:600%;height:100%;transition:transform .28s ease}
-.page{width:100vw;max-width:430px;height:100dvh;flex:0 0 100vw;padding:14px;overflow:hidden}
-.screen{width:100%;height:100%;border-radius:26px;background:white;box-shadow:0 8px 24px rgba(15,23,42,.12);overflow:hidden;position:relative}
-.dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:7px;z-index:10}
-.dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1}
-.dot.active{background:#2563eb;width:22px;border-radius:99px}
+.page{width:100vw;max-width:430px;height:100dvh;flex:0 0 100vw;padding:10px;overflow:hidden}
+.screen{width:100%;height:100%;border-radius:24px;background:white;box-shadow:0 6px 18px rgba(15,23,42,.12);overflow:hidden;position:relative}
+.dots{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:10}
+.dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
+.dot.active{background:#2563eb;width:20px;border-radius:99px}
 
+/* PAGE 1 HOME */
 .home{
   background:
-    linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.38)),
+    linear-gradient(rgba(5,35,90,.10),rgba(5,35,90,.40)),
     url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80");
   background-size:cover;background-position:center;color:white;
 }
-.homeTitle{text-align:center;margin-top:80px}
-.homeTitle h1{font-size:52px;margin:0 0 14px}
-.homeTitle p{font-size:20px;line-height:1.45;margin:0}
-.homeCard{position:absolute;left:18px;right:18px;bottom:90px;background:white;color:#0f172a;border-radius:26px;padding:24px 18px;text-align:center}
-.micCircle{width:104px;height:104px;border-radius:50%;background:#2563eb;color:white;border:16px solid #dbeafe;margin:-72px auto 14px;font-size:42px;display:flex;align-items:center;justify-content:center}
-.startBtn{border:0;background:#2563eb;color:white;border-radius:18px;padding:14px 30px;font-size:19px;font-weight:bold;width:100%;margin-top:12px}
-.homeNav{position:absolute;left:18px;right:18px;bottom:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:white;border-radius:18px;padding:10px;color:#64748b;text-align:center;font-size:12px}
-.homeNav b{display:block;color:#0f172a;font-size:18px}
+.deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.86);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center}
+.homeTitle{text-align:center;margin-top:70px}
+.homeTitle h1{font-size:48px;margin:0 0 10px}
+.homeTitle p{font-size:18px;line-height:1.38;margin:0}
+.homeCard{position:absolute;left:18px;right:18px;bottom:82px;background:white;color:#0f172a;border-radius:24px;padding:20px 16px;text-align:center}
+.micCircle{width:92px;height:92px;border-radius:50%;background:#2563eb;color:white;border:13px solid #dbeafe;margin:-62px auto 10px;font-size:38px;display:flex;align-items:center;justify-content:center}
+.startBtn{border:0;background:#2563eb;color:white;border-radius:16px;padding:12px 26px;font-size:17px;font-weight:bold;width:100%;margin-top:8px}
+.homeNav{position:absolute;left:16px;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;background:white;border-radius:16px;padding:8px;color:#64748b;text-align:center;font-size:11px}
+.homeNav b{display:block;color:#0f172a;font-size:17px}
 
-.header{padding:16px;display:flex;align-items:center;gap:10px}
-.back{border:0;background:#f1f5f9;border-radius:12px;width:38px;height:38px;font-size:22px}
-.title{flex:1;text-align:center;font-size:20px;font-weight:bold}
-.content{padding:0 16px 16px;height:calc(100% - 70px);overflow-y:auto}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:15px 8px;text-align:center;font-weight:bold;box-shadow:0 4px 12px rgba(15,23,42,.06)}
-.card span{display:block;font-size:32px;margin-bottom:6px}
-.card small{display:block;color:#64748b;font-size:12px;margin-top:4px}
-.wide{grid-column:1/3}
+/* COMMON */
+.header{height:52px;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.back{border:0;background:#f1f5f9;border-radius:10px;width:34px;height:34px;font-size:20px}
+.title{flex:1;text-align:center;font-size:18px;font-weight:bold}
+.content{padding:0 12px 12px;height:calc(100% - 52px);overflow:hidden}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:15px;padding:10px 6px;text-align:center;font-weight:bold;box-shadow:0 3px 8px rgba(15,23,42,.05);min-height:70px}
+.card span{display:block;font-size:25px;margin-bottom:4px}
+.card small{display:block;color:#64748b;font-size:10.5px;margin-top:3px}
+.wide{grid-column:1/3;min-height:54px}
+.hubHero{height:58px;padding:15px 14px 4px;text-align:left}
+.hubHero h2{margin:0;font-size:21px}
+.hubHero p{margin:4px 0 0;color:#64748b;font-size:12px}
 
-.hubHero{padding:20px 18px 8px;text-align:left}
-.hubHero h2{margin:0;font-size:25px}
-.hubHero p{margin:6px 0 0;color:#64748b;font-size:14px}
-
-.lang{display:flex;gap:7px;margin-bottom:8px}
-.lang button{flex:1;border:0;background:#e5e7eb;border-radius:11px;padding:9px 2px;font-weight:bold;font-size:13px}
+/* TRANSLATE */
+.lang{display:flex;gap:6px;margin-bottom:6px}
+.lang button{flex:1;border:0;background:#e5e7eb;border-radius:10px;padding:8px 2px;font-weight:bold;font-size:12px}
 .lang button.active{background:#2563eb;color:white}
-select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;padding:9px;font-size:14px;margin:5px 0}
-.autoBar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:10px 12px;margin:8px 0}
-.toggle{width:56px;height:30px;border-radius:999px;background:#cbd5e1;position:relative}
+select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:8px;font-size:13px;margin:4px 0}
+.autoBar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e5e7eb;border-radius:13px;padding:8px 10px;margin:6px 0;font-size:13px}
+.toggle{width:52px;height:28px;border-radius:999px;background:#cbd5e1;position:relative}
 .toggle.on{background:#2563eb}
-.knob{width:24px;height:24px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.2s}
-.toggle.on .knob{left:29px}
-.micWrap{position:relative;width:144px;height:144px;margin:14px auto 8px}
-.listenCircle{width:144px;height:144px;border-radius:50%;background:#2563eb;color:white;border:23px solid #dbeafe;font-size:54px;display:flex;align-items:center;justify-content:center}
-.flowDot{position:absolute;left:5px;top:6px;width:18px;height:18px;border-radius:50%;background:#94a3b8;border:3px solid white;box-shadow:0 0 0 0 rgba(37,99,235,.45)}
+.knob{width:22px;height:22px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.2s}
+.toggle.on .knob{left:27px}
+.micWrap{position:relative;width:116px;height:116px;margin:8px auto 4px}
+.listenCircle{width:116px;height:116px;border-radius:50%;background:#2563eb;color:white;border:18px solid #dbeafe;font-size:44px;display:flex;align-items:center;justify-content:center}
+.flowDot{position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#94a3b8;border:3px solid white}
 .flowDot.listen{background:#2563eb;animation:heartbeat 1s infinite}
 .flowDot.translate{background:#f59e0b;animation:heartbeat .75s infinite}
 .flowDot.speak{background:#16a34a;animation:heartbeat .65s infinite}
-.flowDot.error{background:#dc2626;animation:none}
-@keyframes heartbeat{
-  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,.45)}
-  50%{transform:scale(1.35);box-shadow:0 0 0 8px rgba(37,99,235,0)}
-  100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0)}
-}
-.status{text-align:center;font-weight:bold;font-size:18px;margin:6px 0}
-.sub{text-align:center;color:#64748b;font-size:12px;margin-bottom:8px}
-.msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:11px;margin:7px 0;text-align:left}
-.msg b{display:block;margin-bottom:5px}
-.actionRow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
-.btn{border:0;border-radius:13px;padding:12px;font-size:16px;font-weight:bold;color:white}
+.flowDot.error{background:#dc2626}
+@keyframes heartbeat{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+.status{text-align:center;font-weight:bold;font-size:16px;margin:4px 0}
+.sub{text-align:center;color:#64748b;font-size:11px;margin-bottom:5px}
+.msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:8px;margin:5px 0;text-align:left;font-size:13px;min-height:44px}
+.msg b{display:block;margin-bottom:3px}
+.actionRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}
+.btn{border:0;border-radius:12px;padding:10px;font-size:14px;font-weight:bold;color:white}
 .green{background:#16a34a}.blue{background:#2563eb}.red{background:#dc2626}
 
-.tabs{display:flex;background:#f1f5f9;border-radius:14px;padding:4px;margin-bottom:14px}
-.tabs button{flex:1;border:0;border-radius:10px;background:transparent;padding:10px;font-weight:bold}
+/* CALL */
+.tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:3px;margin-bottom:8px}
+.tabs button{flex:1;border:0;border-radius:9px;background:transparent;padding:8px;font-weight:bold;font-size:13px}
 .tabs button.active{background:white;color:#2563eb}
-.contact{display:flex;align-items:center;gap:12px;border-bottom:1px solid #e5e7eb;padding:13px 0;text-align:left}
-.contactIcon{font-size:26px}
-.contactInfo{flex:1}
-.contactInfo b{display:block}
-.contactInfo small{color:#64748b}
-.callBtn{border:0;background:#16a34a;color:white;border-radius:50%;width:42px;height:42px;font-size:20px}
+.contact{display:flex;align-items:center;gap:10px;border-bottom:1px solid #e5e7eb;padding:9px 0;text-align:left}
+.contactIcon{font-size:22px}.contactInfo{flex:1}.contactInfo b{display:block;font-size:14px}.contactInfo small{color:#64748b;font-size:11px}
+.callBtn{border:0;background:#16a34a;color:white;border-radius:50%;width:38px;height:38px;font-size:18px}
 
-.historyItem{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:10px 0;text-align:left}
-.historyItem b{display:block}
-.historyItem small{color:#64748b}
+/* HISTORY */
+.historyItem{background:white;border:1px solid #e5e7eb;border-radius:13px;padding:11px;margin:8px 0;text-align:left}
+.historyItem b{display:block;font-size:14px}.historyItem small{color:#64748b;font-size:11px}
 
-.sosTop{background:#dc2626;color:white;padding:32px 20px;text-align:center;border-radius:0 0 28px 28px}
-.sosTop h2{font-size:34px;margin:0}
-.offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:14px;margin-top:14px}
-.phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:11px;margin:8px 0;text-align:left}
+/* SOS */
+.sosTop{height:96px;background:#dc2626;color:white;padding:24px 18px;text-align:center;border-radius:0 0 24px 24px}
+.sosTop h2{font-size:30px;margin:0}
+.offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:10px;margin-top:10px;font-size:13px}
+.phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px;margin:6px 0;text-align:left;font-size:12px}
 
-.modal{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
-.modalBox{width:100%;max-height:86%;overflow:auto;background:white;border-radius:22px;padding:18px}
+/* MODAL */
+.modal{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+.modalBox{width:100%;max-height:88%;overflow:auto;background:white;border-radius:20px;padding:16px}
 .modalHead{display:flex;justify-content:space-between;align-items:center}
 .closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
 </style>
@@ -106,14 +104,12 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
 
     <section class="page">
       <div class="screen home">
-        <div class="homeTitle">
-          <h1>말대말</h1>
-          <p>어디서든, 누구와도<br>바로 통역!</p>
-        </div>
+        <div class="deviceBar" id="deviceContextBar">위치 확인 중 · 시간 확인 중</div>
+        <div class="homeTitle"><h1>말대말</h1><p>어디서든, 누구와도<br>바로 통역!</p></div>
         <div class="homeCard">
           <div class="micCircle">🎙️</div>
-          <h2>통역 시작하기</h2>
-          <p style="color:#64748b">말하면 바로 번역해드려요</p>
+          <h2 style="margin:0">통역 시작하기</h2>
+          <p style="color:#64748b;margin:6px 0">말하면 바로 번역해드려요</p>
           <button class="startBtn" onclick="goPage(2)">통역 시작</button>
         </div>
         <div class="homeNav">
@@ -127,23 +123,21 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
 
     <section class="page">
       <div class="screen">
-        <div class="hubHero">
-          <h2>지금 무엇이 필요하세요?</h2>
-          <p>원하는 서비스를 선택하세요</p>
-        </div>
-        <div class="content" style="height:calc(100% - 72px)">
+        <div class="hubHero"><h2>지금 무엇이 필요하세요?</h2><p>위치 기반 여행 실행 허브</p></div>
+        <div class="content" style="height:calc(100% - 58px)">
           <div class="grid">
-            <div class="card" onclick="openHub('food')"><span>🍜</span>맛집찾기<small>식당·카페</small></div>
-            <div class="card" onclick="openHub('route')"><span>🗺️</span>길찾기<small>지도·경로</small></div>
+            <div class="card" onclick="openHub('airport')"><span>✈️</span>공항<small>입국·환전·유심</small></div>
             <div class="card" onclick="openHub('hotel')"><span>🏨</span>호텔<small>예약·체크인</small></div>
-            <div class="card" onclick="openHub('taxi')"><span>🚕</span>교통<small>택시·대중교통</small></div>
-            <div class="card" onclick="goPage(2)"><span>🎙️</span>통역<small>실시간 통역</small></div>
-            <div class="card" onclick="goPage(3)"><span>📞</span>통화<small>전화 연결</small></div>
-            <div class="card" onclick="openHub('tour')"><span>📷</span>관광<small>YouTube·TikTok·사진</small></div>
-            <div class="card" onclick="openHub('shopping')"><span>🛍️</span>쇼핑<small>구매·환불</small></div>
+            <div class="card" onclick="openHub('food')"><span>🍜</span>식당<small>메뉴·음식정보</small></div>
+            <div class="card" onclick="openHub('taxi')"><span>🚕</span>교통<small>택시·이동</small></div>
+            <div class="card" onclick="openHub('route')"><span>🗺️</span>길찾기<small>GPS·지도</small></div>
+            <div class="card" onclick="openHub('tour')"><span>📷</span>관광<small>YouTube·TikTok</small></div>
+            <div class="card" onclick="openHub('shopping')"><span>🛍️</span>쇼핑<small>상품·라벨</small></div>
             <div class="card" onclick="openHub('music')"><span>🎵</span>음악<small>플레이리스트</small></div>
-            <div class="card" onclick="goPage(5)"><span>🆘</span>SOS<small>긴급 도움</small></div>
-            <div class="card wide" onclick="goPage(2)"><span>💬</span>자유대화<small>상황 구분 없이 바로 통역</small></div>
+            <div class="card" onclick="goPage(2)"><span>🎙️</span>통역<small>자동대화</small></div>
+            <div class="card" onclick="goPage(3)"><span>📞</span>통화<small>전화·메신저</small></div>
+            <div class="card" onclick="openMedia('photo')"><span>📷</span>사진<small>기기 저장</small></div>
+            <div class="card" onclick="openMedia('video')"><span>🎥</span>동영상<small>기기 저장</small></div>
           </div>
         </div>
       </div>
@@ -153,36 +147,15 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">실시간 통역</div></div>
         <div class="content">
-          <div class="lang">
-            <button id="l_auto" onclick="setLang('auto')">자동</button>
-            <button id="l_en" onclick="setLang('en')">영어</button>
-            <button id="l_ja" onclick="setLang('ja')">일본어</button>
-            <button id="l_zh" onclick="setLang('zh')">중국어</button>
-          </div>
-          <select id="langMore" onchange="setLang(this.value)">
-            <option value="">기타 언어 선택</option>
-          </select>
-
-          <div class="autoBar">
-            <b>자동대화</b>
-            <div id="autoToggle" class="toggle" onclick="toggleAuto()"><div class="knob"></div></div>
-          </div>
-
-          <div class="micWrap">
-            <div id="flowDot" class="flowDot"></div>
-            <div class="listenCircle" onclick="recordVoice()">🎙️</div>
-          </div>
-
+          <div class="lang"><button id="l_auto" onclick="setLang('auto')">자동</button><button id="l_en" onclick="setLang('en')">영어</button><button id="l_ja" onclick="setLang('ja')">일본어</button><button id="l_zh" onclick="setLang('zh')">중국어</button></div>
+          <select id="langMore" onchange="setLang(this.value)"><option value="">기타 언어 선택</option></select>
+          <div class="autoBar"><b>자동대화</b><div id="autoToggle" class="toggle" onclick="toggleAuto()"><div class="knob"></div></div></div>
+          <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" onclick="recordVoice()">🎙️</div></div>
           <div class="status" id="status">대기 중</div>
           <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
-
           <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
           <div class="msg"><b>번역</b><span id="resultText">-</span></div>
-
-          <div class="actionRow">
-            <button class="btn blue" onclick="replayTTS()">🔊 다시듣기</button>
-            <button class="btn red" onclick="stopAuto()">종료</button>
-          </div>
+          <div class="actionRow"><button class="btn blue" onclick="replayTTS()">🔊 다시듣기</button><button class="btn red" onclick="stopAuto()">종료</button></div>
         </div>
       </div>
     </section>
@@ -191,12 +164,13 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">통화 연결</div></div>
         <div class="content">
-          <div class="tabs"><button class="active">최근 통화</button><button onclick="manageContact()">연락처 관리</button></div>
+          <div class="tabs"><button class="active">전화</button><button onclick="openMessenger('whatsapp')">WhatsApp</button><button onclick="openMessenger('wechat')">WeChat</button></div>
           <div class="contact"><div class="contactIcon">🏨</div><div class="contactInfo"><b>호텔 전화</b><small>등록 가능</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
           <div class="contact"><div class="contactIcon">🍜</div><div class="contactInfo"><b>식당 전화</b><small>예약·문의</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
           <div class="contact"><div class="contactIcon">🚕</div><div class="contactInfo"><b>택시 전화</b><small>위치 확인</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
           <input id="phoneInput" placeholder="전화번호 입력">
           <button class="btn green" style="width:100%" onclick="callDirect()">📞 전화 걸기</button>
+          <button class="btn blue" style="width:100%;margin-top:6px" onclick="manageContact()">연락처 등록/삭제</button>
         </div>
       </div>
     </section>
@@ -204,21 +178,19 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
     <section class="page">
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(0)">‹</button><div class="title">이용내역</div></div>
-        <div class="content" id="historyList">
-          <div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>
-        </div>
+        <div class="content" id="historyList"><div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div></div>
       </div>
     </section>
 
     <section class="page">
       <div class="screen">
-        <div class="sosTop"><h2>SOS</h2><p style="color:white">긴급 상황 도움 연결</p></div>
-        <div class="content">
+        <div class="sosTop"><h2>SOS</h2><p style="color:white;margin:4px 0">위치 기반 긴급 도움</p></div>
+        <div class="content" style="height:calc(100% - 96px)">
           <div class="grid">
             <div class="card" onclick="window.open('tel:112')"><span>👮</span>경찰<small>112</small></div>
             <div class="card" onclick="window.open('tel:119')"><span>🚑</span>구급<small>119</small></div>
-            <div class="card" onclick="window.open('https://www.google.com/maps/search/hospital','_blank')"><span>🏥</span>병원<small>지도 연결</small></div>
-            <div class="card" onclick="window.open('https://www.google.com/search?q=nearest+embassy','_blank')"><span>🏛️</span>대사관<small>검색 연결</small></div>
+            <div class="card" onclick="openLocationSearch('hospital')"><span>🏥</span>병원<small>주변 검색</small></div>
+            <div class="card" onclick="openLocationSearch('embassy')"><span>🏛️</span>대사관<small>주변 검색</small></div>
           </div>
           <div class="offline">
             <b>OFFLINE 생존 문장</b>
@@ -230,164 +202,87 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
         </div>
       </div>
     </section>
-
   </div>
 
   <div class="modal" id="linkModal">
     <div class="modalBox">
-      <div class="modalHead">
-        <h3 id="linkModalTitle">연결</h3>
-        <button class="closeBtn" onclick="closeLinkModal()">닫기</button>
-      </div>
-
-      <div id="linkModalList"></div>
-
-      <hr>
-
+      <div class="modalHead"><h3 id="linkModalTitle">연결</h3><button class="closeBtn" onclick="closeLinkModal()">닫기</button></div>
+      <div id="linkModalList"></div><hr>
       <b>내 링크 추가</b>
       <input id="userLinkName" placeholder="사이트명">
       <input id="userLinkUrl" placeholder="https://...">
       <button class="btn blue" style="width:100%;margin-top:6px" onclick="addUserLink()">추가</button>
-
       <input id="deleteLinkIndex" placeholder="삭제 번호 예: 0">
       <button class="btn red" style="width:100%;margin-top:6px" onclick="deleteUserLink()">삭제</button>
     </div>
   </div>
 
+  <input id="cameraPhoto" type="file" accept="image/*" capture="environment" style="display:none">
+  <input id="cameraVideo" type="file" accept="video/*" capture="environment" style="display:none">
   <div class="dots" id="dots"></div>
 </div>
 
 <script>
-let currentPage=0,totalPages=6,startX=0,lastAudioText="",autoConversation=false,autoRunning=false;
+let currentPage=0,totalPages=6,startX=0,lastAudioText="",autoConversation=false,autoRunning=false,currentLinkCategory="";
 let sessionId=localStorage.getItem("krxa_session_id")||("session-"+Math.random().toString(16).slice(2,10));
 localStorage.setItem("krxa_session_id",sessionId);
 let targetLang=localStorage.getItem("krxa_language_mode")||"auto";
-let lat="",lng="",currentLinkCategory="";
+let deviceContext={date:"",time:"",locale:navigator.language||"",lat:"",lng:"",gpsReady:false};
 
-const CATEGORY_LABELS={food:"맛집",route:"길찾기",hotel:"호텔",taxi:"교통",tour:"관광",shopping:"쇼핑",music:"음악",game:"게임",sos:"SOS"};
-const LANGS=[
-["af","Afrikaans"],["sq","Albanian"],["am","Amharic"],["ar","Arabic"],["hy","Armenian"],["az","Azerbaijani"],["eu","Basque"],["be","Belarusian"],["bn","Bengali"],["bs","Bosnian"],["bg","Bulgarian"],["ca","Catalan"],["ceb","Cebuano"],["zh","Chinese"],["co","Corsican"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["en","English"],["eo","Esperanto"],["et","Estonian"],["fi","Finnish"],["fr","French"],["fy","Frisian"],["gl","Galician"],["ka","Georgian"],["de","German"],["el","Greek"],["gu","Gujarati"],["ht","Haitian Creole"],["ha","Hausa"],["haw","Hawaiian"],["he","Hebrew"],["hi","Hindi"],["hmn","Hmong"],["hu","Hungarian"],["is","Icelandic"],["ig","Igbo"],["id","Indonesian"],["ga","Irish"],["it","Italian"],["ja","Japanese"],["jv","Javanese"],["kn","Kannada"],["kk","Kazakh"],["km","Khmer"],["ko","Korean"],["ku","Kurdish"],["ky","Kyrgyz"],["lo","Lao"],["la","Latin"],["lv","Latvian"],["lt","Lithuanian"],["lb","Luxembourgish"],["mk","Macedonian"],["mg","Malagasy"],["ms","Malay"],["ml","Malayalam"],["mt","Maltese"],["mi","Maori"],["mr","Marathi"],["mn","Mongolian"],["my","Myanmar"],["ne","Nepali"],["no","Norwegian"],["ny","Nyanja"],["or","Odia"],["ps","Pashto"],["fa","Persian"],["pl","Polish"],["pt","Portuguese"],["pa","Punjabi"],["ro","Romanian"],["ru","Russian"],["sm","Samoan"],["gd","Scots Gaelic"],["sr","Serbian"],["st","Sesotho"],["sn","Shona"],["sd","Sindhi"],["si","Sinhala"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["es","Spanish"],["su","Sundanese"],["sw","Swahili"],["sv","Swedish"],["tg","Tajik"],["ta","Tamil"],["te","Telugu"],["th","Thai"],["tr","Turkish"],["uk","Ukrainian"],["ur","Urdu"],["ug","Uyghur"],["uz","Uzbek"],["vi","Vietnamese"],["cy","Welsh"],["xh","Xhosa"],["yi","Yiddish"],["yo","Yoruba"],["zu","Zulu"]
-];
+const CATEGORY_LABELS={airport:"공항",food:"식당",route:"길찾기",hotel:"호텔",taxi:"교통",tour:"관광",shopping:"쇼핑",music:"음악"};
+const LANGS=[["af","Afrikaans"],["ar","Arabic"],["bn","Bengali"],["zh","Chinese"],["nl","Dutch"],["en","English"],["fr","French"],["de","German"],["hi","Hindi"],["id","Indonesian"],["it","Italian"],["ja","Japanese"],["ko","Korean"],["ms","Malay"],["pt","Portuguese"],["ru","Russian"],["es","Spanish"],["th","Thai"],["tr","Turkish"],["uk","Ukrainian"],["vi","Vietnamese"]];
 
-function initLangs(){
- const s=document.getElementById("langMore");
- LANGS.forEach(([c,n])=>{let o=document.createElement("option");o.value=c;o.textContent=n;s.appendChild(o)});
-}
-function render(){
- document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;
- const dots=document.getElementById("dots");dots.innerHTML="";
- for(let i=0;i<totalPages;i++){let d=document.createElement("div");d.className="dot"+(i===currentPage?" active":"");d.onclick=()=>goPage(i);dots.appendChild(d)}
-}
+function initLangs(){const s=document.getElementById("langMore");LANGS.forEach(([c,n])=>{let o=document.createElement("option");o.value=c;o.textContent=n;s.appendChild(o)})}
+function render(){document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;const dots=document.getElementById("dots");dots.innerHTML="";for(let i=0;i<totalPages;i++){let d=document.createElement("div");d.className="dot"+(i===currentPage?" active":"");d.onclick=()=>goPage(i);dots.appendChild(d)}}
 function goPage(i){currentPage=(i+totalPages)%totalPages;render()}
 function nextPage(){goPage(currentPage+1)}
 function prevPage(){goPage(currentPage-1)}
 app.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
 app.addEventListener("touchend",e=>{let dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<70)return;dx<0?nextPage():prevPage()});
 
-function setFlowState(state,msg){
- const d=document.getElementById("flowDot");
- d.className="flowDot "+(state||"");
- if(msg)document.getElementById("flow").innerText=msg;
+function updateDeviceTime(){
+ const now=new Date();
+ deviceContext.date=now.toLocaleDateString("ko-KR",{month:"2-digit",day:"2-digit",weekday:"short"});
+ deviceContext.time=now.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+ const el=document.getElementById("deviceContextBar");
+ if(el)el.innerText=`📍 ${deviceContext.gpsReady?"위치 확인됨":"위치 확인 중"} · ${deviceContext.date} · ${deviceContext.time} · ${deviceContext.locale}`;
 }
+function initDeviceContext(){
+ updateDeviceTime();setInterval(updateDeviceTime,30000);
+ if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{deviceContext.lat=p.coords.latitude;deviceContext.lng=p.coords.longitude;deviceContext.gpsReady=true;updateDeviceTime();remember("기기 위치 확인",{category:"GPS"})},()=>{deviceContext.gpsReady=false;updateDeviceTime()},{enableHighAccuracy:true,timeout:10000,maximumAge:30000})}
+}
+function buildMapSearchUrl(keyword){return deviceContext.gpsReady?`https://www.google.com/maps/search/${encodeURIComponent(keyword)}/@${deviceContext.lat},${deviceContext.lng},15z`:`https://www.google.com/maps/search/${encodeURIComponent(keyword)}`}
+function openLocationSearch(keyword){window.open(buildMapSearchUrl(keyword),"_blank")}
+
+function setFlowState(state,msg){const d=document.getElementById("flowDot");d.className="flowDot "+(state||"");if(msg)document.getElementById("flow").innerText=msg}
 function setLang(v){if(!v)return;targetLang=v;localStorage.setItem("krxa_language_mode",v);document.querySelectorAll(".lang button").forEach(b=>b.classList.remove("active"));let el=document.getElementById("l_"+v);if(el)el.classList.add("active")}
 function toggleAuto(){autoConversation=!autoConversation;document.getElementById("autoToggle").className="toggle"+(autoConversation?" on":"")}
 function stopAuto(){autoRunning=false;setFlowState("","자동대화 종료");document.getElementById("status").innerText="대기 중"}
 
-function remember(kind,detail){
- let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}
- d.push({time:new Date().toISOString(),kind,detail});localStorage.setItem("krxa_usage_history",JSON.stringify(d.slice(-100)));renderHistory()
-}
-function renderHistory(){
- let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}
- const box=document.getElementById("historyList");box.innerHTML="";
- if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}
- d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.lang||x.detail?.category||""}</small>`;box.appendChild(div)})
-}
+function remember(kind,detail){let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}d.push({time:new Date().toISOString(),kind,detail});localStorage.setItem("krxa_usage_history",JSON.stringify(d.slice(-100)));renderHistory()}
+function renderHistory(){let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}const box=document.getElementById("historyList");box.innerHTML="";if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.category||x.detail?.lang||""}</small>`;box.appendChild(div)})}
 
-async function openHub(cat){
- currentLinkCategory=cat;
- remember("카테고리 선택",{category:cat});
- if(cat==="call"){goPage(3);return}
- await openLinkModal(cat);
-}
+async function openHub(cat){currentLinkCategory=cat;remember("카테고리 선택",{category:cat});await openLinkModal(cat)}
 async function openLinkModal(cat){
- document.getElementById("linkModal").style.display="flex";
- document.getElementById("linkModalTitle").innerText=CATEGORY_LABELS[cat]||cat;
- const box=document.getElementById("linkModalList");
- box.innerHTML='<div class="historyItem"><b>불러오는 중...</b></div>';
- try{
-  const r=await fetch("/api/travel-links/"+encodeURIComponent(cat));
-  const j=await r.json();
-  if(!j.ok||!j.links||!j.links.length){box.innerHTML='<div class="historyItem"><b>등록된 링크 없음</b><small>사용자 링크를 추가하세요.</small></div>';return}
-  box.innerHTML="";
-  j.links.forEach((link,i)=>{
-   const div=document.createElement("div");
-   div.className="historyItem";
-   div.innerHTML=`<b>${i}. ${link.name}</b><small>${link.url}</small><button class="btn blue" style="width:100%;margin-top:8px">열기</button>`;
-   div.querySelector("button").onclick=()=>{remember("링크 열기",{category:cat,name:link.name});window.open(link.url,"_blank")};
-   box.appendChild(div);
-  });
- }catch(e){box.innerHTML='<div class="historyItem"><b>링크 로드 실패</b></div>'}
+ document.getElementById("linkModal").style.display="flex";document.getElementById("linkModalTitle").innerText=CATEGORY_LABELS[cat]||cat;
+ const box=document.getElementById("linkModalList");box.innerHTML="";
+ if(["airport","food","hotel","taxi","tour","shopping"].includes(cat)){box.innerHTML+='<div class="historyItem"><b>📷 사진찍기 / 🎥 동영상촬영</b><small>사용자 기기에 저장됩니다.</small><button class="btn blue" style="width:48%;margin-top:8px" onclick="openMedia(\'photo\')">사진</button> <button class="btn blue" style="width:48%;margin-top:8px" onclick="openMedia(\'video\')">동영상</button></div>'}
+ try{const r=await fetch("/api/travel-links/"+encodeURIComponent(cat));const j=await r.json();if(j.ok&&j.links){j.links.forEach((link,i)=>{const div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${i}. ${link.name}</b><small>${link.url}</small><button class="btn blue" style="width:100%;margin-top:8px">열기</button>`;div.querySelector("button").onclick=()=>{remember("링크 열기",{category:cat});window.open(link.url,"_blank")};box.appendChild(div)})}}catch(e){}
 }
 function closeLinkModal(){document.getElementById("linkModal").style.display="none"}
-async function addUserLink(){
- const name=document.getElementById("userLinkName").value.trim();
- const url=document.getElementById("userLinkUrl").value.trim();
- if(!currentLinkCategory||!name||!url){alert("카테고리, 사이트명, URL을 확인하세요.");return}
- const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("name",name);fd.append("url",url);
- await fetch("/api/travel-links/add",{method:"POST",body:fd});
- document.getElementById("userLinkName").value="";document.getElementById("userLinkUrl").value="";
- openLinkModal(currentLinkCategory);
-}
-async function deleteUserLink(){
- const idx=document.getElementById("deleteLinkIndex").value.trim();
- if(!currentLinkCategory||idx===""){alert("삭제 번호를 입력하세요.");return}
- const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("index",idx);
- await fetch("/api/travel-links/delete",{method:"POST",body:fd});
- document.getElementById("deleteLinkIndex").value="";
- openLinkModal(currentLinkCategory);
-}
-
+async function addUserLink(){const name=document.getElementById("userLinkName").value.trim();const url=document.getElementById("userLinkUrl").value.trim();if(!currentLinkCategory||!name||!url)return alert("입력 확인");const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("name",name);fd.append("url",url);await fetch("/api/travel-links/add",{method:"POST",body:fd});openLinkModal(currentLinkCategory)}
+async function deleteUserLink(){const idx=document.getElementById("deleteLinkIndex").value.trim();if(!currentLinkCategory||idx==="")return alert("삭제 번호 입력");const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("index",idx);await fetch("/api/travel-links/delete",{method:"POST",body:fd});openLinkModal(currentLinkCategory)}
+function openMedia(type){document.getElementById(type==="photo"?"cameraPhoto":"cameraVideo").click();remember(type==="photo"?"사진 촬영":"동영상 촬영",{category:currentLinkCategory||"공통"})}
+function openMessenger(type){window.open(type==="whatsapp"?"https://wa.me/":"https://www.wechat.com","_blank")}
 function callNumber(n){window.location.href="tel:"+n}
 function callDirect(){callNumber(document.getElementById("phoneInput").value.trim())}
 function manageContact(){alert("연락처 등록/삭제는 다음 단계에서 연결합니다.")}
 
-async function translate(text,source){
- document.getElementById("sourceText").innerText=text;
- document.getElementById("status").innerText="통역 처리 중...";
- setFlowState("translate","번역 중");
- const fd=new FormData();fd.append("text",text);fd.append("service","travel");fd.append("session_id",sessionId);fd.append("source",source);fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||"");
- const r=await fetch("/api/translate",{method:"POST",body:fd});const j=await r.json();
- document.getElementById("resultText").innerText=j.result||"";lastAudioText=j.result||"";document.getElementById("status").innerText="통역 완료";setFlowState("speak","음성 출력 중");
- remember("통역 이용",{lang:targetLang});await playTTS(lastAudioText);
- setFlowState("","대기 중");
- if(autoConversation&&autoRunning){setTimeout(()=>recordVoice(true),800)}
-}
+async function translate(text,source){document.getElementById("sourceText").innerText=text;document.getElementById("status").innerText="통역 처리 중...";setFlowState("translate","번역 중");const fd=new FormData();fd.append("text",text);fd.append("service","travel");fd.append("session_id",sessionId);fd.append("source",source);fd.append("target_language",targetLang);fd.append("lat",deviceContext.lat);fd.append("lng",deviceContext.lng);fd.append("device_locale",deviceContext.locale);const r=await fetch("/api/translate",{method:"POST",body:fd});const j=await r.json();document.getElementById("resultText").innerText=j.result||"";lastAudioText=j.result||"";document.getElementById("status").innerText="통역 완료";remember("통역 이용",{lang:targetLang});await playTTS(lastAudioText);setFlowState("","대기 중");if(autoConversation&&autoRunning)setTimeout(()=>recordVoice(),800)}
 async function playTTS(text){if(!text)return;try{const fd=new FormData();fd.append("text",text);fd.append("session_id",sessionId);const r=await fetch("/api/tts",{method:"POST",body:fd});const b=await r.blob();if(b.size>100){let a=new Audio(URL.createObjectURL(b));await a.play()}}catch(e){}}
 function replayTTS(){playTTS(lastAudioText)}
-async function recordVoice(loopMode=false){
- goPage(2);
- autoRunning=true;
- document.getElementById("status").innerText="말씀하세요";
- setFlowState("listen","듣는 중");
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  const ac=new AudioContext(),src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=2048;src.connect(an);
-  const data=new Uint8Array(an.fftSize),mr=new MediaRecorder(stream);let chunks=[],started=false,lastVoice=Date.now(),begin=Date.now();
-  mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
-  mr.onstop=async()=>{
-   stream.getTracks().forEach(t=>t.stop());try{ac.close()}catch(e){}
-   const blob=new Blob(chunks,{type:"audio/webm"});const fd=new FormData();fd.append("file",blob,"voice.webm");fd.append("session_id",sessionId);fd.append("duration",String(Math.round((Date.now()-begin)/1000)));fd.append("user_language_mode","auto");fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||"");
-   const r=await fetch("/api/stt",{method:"POST",body:fd});const j=await r.json();
-   if(j.ok&&j.text)translate(j.text,"voice");else{document.getElementById("status").innerText="음성 인식 실패";setFlowState("error","다시 말해주세요");if(autoConversation&&autoRunning)setTimeout(()=>recordVoice(true),1000)}
-  };
-  mr.start(250);
-  function loop(){an.getByteTimeDomainData(data);let sum=0;for(let v of data)sum+=Math.abs(v-128);let vol=sum/data.length,now=Date.now();if(vol>18){started=true;lastVoice=now}if(started&&now-begin>900&&now-lastVoice>1300){mr.stop();return}if(mr.state!=="inactive")requestAnimationFrame(loop)}
-  loop();
- }catch(e){document.getElementById("status").innerText="마이크 권한 필요";setFlowState("error","마이크 오류")}
-}
-if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{lat=p.coords.latitude;lng=p.coords.longitude},()=>{}, {enableHighAccuracy:true,timeout:8000,maximumAge:30000})}
-initLangs();setLang(targetLang);render();renderHistory();
+async function recordVoice(){goPage(2);autoRunning=true;document.getElementById("status").innerText="말씀하세요";setFlowState("listen","듣는 중");try{const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});const ac=new AudioContext(),src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=2048;src.connect(an);const data=new Uint8Array(an.fftSize),mr=new MediaRecorder(stream);let chunks=[],started=false,lastVoice=Date.now(),begin=Date.now();mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};mr.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());try{ac.close()}catch(e){}const blob=new Blob(chunks,{type:"audio/webm"});const fd=new FormData();fd.append("file",blob,"voice.webm");fd.append("session_id",sessionId);fd.append("duration",String(Math.round((Date.now()-begin)/1000)));fd.append("user_language_mode","auto");fd.append("target_language",targetLang);fd.append("lat",deviceContext.lat);fd.append("lng",deviceContext.lng);fd.append("device_locale",deviceContext.locale);const r=await fetch("/api/stt",{method:"POST",body:fd});const j=await r.json();if(j.ok&&j.text)translate(j.text,"voice");else{document.getElementById("status").innerText="음성 인식 실패";setFlowState("error","다시 말해주세요")}};mr.start(250);function loop(){an.getByteTimeDomainData(data);let sum=0;for(let v of data)sum+=Math.abs(v-128);let vol=sum/data.length,now=Date.now();if(vol>18){started=true;lastVoice=now}if(started&&now-begin>900&&now-lastVoice>1300){mr.stop();return}if(mr.state!=="inactive")requestAnimationFrame(loop)}loop()}catch(e){document.getElementById("status").innerText="마이크 권한 필요";setFlowState("error","마이크 오류")}}
+initLangs();setLang(targetLang);render();renderHistory();initDeviceContext();
 </script>
 </body>
 </html>
