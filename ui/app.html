@@ -15,15 +15,14 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
 .dot.active{background:#2563eb;width:20px;border-radius:99px}
 
-/* PAGE 1 HOME */
 .home{
   background:
-    linear-gradient(rgba(5,35,90,.10),rgba(5,35,90,.40)),
+    linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),
     url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80");
   background-size:cover;background-position:center;color:white;
 }
-.deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.86);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center}
-.homeTitle{text-align:center;margin-top:70px}
+.deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.88);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center}
+.homeTitle{text-align:center;margin-top:72px}
 .homeTitle h1{font-size:48px;margin:0 0 10px}
 .homeTitle p{font-size:18px;line-height:1.38;margin:0}
 .homeCard{position:absolute;left:18px;right:18px;bottom:82px;background:white;color:#0f172a;border-radius:24px;padding:20px 16px;text-align:center}
@@ -32,7 +31,6 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .homeNav{position:absolute;left:16px;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;background:white;border-radius:16px;padding:8px;color:#64748b;text-align:center;font-size:11px}
 .homeNav b{display:block;color:#0f172a;font-size:17px}
 
-/* COMMON */
 .header{height:52px;padding:10px 12px;display:flex;align-items:center;gap:8px}
 .back{border:0;background:#f1f5f9;border-radius:10px;width:34px;height:34px;font-size:20px}
 .title{flex:1;text-align:center;font-size:18px;font-weight:bold}
@@ -45,56 +43,7 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .hubHero{height:58px;padding:15px 14px 4px;text-align:left}
 .hubHero h2{margin:0;font-size:21px}
 .hubHero p{margin:4px 0 0;color:#64748b;font-size:12px}
-
-/* TRANSLATE */
-.lang{display:flex;gap:6px;margin-bottom:6px}
-.lang button{flex:1;border:0;background:#e5e7eb;border-radius:10px;padding:8px 2px;font-weight:bold;font-size:12px}
-.lang button.active{background:#2563eb;color:white}
-select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:8px;font-size:13px;margin:4px 0}
-.autoBar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e5e7eb;border-radius:13px;padding:8px 10px;margin:6px 0;font-size:13px}
-.toggle{width:52px;height:28px;border-radius:999px;background:#cbd5e1;position:relative}
-.toggle.on{background:#2563eb}
-.knob{width:22px;height:22px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.2s}
-.toggle.on .knob{left:27px}
-.micWrap{position:relative;width:116px;height:116px;margin:8px auto 4px}
-.listenCircle{width:116px;height:116px;border-radius:50%;background:#2563eb;color:white;border:18px solid #dbeafe;font-size:44px;display:flex;align-items:center;justify-content:center}
-.flowDot{position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#94a3b8;border:3px solid white}
-.flowDot.listen{background:#2563eb;animation:heartbeat 1s infinite}
-.flowDot.translate{background:#f59e0b;animation:heartbeat .75s infinite}
-.flowDot.speak{background:#16a34a;animation:heartbeat .65s infinite}
-.flowDot.error{background:#dc2626}
-@keyframes heartbeat{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
-.status{text-align:center;font-weight:bold;font-size:16px;margin:4px 0}
-.sub{text-align:center;color:#64748b;font-size:11px;margin-bottom:5px}
-.msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:8px;margin:5px 0;text-align:left;font-size:13px;min-height:44px}
-.msg b{display:block;margin-bottom:3px}
-.actionRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}
-.btn{border:0;border-radius:12px;padding:10px;font-size:14px;font-weight:bold;color:white}
-.green{background:#16a34a}.blue{background:#2563eb}.red{background:#dc2626}
-
-/* CALL */
-.tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:3px;margin-bottom:8px}
-.tabs button{flex:1;border:0;border-radius:9px;background:transparent;padding:8px;font-weight:bold;font-size:13px}
-.tabs button.active{background:white;color:#2563eb}
-.contact{display:flex;align-items:center;gap:10px;border-bottom:1px solid #e5e7eb;padding:9px 0;text-align:left}
-.contactIcon{font-size:22px}.contactInfo{flex:1}.contactInfo b{display:block;font-size:14px}.contactInfo small{color:#64748b;font-size:11px}
-.callBtn{border:0;background:#16a34a;color:white;border-radius:50%;width:38px;height:38px;font-size:18px}
-
-/* HISTORY */
-.historyItem{background:white;border:1px solid #e5e7eb;border-radius:13px;padding:11px;margin:8px 0;text-align:left}
-.historyItem b{display:block;font-size:14px}.historyItem small{color:#64748b;font-size:11px}
-
-/* SOS */
-.sosTop{height:96px;background:#dc2626;color:white;padding:24px 18px;text-align:center;border-radius:0 0 24px 24px}
-.sosTop h2{font-size:30px;margin:0}
-.offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:10px;margin-top:10px;font-size:13px}
-.phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px;margin:6px 0;text-align:left;font-size:12px}
-
-/* MODAL */
-.modal{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
-.modalBox{width:100%;max-height:88%;overflow:auto;background:white;border-radius:20px;padding:16px}
-.modalHead{display:flex;justify-content:space-between;align-items:center}
-.closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
+.placeholder{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#64748b;padding:20px}
 </style>
 </head>
 
@@ -104,13 +53,16 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;pad
 
     <section class="page">
       <div class="screen home">
-        <div class="deviceBar" id="deviceContextBar">위치 확인 중 · 시간 확인 중</div>
-        <div class="homeTitle"><h1>말대말</h1><p>어디서든, 누구와도<br>바로 통역!</p></div>
+        <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
+        <div class="homeTitle">
+          <h1>말대말</h1>
+          <p>어디서든, 누구와도<br>바로 통역!</p>
+        </div>
         <div class="homeCard">
           <div class="micCircle">🎙️</div>
           <h2 style="margin:0">통역 시작하기</h2>
           <p style="color:#64748b;margin:6px 0">말하면 바로 번역해드려요</p>
-          <button class="startBtn" onclick="goPage(2)">통역 시작</button>
+          <button class="startBtn" onclick="goPage(3)">통역 시작</button>
         </div>
         <div class="homeNav">
           <div onclick="goPage(1)"><b>🧭</b>여행상황</div>
@@ -123,166 +75,159 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;pad
 
     <section class="page">
       <div class="screen">
-        <div class="hubHero"><h2>지금 무엇이 필요하세요?</h2><p>위치 기반 여행 실행 허브</p></div>
+        <div class="hubHero">
+          <h2>지금 무엇이 필요하세요?</h2>
+          <p id="hubContextText">위치 기반 여행 실행 허브</p>
+        </div>
         <div class="content" style="height:calc(100% - 58px)">
           <div class="grid">
-            <div class="card" onclick="openHub('airport')"><span>✈️</span>공항<small>입국·환전·유심</small></div>
-            <div class="card" onclick="openHub('hotel')"><span>🏨</span>호텔<small>예약·체크인</small></div>
-            <div class="card" onclick="openHub('food')"><span>🍜</span>식당<small>메뉴·음식정보</small></div>
-            <div class="card" onclick="openHub('taxi')"><span>🚕</span>교통<small>택시·이동</small></div>
-            <div class="card" onclick="openHub('route')"><span>🗺️</span>길찾기<small>GPS·지도</small></div>
-            <div class="card" onclick="openHub('tour')"><span>📷</span>관광<small>YouTube·TikTok</small></div>
-            <div class="card" onclick="openHub('shopping')"><span>🛍️</span>쇼핑<small>상품·라벨</small></div>
-            <div class="card" onclick="openHub('music')"><span>🎵</span>음악<small>플레이리스트</small></div>
-            <div class="card" onclick="goPage(2)"><span>🎙️</span>통역<small>자동대화</small></div>
-            <div class="card" onclick="goPage(3)"><span>📞</span>통화<small>전화·메신저</small></div>
-            <div class="card" onclick="openMedia('photo')"><span>📷</span>사진<small>기기 저장</small></div>
-            <div class="card" onclick="openMedia('video')"><span>🎥</span>동영상<small>기기 저장</small></div>
+            <div class="card"><span>✈️</span>공항<small>입국·환전·유심</small></div>
+            <div class="card"><span>🏨</span>호텔<small>예약·체크인</small></div>
+            <div class="card"><span>🍜</span>식당<small>주변·메뉴</small></div>
+            <div class="card"><span>🚕</span>교통<small>택시·버스</small></div>
+            <div class="card"><span>🗺️</span>길찾기<small>GPS·지도</small></div>
+            <div class="card"><span>📷</span>관광<small>사진·영상</small></div>
+            <div class="card"><span>🛍️</span>쇼핑<small>상품·라벨</small></div>
+            <div class="card"><span>🎵</span>음악<small>플레이리스트</small></div>
+            <div class="card"><span>🎙️</span>통역<small>자동대화</small></div>
+            <div class="card"><span>📞</span>통화<small>전화·메신저</small></div>
+            <div class="card"><span>📷</span>사진<small>기기 저장</small></div>
+            <div class="card"><span>🎥</span>동영상<small>기기 저장</small></div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="page">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">실시간 통역</div></div>
-        <div class="content">
-          <div class="lang"><button id="l_auto" onclick="setLang('auto')">자동</button><button id="l_en" onclick="setLang('en')">영어</button><button id="l_ja" onclick="setLang('ja')">일본어</button><button id="l_zh" onclick="setLang('zh')">중국어</button></div>
-          <select id="langMore" onchange="setLang(this.value)"><option value="">기타 언어 선택</option></select>
-          <div class="autoBar"><b>자동대화</b><div id="autoToggle" class="toggle" onclick="toggleAuto()"><div class="knob"></div></div></div>
-          <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" onclick="recordVoice()">🎙️</div></div>
-          <div class="status" id="status">대기 중</div>
-          <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
-          <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
-          <div class="msg"><b>번역</b><span id="resultText">-</span></div>
-          <div class="actionRow"><button class="btn blue" onclick="replayTTS()">🔊 다시듣기</button><button class="btn red" onclick="stopAuto()">종료</button></div>
-        </div>
-      </div>
-    </section>
+    <section class="page"><div class="screen"><div class="placeholder"><div><h2>상세 안내 페이지</h2><p>공항/호텔/식당 등 상세창이 들어갑니다.</p></div></div></div></section>
+    <section class="page"><div class="screen"><div class="placeholder"><div><h2>말대말 통역</h2><p>자동대화 ON/OFF · 120개 언어 · Flow Heart</p></div></div></div></section>
+    <section class="page"><div class="screen"><div class="placeholder"><div><h2>통화 / 이용내역</h2><p>전화, WhatsApp, WeChat, 시간순 이용내역</p></div></div></div></section>
+    <section class="page"><div class="screen"><div class="placeholder"><div><h2>SOS / OFFLINE</h2><p>위치 기반 긴급 연결과 생존 문장</p></div></div></div></section>
 
-    <section class="page">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">통화 연결</div></div>
-        <div class="content">
-          <div class="tabs"><button class="active">전화</button><button onclick="openMessenger('whatsapp')">WhatsApp</button><button onclick="openMessenger('wechat')">WeChat</button></div>
-          <div class="contact"><div class="contactIcon">🏨</div><div class="contactInfo"><b>호텔 전화</b><small>등록 가능</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-          <div class="contact"><div class="contactIcon">🍜</div><div class="contactInfo"><b>식당 전화</b><small>예약·문의</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-          <div class="contact"><div class="contactIcon">🚕</div><div class="contactInfo"><b>택시 전화</b><small>위치 확인</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-          <input id="phoneInput" placeholder="전화번호 입력">
-          <button class="btn green" style="width:100%" onclick="callDirect()">📞 전화 걸기</button>
-          <button class="btn blue" style="width:100%;margin-top:6px" onclick="manageContact()">연락처 등록/삭제</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="page">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="goPage(0)">‹</button><div class="title">이용내역</div></div>
-        <div class="content" id="historyList"><div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div></div>
-      </div>
-    </section>
-
-    <section class="page">
-      <div class="screen">
-        <div class="sosTop"><h2>SOS</h2><p style="color:white;margin:4px 0">위치 기반 긴급 도움</p></div>
-        <div class="content" style="height:calc(100% - 96px)">
-          <div class="grid">
-            <div class="card" onclick="window.open('tel:112')"><span>👮</span>경찰<small>112</small></div>
-            <div class="card" onclick="window.open('tel:119')"><span>🚑</span>구급<small>119</small></div>
-            <div class="card" onclick="openLocationSearch('hospital')"><span>🏥</span>병원<small>주변 검색</small></div>
-            <div class="card" onclick="openLocationSearch('embassy')"><span>🏛️</span>대사관<small>주변 검색</small></div>
-          </div>
-          <div class="offline">
-            <b>OFFLINE 생존 문장</b>
-            <div class="phrase">도와주세요 → Help me.</div>
-            <div class="phrase">병원이 어디인가요? → Where is the hospital?</div>
-            <div class="phrase">경찰을 불러주세요. → Please call the police.</div>
-            <div class="phrase">인터넷이 안 됩니다. → I have no internet connection.</div>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
-
-  <div class="modal" id="linkModal">
-    <div class="modalBox">
-      <div class="modalHead"><h3 id="linkModalTitle">연결</h3><button class="closeBtn" onclick="closeLinkModal()">닫기</button></div>
-      <div id="linkModalList"></div><hr>
-      <b>내 링크 추가</b>
-      <input id="userLinkName" placeholder="사이트명">
-      <input id="userLinkUrl" placeholder="https://...">
-      <button class="btn blue" style="width:100%;margin-top:6px" onclick="addUserLink()">추가</button>
-      <input id="deleteLinkIndex" placeholder="삭제 번호 예: 0">
-      <button class="btn red" style="width:100%;margin-top:6px" onclick="deleteUserLink()">삭제</button>
-    </div>
-  </div>
-
-  <input id="cameraPhoto" type="file" accept="image/*" capture="environment" style="display:none">
-  <input id="cameraVideo" type="file" accept="video/*" capture="environment" style="display:none">
   <div class="dots" id="dots"></div>
 </div>
 
 <script>
-let currentPage=0,totalPages=6,startX=0,lastAudioText="",autoConversation=false,autoRunning=false,currentLinkCategory="";
-let sessionId=localStorage.getItem("krxa_session_id")||("session-"+Math.random().toString(16).slice(2,10));
-localStorage.setItem("krxa_session_id",sessionId);
-let targetLang=localStorage.getItem("krxa_language_mode")||"auto";
-let deviceContext={date:"",time:"",locale:navigator.language||"",lat:"",lng:"",gpsReady:false};
+let currentPage = 0;
+const totalPages = 6;
+let startX = 0;
 
-const CATEGORY_LABELS={airport:"공항",food:"식당",route:"길찾기",hotel:"호텔",taxi:"교통",tour:"관광",shopping:"쇼핑",music:"음악"};
-const LANGS=[["af","Afrikaans"],["ar","Arabic"],["bn","Bengali"],["zh","Chinese"],["nl","Dutch"],["en","English"],["fr","French"],["de","German"],["hi","Hindi"],["id","Indonesian"],["it","Italian"],["ja","Japanese"],["ko","Korean"],["ms","Malay"],["pt","Portuguese"],["ru","Russian"],["es","Spanish"],["th","Thai"],["tr","Turkish"],["uk","Ukrainian"],["vi","Vietnamese"]];
+let deviceContext = {
+  date: "",
+  time: "",
+  locale: navigator.language || "",
+  lat: "",
+  lng: "",
+  gpsReady: false,
+  gpsStatus: "위치 확인 중"
+};
 
-function initLangs(){const s=document.getElementById("langMore");LANGS.forEach(([c,n])=>{let o=document.createElement("option");o.value=c;o.textContent=n;s.appendChild(o)})}
-function render(){document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;const dots=document.getElementById("dots");dots.innerHTML="";for(let i=0;i<totalPages;i++){let d=document.createElement("div");d.className="dot"+(i===currentPage?" active":"");d.onclick=()=>goPage(i);dots.appendChild(d)}}
-function goPage(i){currentPage=(i+totalPages)%totalPages;render()}
-function nextPage(){goPage(currentPage+1)}
-function prevPage(){goPage(currentPage-1)}
-app.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
-app.addEventListener("touchend",e=>{let dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<70)return;dx<0?nextPage():prevPage()});
+function render(){
+  document.getElementById("pages").style.transform =
+    `translateX(-${currentPage * (100 / totalPages)}%)`;
+
+  const dots = document.getElementById("dots");
+  dots.innerHTML = "";
+
+  for(let i=0;i<totalPages;i++){
+    const d = document.createElement("div");
+    d.className = "dot" + (i === currentPage ? " active" : "");
+    d.onclick = () => goPage(i);
+    dots.appendChild(d);
+  }
+}
+
+function goPage(i){
+  currentPage = (i + totalPages) % totalPages;
+  render();
+}
+
+function nextPage(){ goPage(currentPage + 1); }
+function prevPage(){ goPage(currentPage - 1); }
+
+const app = document.getElementById("app");
+
+app.addEventListener("touchstart", e=>{
+  startX = e.touches[0].clientX;
+});
+
+app.addEventListener("touchend", e=>{
+  const dx = e.changedTouches[0].clientX - startX;
+  if(Math.abs(dx) < 70) return;
+  dx < 0 ? nextPage() : prevPage();
+});
 
 function updateDeviceTime(){
- const now=new Date();
- deviceContext.date=now.toLocaleDateString("ko-KR",{month:"2-digit",day:"2-digit",weekday:"short"});
- deviceContext.time=now.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
- const el=document.getElementById("deviceContextBar");
- if(el)el.innerText=`📍 ${deviceContext.gpsReady?"위치 확인됨":"위치 확인 중"} · ${deviceContext.date} · ${deviceContext.time} · ${deviceContext.locale}`;
+  const now = new Date();
+
+  deviceContext.date = now.toLocaleDateString("ko-KR", {
+    month:"2-digit",
+    day:"2-digit",
+    weekday:"short"
+  });
+
+  deviceContext.time = now.toLocaleTimeString("ko-KR", {
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+
+  const text =
+    `📍 ${deviceContext.gpsStatus} · ${deviceContext.date} · ${deviceContext.time} · ${deviceContext.locale}`;
+
+  const bar = document.getElementById("deviceContextBar");
+  if(bar) bar.innerText = text;
+
+  const hub = document.getElementById("hubContextText");
+  if(hub){
+    hub.innerText = deviceContext.gpsReady
+      ? "현재 위치 기반으로 여행 메뉴를 준비합니다"
+      : "위치 권한 허용 시 주변 정보가 더 정확해집니다";
+  }
 }
+
 function initDeviceContext(){
- updateDeviceTime();setInterval(updateDeviceTime,30000);
- if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{deviceContext.lat=p.coords.latitude;deviceContext.lng=p.coords.longitude;deviceContext.gpsReady=true;updateDeviceTime();remember("기기 위치 확인",{category:"GPS"})},()=>{deviceContext.gpsReady=false;updateDeviceTime()},{enableHighAccuracy:true,timeout:10000,maximumAge:30000})}
+  updateDeviceTime();
+  setInterval(updateDeviceTime, 30000);
+
+  if(!navigator.geolocation){
+    deviceContext.gpsStatus = "GPS 미지원";
+    updateDeviceTime();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      deviceContext.lat = pos.coords.latitude;
+      deviceContext.lng = pos.coords.longitude;
+      deviceContext.gpsReady = true;
+      deviceContext.gpsStatus = "위치 확인됨";
+      updateDeviceTime();
+    },
+    err=>{
+      deviceContext.gpsReady = false;
+      deviceContext.gpsStatus = "위치 권한 없음";
+      updateDeviceTime();
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:30000
+    }
+  );
 }
-function buildMapSearchUrl(keyword){return deviceContext.gpsReady?`https://www.google.com/maps/search/${encodeURIComponent(keyword)}/@${deviceContext.lat},${deviceContext.lng},15z`:`https://www.google.com/maps/search/${encodeURIComponent(keyword)}`}
-function openLocationSearch(keyword){window.open(buildMapSearchUrl(keyword),"_blank")}
 
-function setFlowState(state,msg){const d=document.getElementById("flowDot");d.className="flowDot "+(state||"");if(msg)document.getElementById("flow").innerText=msg}
-function setLang(v){if(!v)return;targetLang=v;localStorage.setItem("krxa_language_mode",v);document.querySelectorAll(".lang button").forEach(b=>b.classList.remove("active"));let el=document.getElementById("l_"+v);if(el)el.classList.add("active")}
-function toggleAuto(){autoConversation=!autoConversation;document.getElementById("autoToggle").className="toggle"+(autoConversation?" on":"")}
-function stopAuto(){autoRunning=false;setFlowState("","자동대화 종료");document.getElementById("status").innerText="대기 중"}
+function buildMapSearchUrl(keyword){
+  if(deviceContext.gpsReady){
+    return "https://www.google.com/maps/search/" +
+      encodeURIComponent(keyword) +
+      "/@" + deviceContext.lat + "," + deviceContext.lng + ",15z";
+  }
 
-function remember(kind,detail){let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}d.push({time:new Date().toISOString(),kind,detail});localStorage.setItem("krxa_usage_history",JSON.stringify(d.slice(-100)));renderHistory()}
-function renderHistory(){let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}const box=document.getElementById("historyList");box.innerHTML="";if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.category||x.detail?.lang||""}</small>`;box.appendChild(div)})}
-
-async function openHub(cat){currentLinkCategory=cat;remember("카테고리 선택",{category:cat});await openLinkModal(cat)}
-async function openLinkModal(cat){
- document.getElementById("linkModal").style.display="flex";document.getElementById("linkModalTitle").innerText=CATEGORY_LABELS[cat]||cat;
- const box=document.getElementById("linkModalList");box.innerHTML="";
- if(["airport","food","hotel","taxi","tour","shopping"].includes(cat)){box.innerHTML+='<div class="historyItem"><b>📷 사진찍기 / 🎥 동영상촬영</b><small>사용자 기기에 저장됩니다.</small><button class="btn blue" style="width:48%;margin-top:8px" onclick="openMedia(\'photo\')">사진</button> <button class="btn blue" style="width:48%;margin-top:8px" onclick="openMedia(\'video\')">동영상</button></div>'}
- try{const r=await fetch("/api/travel-links/"+encodeURIComponent(cat));const j=await r.json();if(j.ok&&j.links){j.links.forEach((link,i)=>{const div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${i}. ${link.name}</b><small>${link.url}</small><button class="btn blue" style="width:100%;margin-top:8px">열기</button>`;div.querySelector("button").onclick=()=>{remember("링크 열기",{category:cat});window.open(link.url,"_blank")};box.appendChild(div)})}}catch(e){}
+  return "https://www.google.com/maps/search/" + encodeURIComponent(keyword);
 }
-function closeLinkModal(){document.getElementById("linkModal").style.display="none"}
-async function addUserLink(){const name=document.getElementById("userLinkName").value.trim();const url=document.getElementById("userLinkUrl").value.trim();if(!currentLinkCategory||!name||!url)return alert("입력 확인");const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("name",name);fd.append("url",url);await fetch("/api/travel-links/add",{method:"POST",body:fd});openLinkModal(currentLinkCategory)}
-async function deleteUserLink(){const idx=document.getElementById("deleteLinkIndex").value.trim();if(!currentLinkCategory||idx==="")return alert("삭제 번호 입력");const fd=new FormData();fd.append("category",currentLinkCategory);fd.append("index",idx);await fetch("/api/travel-links/delete",{method:"POST",body:fd});openLinkModal(currentLinkCategory)}
-function openMedia(type){document.getElementById(type==="photo"?"cameraPhoto":"cameraVideo").click();remember(type==="photo"?"사진 촬영":"동영상 촬영",{category:currentLinkCategory||"공통"})}
-function openMessenger(type){window.open(type==="whatsapp"?"https://wa.me/":"https://www.wechat.com","_blank")}
-function callNumber(n){window.location.href="tel:"+n}
-function callDirect(){callNumber(document.getElementById("phoneInput").value.trim())}
-function manageContact(){alert("연락처 등록/삭제는 다음 단계에서 연결합니다.")}
 
-async function translate(text,source){document.getElementById("sourceText").innerText=text;document.getElementById("status").innerText="통역 처리 중...";setFlowState("translate","번역 중");const fd=new FormData();fd.append("text",text);fd.append("service","travel");fd.append("session_id",sessionId);fd.append("source",source);fd.append("target_language",targetLang);fd.append("lat",deviceContext.lat);fd.append("lng",deviceContext.lng);fd.append("device_locale",deviceContext.locale);const r=await fetch("/api/translate",{method:"POST",body:fd});const j=await r.json();document.getElementById("resultText").innerText=j.result||"";lastAudioText=j.result||"";document.getElementById("status").innerText="통역 완료";remember("통역 이용",{lang:targetLang});await playTTS(lastAudioText);setFlowState("","대기 중");if(autoConversation&&autoRunning)setTimeout(()=>recordVoice(),800)}
-async function playTTS(text){if(!text)return;try{const fd=new FormData();fd.append("text",text);fd.append("session_id",sessionId);const r=await fetch("/api/tts",{method:"POST",body:fd});const b=await r.blob();if(b.size>100){let a=new Audio(URL.createObjectURL(b));await a.play()}}catch(e){}}
-function replayTTS(){playTTS(lastAudioText)}
-async function recordVoice(){goPage(2);autoRunning=true;document.getElementById("status").innerText="말씀하세요";setFlowState("listen","듣는 중");try{const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});const ac=new AudioContext(),src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=2048;src.connect(an);const data=new Uint8Array(an.fftSize),mr=new MediaRecorder(stream);let chunks=[],started=false,lastVoice=Date.now(),begin=Date.now();mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};mr.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());try{ac.close()}catch(e){}const blob=new Blob(chunks,{type:"audio/webm"});const fd=new FormData();fd.append("file",blob,"voice.webm");fd.append("session_id",sessionId);fd.append("duration",String(Math.round((Date.now()-begin)/1000)));fd.append("user_language_mode","auto");fd.append("target_language",targetLang);fd.append("lat",deviceContext.lat);fd.append("lng",deviceContext.lng);fd.append("device_locale",deviceContext.locale);const r=await fetch("/api/stt",{method:"POST",body:fd});const j=await r.json();if(j.ok&&j.text)translate(j.text,"voice");else{document.getElementById("status").innerText="음성 인식 실패";setFlowState("error","다시 말해주세요")}};mr.start(250);function loop(){an.getByteTimeDomainData(data);let sum=0;for(let v of data)sum+=Math.abs(v-128);let vol=sum/data.length,now=Date.now();if(vol>18){started=true;lastVoice=now}if(started&&now-begin>900&&now-lastVoice>1300){mr.stop();return}if(mr.state!=="inactive")requestAnimationFrame(loop)}loop()}catch(e){document.getElementById("status").innerText="마이크 권한 필요";setFlowState("error","마이크 오류")}}
-initLangs();setLang(targetLang);render();renderHistory();initDeviceContext();
+render();
+initDeviceContext();
 </script>
 </body>
 </html>
