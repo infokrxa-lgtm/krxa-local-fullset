@@ -12,36 +12,35 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .pages{display:flex;width:600%;height:100%;transition:transform .28s ease}
 .page{width:100vw;max-width:430px;height:100dvh;flex:0 0 100vw;padding:14px;overflow:hidden}
 .screen{width:100%;height:100%;border-radius:26px;background:white;box-shadow:0 8px 24px rgba(15,23,42,.12);overflow:hidden;position:relative}
-.dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:7px;z-index:10}
+.dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:7px;z-index:10}
 .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1}
 .dot.active{background:#2563eb;width:22px;border-radius:99px}
 
 /* PAGE 1 */
 .home{
   background:
-    linear-gradient(rgba(5,35,90,.1),rgba(5,35,90,.35)),
+    linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.38)),
     url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80");
   background-size:cover;background-position:center;color:white;
 }
-.homeTop{padding:28px 20px 0;display:flex;justify-content:space-between;font-size:24px}
-.homeTitle{text-align:center;margin-top:34px}
-.homeTitle h1{font-size:50px;margin:0 0 16px}
+.homeTitle{text-align:center;margin-top:80px}
+.homeTitle h1{font-size:52px;margin:0 0 14px}
 .homeTitle p{font-size:20px;line-height:1.45;margin:0}
-.homeCard{position:absolute;left:18px;right:18px;bottom:94px;background:white;color:#0f172a;border-radius:26px;padding:24px 18px;text-align:center}
+.homeCard{position:absolute;left:18px;right:18px;bottom:90px;background:white;color:#0f172a;border-radius:26px;padding:24px 18px;text-align:center}
 .micCircle{width:104px;height:104px;border-radius:50%;background:#2563eb;color:white;border:16px solid #dbeafe;margin:-72px auto 14px;font-size:42px;display:flex;align-items:center;justify-content:center}
 .startBtn{border:0;background:#2563eb;color:white;border-radius:18px;padding:14px 30px;font-size:19px;font-weight:bold;width:100%;margin-top:12px}
 .homeNav{position:absolute;left:18px;right:18px;bottom:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:white;border-radius:18px;padding:10px;color:#64748b;text-align:center;font-size:12px}
 .homeNav b{display:block;color:#0f172a;font-size:18px}
 
-/* Common */
-.header{padding:18px;display:flex;align-items:center;gap:10px}
-.back{border:0;background:#f1f5f9;border-radius:12px;width:40px;height:40px;font-size:22px}
+/* COMMON */
+.header{padding:16px;display:flex;align-items:center;gap:10px}
+.back{border:0;background:#f1f5f9;border-radius:12px;width:38px;height:38px;font-size:22px}
 .title{flex:1;text-align:center;font-size:20px;font-weight:bold}
-.content{padding:0 18px 18px;height:calc(100% - 76px);overflow-y:auto}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:16px 8px;text-align:center;font-weight:bold;box-shadow:0 4px 12px rgba(15,23,42,.06)}
-.card span{display:block;font-size:34px;margin-bottom:7px}
-.card small{display:block;color:#64748b;font-size:12px;margin-top:5px}
+.content{padding:0 16px 16px;height:calc(100% - 70px);overflow-y:auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:15px 8px;text-align:center;font-weight:bold;box-shadow:0 4px 12px rgba(15,23,42,.06)}
+.card span{display:block;font-size:32px;margin-bottom:6px}
+.card small{display:block;color:#64748b;font-size:12px;margin-top:4px}
 .wide{grid-column:1/3}
 
 /* PAGE 2 */
@@ -49,19 +48,35 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;over
 .hubHero h2{margin:0;font-size:25px}
 .hubHero p{margin:6px 0 0;color:#64748b;font-size:14px}
 
-/* PAGE 3 */
-.lang{display:flex;gap:8px;margin:0 0 12px}
-.lang button{flex:1;border:0;background:#e5e7eb;border-radius:12px;padding:10px;font-weight:bold}
+/* PAGE 3 TRANSLATE */
+.lang{display:flex;gap:7px;margin-bottom:8px}
+.lang button{flex:1;border:0;background:#e5e7eb;border-radius:11px;padding:9px 2px;font-weight:bold;font-size:13px}
 .lang button.active{background:#2563eb;color:white}
-.listenCircle{width:148px;height:148px;border-radius:50%;background:#2563eb;color:white;border:24px solid #dbeafe;margin:18px auto;font-size:54px;display:flex;align-items:center;justify-content:center}
-.status{text-align:center;font-weight:bold;font-size:20px;margin:10px 0}
-.sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:16px}
-.msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin:10px 0}
-.msg b{display:block;margin-bottom:7px}
-.actionRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.btn{border:0;border-radius:14px;padding:14px;font-size:17px;font-weight:bold;color:white}
+select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;padding:9px;font-size:14px;margin:5px 0}
+.autoBar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:10px 12px;margin:8px 0}
+.toggle{width:56px;height:30px;border-radius:999px;background:#cbd5e1;position:relative}
+.toggle.on{background:#2563eb}
+.knob{width:24px;height:24px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.2s}
+.toggle.on .knob{left:29px}
+.micWrap{position:relative;width:144px;height:144px;margin:14px auto 8px}
+.listenCircle{width:144px;height:144px;border-radius:50%;background:#2563eb;color:white;border:23px solid #dbeafe;font-size:54px;display:flex;align-items:center;justify-content:center}
+.flowDot{position:absolute;left:5px;top:6px;width:18px;height:18px;border-radius:50%;background:#94a3b8;border:3px solid white;box-shadow:0 0 0 0 rgba(37,99,235,.45)}
+.flowDot.listen{background:#2563eb;animation:heartbeat 1s infinite}
+.flowDot.translate{background:#f59e0b;animation:heartbeat .75s infinite}
+.flowDot.speak{background:#16a34a;animation:heartbeat .65s infinite}
+.flowDot.error{background:#dc2626;animation:none}
+@keyframes heartbeat{
+  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,.45)}
+  50%{transform:scale(1.35);box-shadow:0 0 0 8px rgba(37,99,235,0)}
+  100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0)}
+}
+.status{text-align:center;font-weight:bold;font-size:18px;margin:6px 0}
+.sub{text-align:center;color:#64748b;font-size:12px;margin-bottom:8px}
+.msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:11px;margin:7px 0;text-align:left}
+.msg b{display:block;margin-bottom:5px}
+.actionRow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.btn{border:0;border-radius:13px;padding:12px;font-size:16px;font-weight:bold;color:white}
 .green{background:#16a34a}.blue{background:#2563eb}.red{background:#dc2626}
-textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:11px;font-size:15px;margin:6px 0}
 
 /* PAGE 4 */
 .tabs{display:flex;background:#f1f5f9;border-radius:14px;padding:4px;margin-bottom:14px}
@@ -80,7 +95,7 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
 .historyItem small{color:#64748b}
 
 /* PAGE 6 */
-.sosTop{background:#dc2626;color:white;padding:34px 20px;text-align:center;border-radius:0 0 28px 28px}
+.sosTop{background:#dc2626;color:white;padding:32px 20px;text-align:center;border-radius:0 0 28px 28px}
 .sosTop h2{font-size:34px;margin:0}
 .offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:14px;margin-top:14px}
 .phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:11px;margin:8px 0;text-align:left}
@@ -91,10 +106,8 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
 <div class="app" id="app">
   <div class="pages" id="pages">
 
-    <!-- 1 HOME -->
     <section class="page">
       <div class="screen home">
-        <div class="homeTop"><span>🌐</span><span>⚙️</span></div>
         <div class="homeTitle">
           <h1>말대말</h1>
           <p>어디서든, 누구와도<br>바로 통역!</p>
@@ -108,13 +121,12 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
         <div class="homeNav">
           <div onclick="goPage(1)"><b>🧭</b>여행상황</div>
           <div onclick="goPage(5)"><b>🆘</b>SOS</div>
-          <div onclick="goPage(4)"><b>📋</b>기록</div>
+          <div onclick="goPage(4)"><b>📋</b>내역</div>
           <div onclick="goPage(5)"><b>🔒</b>OFF</div>
         </div>
       </div>
     </section>
 
-    <!-- 2 HUB -->
     <section class="page">
       <div class="screen">
         <div class="hubHero">
@@ -128,8 +140,8 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
             <div class="card" onclick="openHub('hotel')"><span>🏨</span>호텔<small>예약·체크인</small></div>
             <div class="card" onclick="openHub('taxi')"><span>🚕</span>교통<small>택시·대중교통</small></div>
             <div class="card" onclick="goPage(2)"><span>🎙️</span>통역<small>실시간 통역</small></div>
-            <div class="card" onclick="goPage(3)"><span>📞</span>통화<small>전화 연결 통역</small></div>
-            <div class="card" onclick="openHub('tour')"><span>📷</span>관광<small>YouTube·TikTok</small></div>
+            <div class="card" onclick="goPage(3)"><span>📞</span>통화<small>전화 연결</small></div>
+            <div class="card" onclick="openHub('tour')"><span>📷</span>관광<small>YouTube·TikTok·사진</small></div>
             <div class="card" onclick="openHub('shopping')"><span>🛍️</span>쇼핑<small>구매·환불</small></div>
             <div class="card" onclick="openHub('music')"><span>🎵</span>음악<small>플레이리스트</small></div>
             <div class="card" onclick="goPage(5)"><span>🆘</span>SOS<small>긴급 도움</small></div>
@@ -139,7 +151,6 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
       </div>
     </section>
 
-    <!-- 3 TRANSLATE -->
     <section class="page">
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">실시간 통역</div></div>
@@ -150,56 +161,57 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
             <button id="l_ja" onclick="setLang('ja')">일본어</button>
             <button id="l_zh" onclick="setLang('zh')">중국어</button>
           </div>
-          <select onchange="setLang(this.value)">
-            <option value="">기타 언어</option><option value="fr">프랑스어</option><option value="de">독일어</option><option value="es">스페인어</option><option value="vi">베트남어</option><option value="th">태국어</option>
+          <select id="langMore" onchange="setLang(this.value)">
+            <option value="">기타 언어 선택</option>
           </select>
-          <div class="listenCircle" onclick="recordVoice()">🎙️</div>
-          <div class="status" id="status">듣고 있어요...</div>
-          <div class="sub" id="flow">말을 마치면 자동으로 번역합니다</div>
-          <div id="chat">
-            <div class="msg"><b>원문</b><span id="sourceText">상대방이 말하는 내용이 여기에 표시됩니다.</span></div>
-            <div class="msg"><b>번역</b><span id="resultText">번역된 내용이 여기에 표시됩니다.</span></div>
+
+          <div class="autoBar">
+            <b>자동대화</b>
+            <div id="autoToggle" class="toggle" onclick="toggleAuto()"><div class="knob"></div></div>
           </div>
+
+          <div class="micWrap">
+            <div id="flowDot" class="flowDot"></div>
+            <div class="listenCircle" onclick="recordVoice()">🎙️</div>
+          </div>
+
+          <div class="status" id="status">대기 중</div>
+          <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
+
+          <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
+          <div class="msg"><b>번역</b><span id="resultText">-</span></div>
+
           <div class="actionRow">
-            <button class="btn green" onclick="recordVoice()">🎙️ 말하기</button>
-            <button class="btn blue" onclick="replayTTS()">🔊 다시 듣기</button>
+            <button class="btn blue" onclick="replayTTS()">🔊 다시듣기</button>
+            <button class="btn red" onclick="stopAuto()">종료</button>
           </div>
-          <textarea id="textInput" placeholder="직접 입력"></textarea>
-          <button class="btn blue" style="width:100%" onclick="sendText()">통역하기</button>
         </div>
       </div>
     </section>
 
-    <!-- 4 CALL -->
     <section class="page">
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(1)">‹</button><div class="title">통화 연결</div></div>
         <div class="content">
-          <div class="tabs"><button class="active">최근 통화</button><button>연락처</button></div>
-          <div id="contactList">
-            <div class="contact"><div class="contactIcon">🏨</div><div class="contactInfo"><b>호텔 전화</b><small>사용자 등록 가능</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-            <div class="contact"><div class="contactIcon">🍜</div><div class="contactInfo"><b>식당 전화</b><small>예약·문의</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-            <div class="contact"><div class="contactIcon">🚕</div><div class="contactInfo"><b>택시 전화</b><small>위치 확인</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
-          </div>
+          <div class="tabs"><button class="active">최근 통화</button><button onclick="manageContact()">연락처 관리</button></div>
+          <div class="contact"><div class="contactIcon">🏨</div><div class="contactInfo"><b>호텔 전화</b><small>등록 가능</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
+          <div class="contact"><div class="contactIcon">🍜</div><div class="contactInfo"><b>식당 전화</b><small>예약·문의</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
+          <div class="contact"><div class="contactIcon">🚕</div><div class="contactInfo"><b>택시 전화</b><small>위치 확인</small></div><button class="callBtn" onclick="callNumber('')">☎</button></div>
           <input id="phoneInput" placeholder="전화번호 입력">
           <button class="btn green" style="width:100%" onclick="callDirect()">📞 전화 걸기</button>
-          <button class="btn blue" style="width:100%;margin-top:8px" onclick="manageContact()">연락처 등록/삭제</button>
-          <p class="sub">통화는 휴대폰 전화앱으로 연결됩니다.</p>
         </div>
       </div>
     </section>
 
-    <!-- 5 HISTORY -->
     <section class="page">
       <div class="screen">
         <div class="header"><button class="back" onclick="goPage(0)">‹</button><div class="title">이용내역</div></div>
         <div class="content" id="historyList">
-          <div class="historyItem"><b>오늘</b><small>통역 이용내역이 시간순으로 표시됩니다. 원문/번역문은 표시하지 않습니다.</small></div>
+          <div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>
         </div>
       </div>
     </section>
 
-    <!-- 6 SOS -->
     <section class="page">
       <div class="screen">
         <div class="sosTop"><h2>SOS</h2><p style="color:white">긴급 상황 도움 연결</p></div>
@@ -226,26 +238,39 @@ textarea,input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;pad
 </div>
 
 <script>
-let currentPage=0,totalPages=6,startX=0,lastAudioText="";
+let currentPage=0,totalPages=6,startX=0,lastAudioText="",autoConversation=false,autoRunning=false;
 let sessionId=localStorage.getItem("krxa_session_id")||("session-"+Math.random().toString(16).slice(2,10));
 localStorage.setItem("krxa_session_id",sessionId);
 let targetLang=localStorage.getItem("krxa_language_mode")||"auto";
 let lat="",lng="";
 
+const LANGS=[
+["af","Afrikaans"],["sq","Albanian"],["am","Amharic"],["ar","Arabic"],["hy","Armenian"],["az","Azerbaijani"],["eu","Basque"],["be","Belarusian"],["bn","Bengali"],["bs","Bosnian"],["bg","Bulgarian"],["ca","Catalan"],["ceb","Cebuano"],["zh","Chinese"],["co","Corsican"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["en","English"],["eo","Esperanto"],["et","Estonian"],["fi","Finnish"],["fr","French"],["fy","Frisian"],["gl","Galician"],["ka","Georgian"],["de","German"],["el","Greek"],["gu","Gujarati"],["ht","Haitian Creole"],["ha","Hausa"],["haw","Hawaiian"],["he","Hebrew"],["hi","Hindi"],["hmn","Hmong"],["hu","Hungarian"],["is","Icelandic"],["ig","Igbo"],["id","Indonesian"],["ga","Irish"],["it","Italian"],["ja","Japanese"],["jv","Javanese"],["kn","Kannada"],["kk","Kazakh"],["km","Khmer"],["ko","Korean"],["ku","Kurdish"],["ky","Kyrgyz"],["lo","Lao"],["la","Latin"],["lv","Latvian"],["lt","Lithuanian"],["lb","Luxembourgish"],["mk","Macedonian"],["mg","Malagasy"],["ms","Malay"],["ml","Malayalam"],["mt","Maltese"],["mi","Maori"],["mr","Marathi"],["mn","Mongolian"],["my","Myanmar"],["ne","Nepali"],["no","Norwegian"],["ny","Nyanja"],["or","Odia"],["ps","Pashto"],["fa","Persian"],["pl","Polish"],["pt","Portuguese"],["pa","Punjabi"],["ro","Romanian"],["ru","Russian"],["sm","Samoan"],["gd","Scots Gaelic"],["sr","Serbian"],["st","Sesotho"],["sn","Shona"],["sd","Sindhi"],["si","Sinhala"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["es","Spanish"],["su","Sundanese"],["sw","Swahili"],["sv","Swedish"],["tg","Tajik"],["ta","Tamil"],["te","Telugu"],["th","Thai"],["tr","Turkish"],["uk","Ukrainian"],["ur","Urdu"],["ug","Uyghur"],["uz","Uzbek"],["vi","Vietnamese"],["cy","Welsh"],["xh","Xhosa"],["yi","Yiddish"],["yo","Yoruba"],["zu","Zulu"]
+];
+
+function initLangs(){
+ const s=document.getElementById("langMore");
+ LANGS.forEach(([c,n])=>{let o=document.createElement("option");o.value=c;o.textContent=n;s.appendChild(o)});
+}
 function render(){
-  document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;
-  const dots=document.getElementById("dots"); dots.innerHTML="";
-  for(let i=0;i<totalPages;i++){let d=document.createElement("div");d.className="dot"+(i===currentPage?" active":"");d.onclick=()=>goPage(i);dots.appendChild(d)}
+ document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;
+ const dots=document.getElementById("dots");dots.innerHTML="";
+ for(let i=0;i<totalPages;i++){let d=document.createElement("div");d.className="dot"+(i===currentPage?" active":"");d.onclick=()=>goPage(i);dots.appendChild(d)}
 }
 function goPage(i){currentPage=(i+totalPages)%totalPages;render()}
 function nextPage(){goPage(currentPage+1)}
 function prevPage(){goPage(currentPage-1)}
-
 app.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
 app.addEventListener("touchend",e=>{let dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<70)return;dx<0?nextPage():prevPage()});
 
+function setFlowState(state,msg){
+ const d=document.getElementById("flowDot");
+ d.className="flowDot "+(state||"");
+ if(msg)document.getElementById("flow").innerText=msg;
+}
 function setLang(v){if(!v)return;targetLang=v;localStorage.setItem("krxa_language_mode",v);document.querySelectorAll(".lang button").forEach(b=>b.classList.remove("active"));let el=document.getElementById("l_"+v);if(el)el.classList.add("active")}
-setLang(targetLang);
+function toggleAuto(){autoConversation=!autoConversation;document.getElementById("autoToggle").className="toggle"+(autoConversation?" on":"")}
+function stopAuto(){autoRunning=false;setFlowState("","자동대화 종료");document.getElementById("status").innerText="대기 중"}
 
 function remember(kind,detail){
  let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}
@@ -253,39 +278,58 @@ function remember(kind,detail){
 }
 function renderHistory(){
  let d=[];try{d=JSON.parse(localStorage.getItem("krxa_usage_history")||"[]")}catch(e){}
- const box=document.getElementById("historyList"); box.innerHTML="";
- d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.category||x.detail?.lang||""}</small>`;box.appendChild(div)})
+ const box=document.getElementById("historyList");box.innerHTML="";
+ if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}
+ d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.lang||""}</small>`;box.appendChild(div)})
 }
-
-function openHub(cat){remember("카테고리 선택",{category:cat}); if(cat==="route"){openMap();return} if(cat==="call"){goPage(3);return} if(cat==="tour")window.open("https://www.youtube.com","_blank"); else goPage(2)}
-function openMap(){let url="https://www.google.com/maps"; if(lat&&lng)url=`https://www.google.com/maps/search/travel+nearby/@${lat},${lng},15z`; window.open(url,"_blank")}
+function openHub(cat){
+ remember("카테고리 선택",{category:cat});
+ if(cat==="route"){openMap();return}
+ if(cat==="tour"){window.open("https://www.youtube.com","_blank");return}
+ if(cat==="call"){goPage(3);return}
+ goPage(2);
+}
+function openMap(){let url="https://www.google.com/maps";if(lat&&lng)url=`https://www.google.com/maps/search/travel+nearby/@${lat},${lng},15z`;window.open(url,"_blank")}
 function callNumber(n){window.location.href="tel:"+n}
 function callDirect(){callNumber(document.getElementById("phoneInput").value.trim())}
-function manageContact(){alert("연락처 등록/삭제 창은 다음 단계에서 연결합니다.")}
+function manageContact(){alert("연락처 등록/삭제는 다음 단계에서 연결합니다.")}
 
-async function sendText(){let t=document.getElementById("textInput").value.trim(); if(!t)return; await translate(t,"text")}
 async function translate(text,source){
- document.getElementById("sourceText").innerText=text; document.getElementById("status").innerText="통역 처리 중...";
- const fd=new FormData(); fd.append("text",text);fd.append("service","travel");fd.append("session_id",sessionId);fd.append("source",source);fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||"");
- const r=await fetch("/api/translate",{method:"POST",body:fd}); const j=await r.json();
- document.getElementById("resultText").innerText=j.result||""; lastAudioText=j.result||""; document.getElementById("status").innerText="통역 완료"; remember("통역 이용",{lang:targetLang}); playTTS(lastAudioText)
+ document.getElementById("sourceText").innerText=text;
+ document.getElementById("status").innerText="통역 처리 중...";
+ setFlowState("translate","번역 중");
+ const fd=new FormData();fd.append("text",text);fd.append("service","travel");fd.append("session_id",sessionId);fd.append("source",source);fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||"");
+ const r=await fetch("/api/translate",{method:"POST",body:fd});const j=await r.json();
+ document.getElementById("resultText").innerText=j.result||"";lastAudioText=j.result||"";document.getElementById("status").innerText="통역 완료";setFlowState("speak","음성 출력 중");
+ remember("통역 이용",{lang:targetLang});await playTTS(lastAudioText);
+ setFlowState("","대기 중");
+ if(autoConversation&&autoRunning){setTimeout(()=>recordVoice(true),800)}
 }
-async function playTTS(text){if(!text)return; const fd=new FormData();fd.append("text",text);fd.append("session_id",sessionId); const r=await fetch("/api/tts",{method:"POST",body:fd}); const b=await r.blob(); if(b.size>100)new Audio(URL.createObjectURL(b)).play()}
+async function playTTS(text){if(!text)return;try{const fd=new FormData();fd.append("text",text);fd.append("session_id",sessionId);const r=await fetch("/api/tts",{method:"POST",body:fd});const b=await r.blob();if(b.size>100){let a=new Audio(URL.createObjectURL(b));await a.play()}}catch(e){}}
 function replayTTS(){playTTS(lastAudioText)}
-
-async function recordVoice(){
- document.getElementById("status").innerText="말씀하세요. 끝나면 자동 통역합니다.";
- const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
- const audioContext=new AudioContext(),source=audioContext.createMediaStreamSource(stream),analyser=audioContext.createAnalyser(); analyser.fftSize=2048; source.connect(analyser);
- const data=new Uint8Array(analyser.fftSize),mr=new MediaRecorder(stream); let chunks=[],started=false,lastVoice=Date.now(),begin=Date.now();
- mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
- mr.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());try{audioContext.close()}catch(e){}; const blob=new Blob(chunks,{type:"audio/webm"}); const fd=new FormData();fd.append("file",blob,"voice.webm");fd.append("session_id",sessionId);fd.append("duration",String(Math.round((Date.now()-begin)/1000)));fd.append("user_language_mode","auto");fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||""); const r=await fetch("/api/stt",{method:"POST",body:fd}); const j=await r.json(); if(j.ok&&j.text)translate(j.text,"voice"); else document.getElementById("status").innerText="음성 인식 실패"};
- mr.start(250);
- function loop(){analyser.getByteTimeDomainData(data);let sum=0;for(let v of data)sum+=Math.abs(v-128);let vol=sum/data.length,now=Date.now();if(vol>18){started=true;lastVoice=now} if(started&&now-begin>900&&now-lastVoice>1200){mr.stop();return} if(mr.state!=="inactive")requestAnimationFrame(loop)}
- loop();
+async function recordVoice(loopMode=false){
+ goPage(2);
+ autoRunning=true;
+ document.getElementById("status").innerText="말씀하세요";
+ setFlowState("listen","듣는 중");
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  const ac=new AudioContext(),src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=2048;src.connect(an);
+  const data=new Uint8Array(an.fftSize),mr=new MediaRecorder(stream);let chunks=[],started=false,lastVoice=Date.now(),begin=Date.now();
+  mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+  mr.onstop=async()=>{
+   stream.getTracks().forEach(t=>t.stop());try{ac.close()}catch(e){}
+   const blob=new Blob(chunks,{type:"audio/webm"});const fd=new FormData();fd.append("file",blob,"voice.webm");fd.append("session_id",sessionId);fd.append("duration",String(Math.round((Date.now()-begin)/1000)));fd.append("user_language_mode","auto");fd.append("target_language",targetLang);fd.append("lat",lat);fd.append("lng",lng);fd.append("device_locale",navigator.language||"");
+   const r=await fetch("/api/stt",{method:"POST",body:fd});const j=await r.json();
+   if(j.ok&&j.text)translate(j.text,"voice");else{document.getElementById("status").innerText="음성 인식 실패";setFlowState("error","다시 말해주세요");if(autoConversation&&autoRunning)setTimeout(()=>recordVoice(true),1000)}
+  };
+  mr.start(250);
+  function loop(){an.getByteTimeDomainData(data);let sum=0;for(let v of data)sum+=Math.abs(v-128);let vol=sum/data.length,now=Date.now();if(vol>18){started=true;lastVoice=now}if(started&&now-begin>900&&now-lastVoice>1300){mr.stop();return}if(mr.state!=="inactive")requestAnimationFrame(loop)}
+  loop();
+ }catch(e){document.getElementById("status").innerText="마이크 권한 필요";setFlowState("error","마이크 오류")}
 }
 if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{lat=p.coords.latitude;lng=p.coords.longitude},()=>{}, {enableHighAccuracy:true,timeout:8000,maximumAge:30000})}
-render();renderHistory();
+initLangs();setLang(targetLang);render();renderHistory();
 </script>
 </body>
 </html>
