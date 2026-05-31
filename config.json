@@ -1,0 +1,11 @@
+{ 
+  "project": "KRXA_LOCAL_FULLSET", 
+  "mode": "local", 
+  "call_phrase": "GO = KRXA_VOICE_LOOP_V1", 
+  "primary_ai": "ChatGPT", 
+  "history_enabled": true, 
+  "auto_language_detect": true, 
+  "gps_priority": "reference_only", 
+  "speech_priority": "user_voice_first", 
+  "krxai_role": "secondary_learning_layer" 
+} 
