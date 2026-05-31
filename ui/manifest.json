@@ -1,0 +1,69 @@
+{
+  "name": "말대말 Travel V1",
+  "short_name": "말대말",
+  "description": "KRXA 기반 여행 통역, 위치기반 여행 허브, SOS/OFFLINE 지원 PWA",
+  "start_url": "/app?service=travel",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "ko",
+  "background_color": "#eef4fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "travel",
+    "utilities",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "통역 시작",
+      "short_name": "통역",
+      "description": "말대말 실시간 통역을 시작합니다.",
+      "url": "/app?service=travel&mode=translate",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "여행 상황",
+      "short_name": "여행",
+      "description": "여행 허브를 엽니다.",
+      "url": "/app?service=travel&mode=hub",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "SOS",
+      "short_name": "SOS",
+      "description": "긴급 도움 및 오프라인 문장을 엽니다.",
+      "url": "/app?service=travel&mode=sos",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
