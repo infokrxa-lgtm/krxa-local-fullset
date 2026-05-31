@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
 <title>말대말 Travel V1</title>
 
+.modal{
+  position:absolute;inset:0;background:rgba(15,23,42,.45);
+  z-index:50;display:none;align-items:center;justify-content:center;padding:18px
+}
+.modalBox{
+  width:100%;max-height:86%;overflow:auto;background:white;border-radius:22px;padding:18px
+}
+.modalHead{display:flex;justify-content:space-between;align-items:center}
+.closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
@@ -234,6 +243,26 @@ select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;pad
     </section>
 
   </div>
+<div class="modal" id="linkModal">
+  <div class="modalBox">
+    <div class="modalHead">
+      <h3 id="linkModalTitle">연결</h3>
+      <button class="closeBtn" onclick="closeLinkModal()">닫기</button>
+    </div>
+
+    <div id="linkModalList"></div>
+
+    <hr>
+
+    <b>내 링크 추가</b>
+    <input id="userLinkName" placeholder="사이트명">
+    <input id="userLinkUrl" placeholder="https://...">
+    <button class="btn blue" style="width:100%;margin-top:6px" onclick="addUserLink()">추가</button>
+
+    <input id="deleteLinkIndex" placeholder="삭제 번호 예: 0">
+    <button class="btn red" style="width:100%;margin-top:6px" onclick="deleteUserLink()">삭제</button>
+  </div>
+</div>
   <div class="dots" id="dots"></div>
 </div>
 
@@ -282,12 +311,30 @@ function renderHistory(){
  if(!d.length){box.innerHTML='<div class="historyItem"><b>이용내역 없음</b><small>통역 내용은 표시하지 않습니다.</small></div>';return}
  d.slice().reverse().forEach(x=>{let div=document.createElement("div");div.className="historyItem";div.innerHTML=`<b>${new Date(x.time).toLocaleString()}</b><small>${x.kind} · ${x.detail?.lang||""}</small>`;box.appendChild(div)})
 }
-function openHub(cat){
- remember("카테고리 선택",{category:cat});
- if(cat==="route"){openMap();return}
- if(cat==="tour"){window.open("https://www.youtube.com","_blank");return}
- if(cat==="call"){goPage(3);return}
- goPage(2);
+let currentLinkCategory = "";
+
+const CATEGORY_LABELS = {
+  food:"맛집",
+  route:"길찾기",
+  hotel:"호텔",
+  taxi:"교통",
+  tour:"관광",
+  shopping:"쇼핑",
+  music:"음악",
+  game:"게임",
+  sos:"SOS"
+};
+
+async function openHub(cat){
+  currentLinkCategory = cat;
+  remember("카테고리 선택",{category:cat});
+
+  if(cat === "call"){
+    goPage(3);
+    return;
+  }
+
+  await openLinkModal(cat);
 }
 function openMap(){let url="https://www.google.com/maps";if(lat&&lng)url=`https://www.google.com/maps/search/travel+nearby/@${lat},${lng},15z`;window.open(url,"_blank")}
 function callNumber(n){window.location.href="tel:"+n}
