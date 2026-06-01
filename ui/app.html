@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes" />
   <title>말대말 Travel V1</title>
-<link rel="manifest" href="./manifest.json" />
+<link rel="manifest" href="/ui/manifest.json" />
   <style>
     *{box-sizing:border-box}
     body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
@@ -16,7 +16,7 @@
     .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
     .dot.active{background:#2563eb;width:20px;border-radius:99px}
 
-    .home{background:linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),url("./assets/travel_home_bg.png");background-size:cover;background-position:center;color:white}
+    .home{background:linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),url("/ui/assets/travel_home_bg.png");background-size:cover;background-position:center;color:white}
     .deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.9);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center;z-index:2}
     .homeTitle{text-align:center;margin-top:72px}
     .homeTitle h1{font-size:48px;margin:0 0 10px}
@@ -241,10 +241,10 @@
   <div class="dots" id="dots"></div>
 </div>
 
-<script src="./js/travel_context.js"></script>
-<script src="./js/travel_engine.js"></script>
-<script src="./js/user_links.js"></script>
-<script src="./js/m2m_translate.js"></script>
+<script src="/ui/js/travel_context.js"></script>
+<script src="/ui/js/travel_engine.js"></script>
+<script src="/ui/js/user_links.js"></script>
+<script src="/ui/js/m2m_translate.js"></script>
 
 <script>
 (function(){
@@ -371,7 +371,7 @@ document.addEventListener("keydown", function(e){
   if(window.KRXA_DeviceContext) KRXA_DeviceContext.init();
   if(window.KRXA_Translate) KRXA_Translate.init();
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    navigator.serviceWorker.register("/ui/service-worker.js").catch(()=>{});
   }
 })();
 </script>
