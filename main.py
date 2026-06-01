@@ -32,6 +32,13 @@ from core.krxa_links import (
 )
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
+
+app.mount("/ui", StaticFiles(directory="ui", html=True), name="ui")
+
+@app.get("/travel-v1", response_class=HTMLResponse)
+def travel_v1():
+    return render_template("app.html")
+
 ROOT = Path(".").resolve()
 
 VOICE_FILTER_PATH = "storage/voice_filter_config.json"
@@ -541,14 +548,5 @@ def api_tts(
         text=text,
         session_id=session_id
     )\n
-# ===== KRXA Travel V1 UI Static Route =====
-try:
-    app.mount("/ui", StaticFiles(directory="ui", html=True), name="ui")
-except Exception:
-    pass
 
-@app.get("/travel-v1", response_class=HTMLResponse)
-def travel_v1():
-    return Path("ui/app.html").read_text(encoding="utf-8")
-# ===== End KRXA Travel V1 UI Static Route =====
 \n
