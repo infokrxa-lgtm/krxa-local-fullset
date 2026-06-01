@@ -537,18 +537,20 @@ def api_tts(
     text: str = Form(...),
     session_id: str = Form("")
 ):
-    return tts_response(
+      return tts_response(
         text=text,
         session_id=session_id
-    )\n
+    )
+
+
 # ===== KRXA Travel V1 UI Static Route =====
 try:
     app.mount("/ui", StaticFiles(directory="ui", html=True), name="ui")
 except Exception:
     pass
 
+
 @app.get("/travel-v1", response_class=HTMLResponse)
 def travel_v1():
-    return Path("ui/app.html").read_text(encoding="utf-8")
+    return render_template("app.html")
 # ===== End KRXA Travel V1 UI Static Route =====
-\n
