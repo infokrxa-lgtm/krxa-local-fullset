@@ -5,7 +5,8 @@ import os
 import shutil
 
 from fastapi import FastAPI, Form, UploadFile, File, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 
 from core.krxa_router import route_turn
 from core.krxa_translate import translate_only
@@ -539,4 +540,15 @@ def api_tts(
     return tts_response(
         text=text,
         session_id=session_id
-    )
+    )\n
+# ===== KRXA Travel V1 UI Static Route =====
+try:
+    app.mount("/ui", StaticFiles(directory="ui", html=True), name="ui")
+except Exception:
+    pass
+
+@app.get("/travel-v1", response_class=HTMLResponse)
+def travel_v1():
+    return Path("ui/app.html").read_text(encoding="utf-8")
+# ===== End KRXA Travel V1 UI Static Route =====
+\n
