@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes" />
   <title>말대말 Travel V1</title>
-  <link rel="manifest" href="/manifest.json" />
+<link rel="manifest" href="./manifest.json" />
   <style>
     *{box-sizing:border-box}
     body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
@@ -16,7 +16,7 @@
     .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
     .dot.active{background:#2563eb;width:20px;border-radius:99px}
 
-    .home{background:linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),url("/assets/travel_home_bg.png");background-size:cover;background-position:center;color:white}
+    .home{background:linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),url("./assets/travel_home_bg.png");background-size:cover;background-position:center;color:white}
     .deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.9);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center;z-index:2}
     .homeTitle{text-align:center;margin-top:72px}
     .homeTitle h1{font-size:48px;margin:0 0 10px}
@@ -31,8 +31,21 @@
     .back{border:0;background:#f1f5f9;border-radius:10px;width:34px;height:34px;font-size:20px}
     .title{flex:1;text-align:center;font-size:18px;font-weight:bold}
     .content{padding:0 12px 12px;height:calc(100% - 52px);overflow:hidden}
-    .hubHero{height:58px;padding:15px 14px 4px;text-align:left}
-    .hubHero h2{margin:0;font-size:21px}.hubHero p{margin:4px 0 0;color:#64748b;font-size:12px}
+.hubHero{
+  height:76px;
+  padding:18px 18px 8px;
+  text-align:left;
+}
+.hubHero h2{
+  margin:0;
+  font-size:22px;
+  line-height:1.15;
+}
+.hubHero p{
+  margin:7px 0 0;
+  color:#64748b;
+  font-size:12px;
+}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:15px;padding:10px 6px;text-align:center;font-weight:bold;min-height:68px}
     .card span{display:block;font-size:25px;margin-bottom:4px}
@@ -42,8 +55,26 @@
     .detailBtn{border:1px solid #e5e7eb;background:#f8fafc;border-radius:14px;padding:10px 6px;font-weight:bold;font-size:13px}
     .miniBar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:8px 0}
     .miniBar button{border:0;border-radius:12px;padding:10px 4px;font-weight:bold;color:white;font-size:12px}
-    .linkBox{border:1px solid #e5e7eb;border-radius:14px;padding:10px;margin-top:8px;font-size:12px;text-align:left}
-    .linkBox button{width:100%;border:0;border-radius:10px;background:#2563eb;color:white;padding:8px;margin-top:6px;font-weight:bold}
+   .linkBox{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:9px;
+  margin-top:7px;
+  font-size:12px;
+  text-align:center;
+  background:#f8fafc;
+}
+.linkBox b{display:block;margin-bottom:5px}
+.linkBox button{
+  width:100%;
+  border:0;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  padding:9px;
+  margin-top:4px;
+  font-weight:bold;
+}
 
     .lang{display:flex;gap:6px;margin-bottom:6px}
     .lang button{flex:1;border:0;background:#e5e7eb;border-radius:10px;padding:8px 2px;font-weight:bold;font-size:12px}
@@ -115,7 +146,7 @@
     <section class="page">
       <div class="screen">
         <div class="hubHero"><h2>지금 무엇이 필요하세요?</h2><p id="hubContextText">위치 기반 여행 실행 허브</p></div>
-        <div class="content" style="height:calc(100% - 58px)">
+        <div class="content" style="height:calc(100% - 76px)">
           <div class="grid" id="hubGrid"></div>
         </div>
       </div>
@@ -132,10 +163,9 @@
             <button class="green" onclick="KRXA_Translate.openQuickInput()">🎙 말하기</button>
           </div>
           <div class="linkBox">
-            <b>추천앱 / 사용자 사이트</b>
-            <div id="detailLinks"></div>
-            <button onclick="KRXA_App.openLinkManager()">등록/삭제</button>
-          </div>
+  <b>추천앱 / 사용자 사이트</b>
+  <button onclick="KRXA_App.openLinkManager()">추천앱 보기 / 등록·삭제</button>
+</div>
         </div>
       </div>
     </section>
@@ -211,10 +241,10 @@
   <div class="dots" id="dots"></div>
 </div>
 
-<script src="/js/travel_context.js"></script>
-<script src="/js/travel_engine.js"></script>
-<script src="/js/user_links.js"></script>
-<script src="/js/m2m_translate.js"></script>
+<script src="./js/travel_context.js"></script>
+<script src="./js/travel_engine.js"></script>
+<script src="./js/user_links.js"></script>
+<script src="./js/m2m_translate.js"></script>
 
 <script>
 (function(){
@@ -243,6 +273,16 @@
     if(Math.abs(dx)<70)return;
     dx<0?nextPage():prevPage();
   });
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "ArrowRight"){
+    nextPage();
+  }
+
+  if(e.key === "ArrowLeft"){
+    prevPage();
+  }
+});
 
   function buildHub(){
     const menus=KRXA_TravelEngine.getAllMenus();
@@ -291,8 +331,7 @@
       b.onclick=()=>openGuide(item.label);
       list.appendChild(b);
     });
-    document.getElementById("detailLinks").innerHTML=KRXA_UserLinks.buildLinksHtml(cat);
-    goPage(2);
+        goPage(2);
   }
 
   function openGuide(label){
@@ -332,7 +371,7 @@
   if(window.KRXA_DeviceContext) KRXA_DeviceContext.init();
   if(window.KRXA_Translate) KRXA_Translate.init();
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
   }
 })();
 </script>
