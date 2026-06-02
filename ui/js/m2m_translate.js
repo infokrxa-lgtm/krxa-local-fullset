@@ -8,8 +8,12 @@
 */
 
 (function () {
-  let autoConversation = false;
-  let autoRunning = false;
+ let autoConversation = false;
+let autoRunning = false;
+let isTtsPlaying = false;
+let isRecording = false;
+let micPermissionReady = false;
+let autoRestartTimer = null;
   let targetLanguage = localStorage.getItem("krxa_language_mode") || "auto";
   let lastAudioText = "";
   let sessionId =
@@ -87,22 +91,42 @@ const LANGS = [
     setLang(targetLanguage);
   }
 
-  function toggleAuto() {
-    autoConversation = !autoConversation;
+function toggleAuto() {
+  autoConversation = !autoConversation;
 
-    const toggle = document.getElementById("autoToggle");
-    if (toggle) {
-      toggle.className = "toggle" + (autoConversation ? " on" : "");
-    }
-
-    setFlowState("", autoConversation ? "자동대화 ON" : "자동대화 OFF");
+  const toggle = document.getElementById("autoToggle");
+  if (toggle) {
+    toggle.className = "toggle" + (autoConversation ? " on" : "");
   }
 
+  if (autoConversation) {
+    autoRunning = true;
+    setFlowState("", "자동대화 ON");
+    setStatus("자동대화 준비 중...");
+
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = setTimeout(function () {
+      recordVoice();
+    }, 700);
+  } else {
+    stopAuto();
+  }
+}
   function stopAuto() {
-    autoRunning = false;
-    setStatus("대기 중");
-    setFlowState("", "자동대화 종료");
+  autoConversation = false;
+  autoRunning = false;
+  isRecording = false;
+
+  clearTimeout(autoRestartTimer);
+
+  const toggle = document.getElementById("autoToggle");
+  if (toggle) {
+    toggle.className = "toggle";
   }
+
+  setStatus("대기 중");
+  setFlowState("", "자동대화 종료");
+}
 
   function getDeviceContext() {
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.get) {
@@ -162,11 +186,12 @@ const LANGS = [
 
       setFlowState("", "대기 중");
 
-      if (autoConversation && autoRunning) {
-        setTimeout(function () {
-          recordVoice();
-        }, 800);
-      }
+if (autoConversation && autoRunning && !isTtsPlaying) {
+  clearTimeout(autoRestartTimer);
+  autoRestartTimer = setTimeout(function () {
+    recordVoice();
+  }, 1200);
+}
     } catch (e) {
       setStatus("통역 연결 오류");
       setFlowState("error", "API 연결 확인 필요");
@@ -177,36 +202,50 @@ const LANGS = [
     }
   }
 
-  async function playTTS(text) {
-    const cleanText = String(text || "").trim();
-    if (!cleanText) return;
+async function playTTS(text) {
+  const cleanText = String(text || "").trim();
+  if (!cleanText) return;
 
-    try {
-      const fd = new FormData();
-      fd.append("text", cleanText);
-      fd.append("session_id", sessionId);
+  isTtsPlaying = true;
 
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        body: fd
+  try {
+    const fd = new FormData();
+    fd.append("text", cleanText);
+    fd.append("session_id", sessionId);
+
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      body: fd
+    });
+
+    const blob = await res.blob();
+
+    if (blob.size > 100) {
+      const audio = new Audio(URL.createObjectURL(blob));
+
+      await new Promise(function (resolve) {
+        audio.onended = resolve;
+        audio.onerror = resolve;
+        audio.play().catch(resolve);
       });
-
-      const blob = await res.blob();
-
-      if (blob.size > 100) {
-        const audio = new Audio(URL.createObjectURL(blob));
-        await audio.play();
-      }
-    } catch (e) {
-      // TTS 실패해도 화면 번역은 유지
     }
+  } catch (e) {
+    // TTS 실패해도 화면 번역은 유지
+  } finally {
+    isTtsPlaying = false;
   }
+}
 
   function replayTTS() {
     playTTS(lastAudioText);
   }
 
-  async function recordVoice() {
+async function recordVoice() {
+    if (isRecording || isTtsPlaying) {
+      return;
+    }
+
+    isRecording = true;
     autoRunning = true;
 
     setStatus("말씀하세요");
@@ -243,6 +282,7 @@ const LANGS = [
       recorder.onstop = async function () {
         stream.getTracks().forEach(function (t) { t.stop(); });
         try { audioContext.close(); } catch (e) {}
+isRecording = false;
 
         const blob = new Blob(chunks, { type: "audio/webm" });
         const ctx = getDeviceContext();
@@ -297,7 +337,7 @@ const LANGS = [
         const volume = sum / data.length;
         const now = Date.now();
 
-        if (volume > 18) {
+       if (volume > 24) {
           speechStarted = true;
           lastVoiceTime = now;
         }
