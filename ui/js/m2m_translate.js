@@ -365,27 +365,28 @@ isRecording = false;
       }
 
       detect();
-    } catch (e) {
+        } catch (e) {
+      isRecording = false;
       setStatus("마이크 권한 필요");
       setFlowState("error", "마이크 오류");
     }
-  }
 
   function openQuickInput() {
-  const text = prompt("통역할 내용을 입력하세요.");
-  if (text && text.trim()) {
-    translateText(text.trim(), "quick_text");
-  }
-}
+    if (window.KRXA_App && window.KRXA_App.openModal) {
+      window.KRXA_App.openModal(
+        "말하기 / 텍스트 입력",
+        "<textarea id='quickTranslateText' placeholder='통역할 내용을 입력하세요'></textarea>" +
+        "<button class='btn blue' style='width:100%;margin-top:6px' onclick='KRXA_Translate.sendQuickText()'>전송</button>" +
+        "<button class='btn green' style='width:100%;margin-top:6px' onclick='KRXA_Translate.recordVoice()'>🎙 음성 입력</button>"
+      );
+      return;
+    }
 
-    window.KRXA_App.openModal(
-      "말하기 / 텍스트 입력",
-      "<textarea id='quickTranslateText' placeholder='통역할 내용을 입력하세요'></textarea>" +
-      "<button class='btn blue' style='width:100%;margin-top:6px' onclick='KRXA_Translate.sendQuickText()'>전송</button>" +
-      "<button class='btn green' style='width:100%;margin-top:6px' onclick='KRXA_Translate.recordVoice()'>🎙 음성 입력</button>"
-    );
+    const text = prompt("통역할 내용을 입력하세요.");
+    if (text && text.trim()) {
+      translateText(text.trim(), "quick_text");
+    }
   }
-
   function sendQuickText() {
     const el = document.getElementById("quickTranslateText");
     const text = el ? el.value : "";
