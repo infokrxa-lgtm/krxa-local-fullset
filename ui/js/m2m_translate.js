@@ -186,10 +186,12 @@ function toggleAuto() {
 
       setFlowState("", "대기 중");
 
-if (autoConversation && autoRunning && !isTtsPlaying) {
+if (autoConversation && autoRunning) {
   clearTimeout(autoRestartTimer);
   autoRestartTimer = setTimeout(function () {
-    recordVoice();
+    if (autoConversation && autoRunning && !isTtsPlaying && !isRecording) {
+      recordVoice();
+    }
   }, 1200);
 }
     } catch (e) {
@@ -242,6 +244,12 @@ async function playTTS(text) {
 
 async function recordVoice() {
     if (isRecording || isTtsPlaying) {
+      if (autoConversation && autoRunning) {
+        clearTimeout(autoRestartTimer);
+        autoRestartTimer = setTimeout(function () {
+          recordVoice();
+        }, 900);
+      }
       return;
     }
 
@@ -364,11 +372,11 @@ isRecording = false;
   }
 
   function openQuickInput() {
-    if (!window.KRXA_App || !window.KRXA_App.openModal) {
-      const text = prompt("통역할 내용을 입력하세요.");
-      if (text) translateText(text, "quick_text");
-      return;
-    }
+  const text = prompt("통역할 내용을 입력하세요.");
+  if (text && text.trim()) {
+    translateText(text.trim(), "quick_text");
+  }
+}
 
     window.KRXA_App.openModal(
       "말하기 / 텍스트 입력",
