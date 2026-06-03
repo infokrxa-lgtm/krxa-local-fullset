@@ -9,7 +9,7 @@
     *{box-sizing:border-box}
     body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
     .app{width:100vw;max-width:430px;height:100dvh;margin:auto;background:#fff;overflow:hidden;position:relative}
-    .pages{display:flex;width:600%;height:100%;transition:transform .25s ease}
+    .pages{display:flex;width:700%;height:100%;transition:transform .25s ease}
     .page{width:100vw;max-width:430px;height:100dvh;flex:0 0 100vw;padding:10px;overflow:hidden}
     .screen{width:100%;height:100%;border-radius:24px;background:white;box-shadow:0 6px 18px rgba(15,23,42,.12);overflow:hidden;position:relative}
     .dots{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:10}
@@ -136,9 +136,9 @@
         </div>
         <div class="homeNav">
           <div onclick="KRXA_App.goPage(1)"><b>🧭</b>여행상황</div>
-          <div onclick="KRXA_App.goPage(5)"><b>🆘</b>SOS</div>
+          <div onclick="KRXA_App.goPage(6)"><b>🆘</b>SOS</div>
           <div onclick="KRXA_App.goPage(2)"><b>📘</b>상세</div>
-          <div onclick="KRXA_App.goPage(5)"><b>🔒</b>OFF</div>
+          <div onclick="KRXA_App.goPage(6)"><b>🔒</b>OFF</div>
         </div>
       </div>
     </section>
@@ -154,7 +154,7 @@
 
     <section class="page">
       <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title" id="detailTitle">상세 안내</div></div>
+        <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title" id="detailTitle">식당</div></div>
         <div class="content">
           <div class="detailList" id="detailList"></div>
           <div class="miniBar">
@@ -217,6 +217,20 @@
 
     <section class="page">
       <div class="screen">
+        <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title">사용내역</div></div>
+        <div class="content">
+          <div class="msg"><b>최근 통역</b><span>아직 저장된 통역 내역이 없습니다.</span></div>
+          <div class="msg"><b>최근 여행 이용</b><span>식당 / 공항 / 호텔 / 길찾기 이용 기록이 여기에 표시됩니다.</span></div>
+          <div class="msg"><b>KRXA 기억 루프</b><span>사용자가 종료하지 않은 흐름은 다음 접속 시 이어갈 수 있게 복원합니다.</span></div>
+          <button class="btn blue" style="width:100%;margin-top:8px" onclick="KRXA_App.goPage(3)">통역 계속하기</button>
+          <button class="btn green" style="width:100%;margin-top:8px" onclick="KRXA_App.goPage(1)">여행 메뉴로 이동</button>
+          <button class="btn red" style="width:100%;margin-top:8px" onclick="localStorage.clear();alert('사용내역 초기화 완료')">사용내역 초기화</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="screen">
         <div class="sosTop"><h2>SOS</h2><p style="color:white;margin:4px 0">위치 기반 긴급 도움</p></div>
         <div class="content" style="height:calc(100% - 96px)">
           <div class="grid">
@@ -256,7 +270,7 @@
 
 <script>
 (function(){
-  let currentPage=0,totalPages=6,startX=0,currentCategory="airport";
+  let currentPage=0,totalPages=7,startX=0,currentCategory="airport";
   const order=["airport","hotel","food","taxi","route","tour","shopping","music"];
 
   function render(){
@@ -326,7 +340,7 @@ document.addEventListener("keydown", function(e){
     box.appendChild(v);
   }
 
-  function openDetail(cat){
+  function openDetail(cat, noMove){
     currentCategory=cat;
     const menu=KRXA_TravelEngine.getMenu(cat);
     document.getElementById("detailTitle").innerText=menu.label;
@@ -339,7 +353,7 @@ document.addEventListener("keydown", function(e){
       b.onclick=()=>openGuide(item.label);
       list.appendChild(b);
     });
-        goPage(2);
+        if(!noMove) goPage(2);
   }
 
   function openGuide(label){
@@ -375,6 +389,7 @@ document.addEventListener("keydown", function(e){
   };
 
   buildHub();
+  openDetail('food', true);
   render();
   if(window.KRXA_DeviceContext) KRXA_DeviceContext.init();
   if(window.KRXA_Translate) KRXA_Translate.init();
