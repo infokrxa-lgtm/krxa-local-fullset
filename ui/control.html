@@ -38,12 +38,12 @@ input{min-width:220px}
 <p>운영 관제 UI</p>
 <p>Voice Filter / Turn Engine / Flow Signal / AutoLoop / Travel Link HUB</p>
 <p>
-<a href="/user">USER</a> |
+<a href="/user" target="_blank">USER</a> |
 <a href="/app?service=food">APP</a> |
-<a href="/test_voice">TEST VOICE</a> |
-<a href="/dev">DEV</a> |
-<a href="/api/state">STATE JSON</a> |
-<a href="/api/travel-links">TRAVEL LINKS</a>
+<a href="/test_voice" target="_blank">TEST VOICE</a> |
+<a href="/dev" target="_blank">DEV</a> |
+<a href="/api/state" target="_blank">STATE JSON</a> |
+<a href="/api/travel-links" target="_blank">TRAVEL LINKS</a>
 </p>
 </div>
 
@@ -353,6 +353,31 @@ async function loadCandidates(){
 renderSummary();
 renderLogs();
 </script>
+
+
+<section class="card">
+  <h2>9. KRXAI 학습기억 루프</h2>
+  <p>ChatGPT ⇄ KRXAI 분석, 수정·신규·개선 후보를 관제 보고로 연결합니다.</p>
+
+  <div class="grid">
+    <div class="mini">
+      <b>최근 오류</b>
+      <p>통역 지연 / STT 전 점검 / 없는 문장 차단 / UI 개선</p>
+    </div>
+    <div class="mini">
+      <b>개선 후보</b>
+      <p>Memory Loop Connector v01 생성</p>
+    </div>
+    <div class="mini">
+      <b>다음 행동 1개</b>
+      <p>storage/krxai_memory_loop.json 생성 후 관제 연결</p>
+    </div>
+  </div>
+
+  <button onclick="window.open('/dev','_blank')">DEV 새창 열기</button>
+  <button onclick="window.open('/api/state','_blank')">STATE JSON 새창</button>
+  <button onclick="alert('관제 보고 생성 준비 단계입니다.')">관제 보고 생성</button>
+</section>
 
 </body>
 </html>
