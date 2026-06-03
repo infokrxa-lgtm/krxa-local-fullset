@@ -125,15 +125,7 @@ async function translateText(text, source) {
             setStatus("원문 없음");
             return;
         }
-
-        if (
-            BLOCK_PREVIOUS_TEXT_REUSE &&
-            cleanText === lastSttText
-        ) {
-            setStatus("중복 문장 차단");
-            return;
-        }
-    }
+    
     // ===== End Truth Mode =====
 
     const sourceEl = document.getElementById("sourceText");
@@ -304,28 +296,20 @@ async function translateText(text, source) {
     const currentText = String(sttData.text).trim();
 
     // Truth First Filter
+if (!currentText || currentText === "-") {
+  setStatus("음성 없음");
+  setFlowState("error", "인식 문장 없음");
 
-    if (
-        BLOCK_EMPTY_TRANSLATION &&
-        currentText.length < MIN_STT_LENGTH
-    ) {
-        setStatus("음성 없음");
-        setFlowState("error", "인식 문장 없음");
-        return;
-    }
+  if (autoConversation && autoRunning) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = setTimeout(recordVoice, 1200);
+  }
 
-    if (
-        BLOCK_PREVIOUS_TEXT_REUSE &&
-        currentText === lastSttText
-    ) {
-        setStatus("중복 문장 차단");
-        setFlowState("error", "이전 문장 반복");
-        return;
-    }
+  return;
+}
 
-    lastSttText = currentText;
-
-    await translateText(currentText, "voice");
+lastSttText = currentText;
+await translateText(currentText, "voice");
 } else {
             setStatus("음성 인식 실패");
             setFlowState("error", "다시 말해주세요");
