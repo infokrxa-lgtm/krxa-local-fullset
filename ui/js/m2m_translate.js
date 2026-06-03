@@ -343,31 +343,6 @@ if (autoConversation && isLikelyBackgroundCaption(currentText)) {
   return;
 }
 lastSttText = currentText;
-function isLikelyBackgroundCaption(text) {
-  const t = String(text || "").trim();
-
-  if (!t) return true;
-
-  const blocked = [
-    "시청해 주셔서 감사합니다",
-    "시청해주셔서 감사합니다",
-    "구독",
-    "좋아요",
-    "알림 설정",
-    "유료광고",
-    "광고를 포함",
-    "이 영상",
-    "자막",
-    "다음 영상",
-    "thank you for watching",
-    "subscribe",
-    "like and subscribe"
-  ];
-
-  return blocked.some(function (x) {
-    return t.toLowerCase().includes(x.toLowerCase());
-  });
-}
 await translateText(currentText, "voice");
 } else {
             setStatus("음성 인식 실패");
@@ -435,63 +410,10 @@ await translateText(currentText, "voice");
     }
 
     const text = prompt("통역할 내용을 입력하세요.");
-function isLikelyBackgroundCaption(text) {
-  const t = String(text || "").trim();
-
-  if (!t) return true;
-
-  const blocked = [
-    "시청해 주셔서 감사합니다",
-    "시청해주셔서 감사합니다",
-    "구독",
-    "좋아요",
-    "알림 설정",
-    "유료광고",
-    "광고를 포함",
-    "이 영상",
-    "자막",
-    "다음 영상",
-    "thank you for watching",
-    "subscribe",
-    "like and subscribe"
-  ];
-
-  return blocked.some(function (x) {
-    return t.toLowerCase().includes(x.toLowerCase());
-  });
-}
     if (text && text.trim()) translateText(text.trim(), "quick_text");
   }
 
-  function sendQuickText() {
-    const el = document.getElementById("quickTranslateText");
-    const text = el ? el.value : "";
-function isLikelyBackgroundCaption(text) {
-  const t = String(text || "").trim();
-
-  if (!t) return true;
-
-  const blocked = [
-    "시청해 주셔서 감사합니다",
-    "시청해주셔서 감사합니다",
-    "구독",
-    "좋아요",
-    "알림 설정",
-    "유료광고",
-    "광고를 포함",
-    "이 영상",
-    "자막",
-    "다음 영상",
-    "thank you for watching",
-    "subscribe",
-    "like and subscribe"
-  ];
-
-  return blocked.some(function (x) {
-    return t.toLowerCase().includes(x.toLowerCase());
-  });
-}
-    translateText(text, "quick_text");
+     translateText(text, "quick_text");
   }
 
   function init() {
