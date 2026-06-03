@@ -187,7 +187,15 @@
           <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
           <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
           <div class="msg"><b>번역</b><span id="resultText">-</span></div>
-          <div class="actionRow"><button class="btn blue" onclick="KRXA_Translate.replayTTS()">🔊 다시듣기</button><button class="btn red" onclick="KRXA_Translate.stopAuto()">종료</button></div>
+          <div class="actionRow">
+  <button class="btn blue" onclick="KRXA_Translate.openQuickInput()">⌨️ 텍스트 입력</button>
+  <button class="btn blue" onclick="KRXA_Translate.replayTTS()">🔊 다시듣기</button>
+</div>
+
+<div class="actionRow">
+  <button class="btn green" onclick="KRXA_Translate.recordVoice()">🎙 말하기</button>
+  <button class="btn red" onclick="KRXA_Translate.stopAuto()">종료</button>
+</div>
         </div>
       </div>
     </section>
