@@ -120,12 +120,12 @@ async function translateText(text, source) {
 
     // ===== KRXA Truth First Mode =====
     if (TRUTH_MODE) {
+      if (cleanText === "-") {
+        setStatus("원문 없음");
+        return;
+      }
+    }
 
-        if (cleanText === "-") {
-            setStatus("원문 없음");
-            return;
-        }
-    
     // ===== End Truth Mode =====
 
     const sourceEl = document.getElementById("sourceText");
