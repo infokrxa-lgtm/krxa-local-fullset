@@ -1,23 +1,18 @@
-/* KRXA Travel V1 - M2M Translate Engine */
+from pathlib import Path
+
+src = Path("ui/js/m2m_translate.js")
+backup = Path("ui/js/m2m_translate_before_fix_encoding.js")
+
+if src.exists():
+    backup.write_text(src.read_text(encoding="utf-8", errors="ignore"), encoding="utf-8")
+
+code = r'''/* KRXA Travel V1 - M2M Translate Engine */
 
 (function () {
   let autoConversation = false;
   let autoRunning = false;
   let isTtsPlaying = false;
   let isRecording = false;
-// KRXA Truth First Mode
-const TRUTH_MODE = true;
-
-// 최소 음성 길이
-const MIN_STT_LENGTH = 2;
-
-// STT 결과 없으면 번역 금지
-const BLOCK_EMPTY_TRANSLATION = true;
-
-// 이전 문장 재사용 금지
-const BLOCK_PREVIOUS_TEXT_REUSE = true;
-
-let lastSttText = "";
   let autoRestartTimer = null;
 
   let targetLanguage = localStorage.getItem("krxa_language_mode") || "auto";
@@ -112,33 +107,12 @@ let lastSttText = "";
     setFlowState("", "자동대화 종료");
   }
 
-async function translateText(text, source) {
-
+  async function translateText(text, source) {
     const cleanText = String(text || "").trim();
-
     if (!cleanText) return;
-
-    // ===== KRXA Truth First Mode =====
-    if (TRUTH_MODE) {
-
-        if (cleanText === "-") {
-            setStatus("원문 없음");
-            return;
-        }
-
-        if (
-            BLOCK_PREVIOUS_TEXT_REUSE &&
-            cleanText === lastSttText
-        ) {
-            setStatus("중복 문장 차단");
-            return;
-        }
-    }
-    // ===== End Truth Mode =====
 
     const sourceEl = document.getElementById("sourceText");
     const resultEl = document.getElementById("resultText");
-
     if (sourceEl) sourceEl.innerText = cleanText;
 
     setStatus("통역 처리 중...");
@@ -299,34 +273,9 @@ async function translateText(text, source) {
           const res = await fetch("/api/stt", { method: "POST", body: fd });
           const sttData = await res.json();
 
-       if (sttData.ok && sttData.text) {
-
-    const currentText = String(sttData.text).trim();
-
-    // Truth First Filter
-
-    if (
-        BLOCK_EMPTY_TRANSLATION &&
-        currentText.length < MIN_STT_LENGTH
-    ) {
-        setStatus("음성 없음");
-        setFlowState("error", "인식 문장 없음");
-        return;
-    }
-
-    if (
-        BLOCK_PREVIOUS_TEXT_REUSE &&
-        currentText === lastSttText
-    ) {
-        setStatus("중복 문장 차단");
-        setFlowState("error", "이전 문장 반복");
-        return;
-    }
-
-    lastSttText = currentText;
-
-    await translateText(currentText, "voice");
-} else {
+          if (sttData.ok && sttData.text) {
+            await translateText(sttData.text, "voice");
+          } else {
             setStatus("음성 인식 실패");
             setFlowState("error", "다시 말해주세요");
             if (autoConversation && autoRunning) {
@@ -419,3 +368,8 @@ async function translateText(text, source) {
     sendQuickText: sendQuickText
   };
 })();
+'''
+
+src.write_text(code, encoding="utf-8")
+print("m2m_translate.js fixed")
+print("backup:", backup)
