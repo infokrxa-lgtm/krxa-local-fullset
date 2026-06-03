@@ -376,7 +376,31 @@ renderLogs();
 
   <button onclick="window.open('/dev','_blank')">DEV 새창 열기</button>
   <button onclick="window.open('/api/state','_blank')">STATE JSON 새창</button>
-  <button onclick="alert('관제 보고 생성 준비 단계입니다.')">관제 보고 생성</button>
+  <button onclick="createKrxaiReport()">관제 보고 생성</button>
+  <pre id="krxaiReportBox" style="margin-top:12px;background:#020617;color:#dbeafe;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 보고가 생성되지 않았습니다.</pre>
+
+  <script>
+    async function createKrxaiReport(){
+      const box = document.getElementById("krxaiReportBox");
+      if(box) box.innerText = "관제 보고 생성 중...";
+
+      try{
+        const res = await fetch("/api/krxai-memory/report", {method:"POST"});
+        const data = await res.json();
+
+        if(box){
+          box.innerText =
+            "생성 완료\n\n" +
+            "프로젝트: " + data.report.project + "\n" +
+            "시간: " + data.report.time + "\n" +
+            "다음 행동: " + data.report.next_action + "\n\n" +
+            "개선 후보:\n- " + data.report.improve_candidates.join("\n- ");
+        }
+      }catch(e){
+        if(box) box.innerText = "관제 보고 생성 실패: " + e.message;
+      }
+    }
+  </script>
 </section>
 
 </body>
