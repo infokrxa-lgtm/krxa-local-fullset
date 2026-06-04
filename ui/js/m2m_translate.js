@@ -50,15 +50,15 @@ const LISTEN_PRESETS = {
     minBlobSize: 1000,
     blockBackgroundCaption: false
   },
-  tv: {
-    name: "TV 시청 모드",
-    volumeThreshold: 18,
-    minSpeechMs: 1000,
-    endSilenceMs: 1800,
-    maxSilenceMs: 9000,
-    minBlobSize: 1200,
-    blockBackgroundCaption: false
-  }
+tv: {
+  name: "TV 시청 모드",
+  volumeThreshold: 12,
+  minSpeechMs: 600,
+  endSilenceMs: 2200,
+  maxSilenceMs: 12000,
+  minBlobSize: 500,
+  blockBackgroundCaption: false
+}
 };
 
 function getListenPreset() {
@@ -392,8 +392,9 @@ function shouldSendToSTT(blob, meta) {
 
         const preset = getListenPreset();
 
-        if (!blob || blob.size < preset.minBlobSize) {
-          setStatus("음성 없음");
+if (!blob || blob.size < preset.minBlobSize) {
+  saveMemoryEvent("pre_stt_hold", "hold", "", "", "음성 없음 또는 blob 부족: " + (blob ? blob.size : 0));
+  setStatus("음성 없음");
           setFlowState("", "다시 말씀해주세요");
           if (autoConversation && autoRunning) {
             clearTimeout(autoRestartTimer);
