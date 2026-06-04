@@ -20,6 +20,60 @@ const BLOCK_PREVIOUS_TEXT_REUSE = true;
 let lastSttText = "";
   let autoRestartTimer = null;
 
+let currentListenMode = localStorage.getItem("krxa_listen_mode") || "conversation";
+
+const LISTEN_PRESETS = {
+  conversation: {
+    name: "대화 모드",
+    volumeThreshold: 20,
+    minSpeechMs: 700,
+    endSilenceMs: 1200,
+    maxSilenceMs: 5000,
+    minBlobSize: 900,
+    blockBackgroundCaption: true
+  },
+  restaurant: {
+    name: "식당 모드",
+    volumeThreshold: 20,
+    minSpeechMs: 800,
+    endSilenceMs: 1500,
+    maxSilenceMs: 7000,
+    minBlobSize: 900,
+    blockBackgroundCaption: true
+  },
+  call: {
+    name: "통화 모드",
+    volumeThreshold: 18,
+    minSpeechMs: 900,
+    endSilenceMs: 1600,
+    maxSilenceMs: 8000,
+    minBlobSize: 1000,
+    blockBackgroundCaption: false
+  },
+  tv: {
+    name: "TV 시청 모드",
+    volumeThreshold: 18,
+    minSpeechMs: 1000,
+    endSilenceMs: 1800,
+    maxSilenceMs: 9000,
+    minBlobSize: 1200,
+    blockBackgroundCaption: false
+  }
+};
+
+function getListenPreset() {
+  return LISTEN_PRESETS[currentListenMode] || LISTEN_PRESETS.conversation;
+}
+
+function setListenMode(mode) {
+  currentListenMode = mode || "conversation";
+  localStorage.setItem("krxa_listen_mode", currentListenMode);
+  const preset = getListenPreset();
+  setStatus(preset.name);
+  setFlowState("", preset.name + " 적용");
+}
+
+
   let targetLanguage = localStorage.getItem("krxa_language_mode") || "auto";
   let lastAudioText = "";
   let sessionId = localStorage.getItem("krxa_session_id") || "session-" + Math.random().toString(16).slice(2, 10);
@@ -336,7 +390,9 @@ function shouldSendToSTT(blob, meta) {
         const blob = new Blob(chunks, { type: "audio/webm" });
         const ctx = getDeviceContext();
 
-        if (!blob || blob.size < 500) {
+        const preset = getListenPreset();
+
+        if (!blob || blob.size < preset.minBlobSize) {
           setStatus("음성 없음");
           setFlowState("", "다시 말씀해주세요");
           if (autoConversation && autoRunning) {
@@ -395,7 +451,7 @@ if (!currentText || currentText === "-") {
 
   return;
 }
-if (autoConversation && isLikelyBackgroundCaption(currentText)) {
+if (autoConversation && getListenPreset().blockBackgroundCaption && isLikelyBackgroundCaption(currentText)) {
   setStatus("배경음 차단");
   setFlowState("error", "사용자 발화 아님");
 
@@ -436,17 +492,17 @@ await translateText(currentText, "voice");
         const volume = sum / data.length;
         const now = Date.now();
 
-        if (volume > 24) {
+        if (volume > preset.volumeThreshold) {
           speechStarted = true;
           lastVoiceTime = now;
         }
 
-        if (speechStarted && now - startedAt > 500 && now - lastVoiceTime > 800) {
+        if (speechStarted && now - startedAt > preset.minSpeechMs && now - lastVoiceTime > preset.endSilenceMs) {
           safeStop();
           return;
         }
 
-        if (!speechStarted && now - startedAt > 3500) {
+        if (!speechStarted && now - startedAt > preset.maxSilenceMs) {
           safeStop();
           return;
         }
@@ -501,6 +557,8 @@ await translateText(currentText, "voice");
     playTTS: playTTS,
     replayTTS: replayTTS,
     openQuickInput: openQuickInput,
-    sendQuickText: sendQuickText
+    sendQuickText: sendQuickText,
+    setListenMode: setListenMode,
+    getListenPreset: getListenPreset
   };
 })();
