@@ -93,7 +93,7 @@ let lastSttText = "";
       setStatus("자동대화 준비 중...");
       setFlowState("", "자동대화 ON");
       clearTimeout(autoRestartTimer);
-      autoRestartTimer = setTimeout(recordVoice, 700);
+      autoRestartTimer = setTimeout(recordVoice, 300);
     } else {
       stopAuto();
     }
@@ -439,12 +439,12 @@ await translateText(currentText, "voice");
           lastVoiceTime = now;
         }
 
-        if (speechStarted && now - startedAt > 900 && now - lastVoiceTime > 1300) {
+        if (speechStarted && now - startedAt > 500 && now - lastVoiceTime > 800) {
           safeStop();
           return;
         }
 
-        if (!speechStarted && now - startedAt > 6000) {
+        if (!speechStarted && now - startedAt > 3500) {
           safeStop();
           return;
         }
