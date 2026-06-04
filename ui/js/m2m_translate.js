@@ -588,13 +588,17 @@ setFlowState("error", "마이크 오류");
       window.KRXA_App.openModal(
         "마이크 사용 안내",
         "<p>통역을 시작하려면 마이크 권한이 필요합니다.</p>" +
-        "<button class='btn green' style='width:100%;margin-top:8px' onclick='KRXA_Translate.recordVoice()'>🎙 마이크 허용하고 시작</button>"
+        "<button class='btn green' style='width:100%;margin-top:8px' onclick='window.krxaMicStart()'>🎙 마이크 허용하고 시작</button>"
       );
       return;
     }
 
     recordVoice();
   }
+  window.krxaMicStart = function () {
+    recordVoice();
+  };
+
   window.KRXA_Translate = {
     init: init,
     setLang: setLang,
