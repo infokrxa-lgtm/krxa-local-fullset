@@ -98,6 +98,24 @@ let lastSttText = "";
       stopAuto();
     }
   }
+  async function saveMemoryEvent(type, status, input, output, message) {
+    try {
+      await fetch("/api/krxai-memory/event", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          type: type || "unknown",
+          source: "m2m_translate",
+          status: status || "",
+          input: input || "",
+          output: output || "",
+          message: message || ""
+        })
+      });
+    } catch (e) {
+      // 기억 저장 실패는 통역 흐름을 막지 않는다.
+    }
+  }
 
   function stopAuto() {
     autoConversation = false;
