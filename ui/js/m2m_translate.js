@@ -583,13 +583,25 @@ setFlowState("error", "마이크 오류");
     initLanguages();
     setFlowState("", "마이크를 누르면 통역을 시작합니다");
   }
+  function requestMicAndStart() {
+    if (window.KRXA_App && window.KRXA_App.openModal) {
+      window.KRXA_App.openModal(
+        "마이크 사용 안내",
+        "<p>통역을 시작하려면 마이크 권한이 필요합니다.</p>" +
+        "<button class='btn green' style='width:100%;margin-top:8px' onclick='KRXA_Translate.recordVoice()'>🎙 마이크 허용하고 시작</button>"
+      );
+      return;
+    }
 
+    recordVoice();
+  }
   window.KRXA_Translate = {
     init: init,
     setLang: setLang,
     toggleAuto: toggleAuto,
     stopAuto: stopAuto,
     recordVoice: recordVoice,
+    requestMicAndStart: requestMicAndStart,
     translateText: translateText,
     playTTS: playTTS,
     replayTTS: replayTTS,
