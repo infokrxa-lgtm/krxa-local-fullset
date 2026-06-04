@@ -19,6 +19,8 @@ const BLOCK_PREVIOUS_TEXT_REUSE = true;
 
 let lastSttText = "";
   let autoRestartTimer = null;
+let micStream = null;
+let micReady = false;
 
 let currentListenMode = localStorage.getItem("krxa_listen_mode") || "conversation";
 
@@ -147,7 +149,8 @@ function setListenMode(mode) {
       setStatus("자동대화 준비 중...");
       setFlowState("", "자동대화 ON");
       clearTimeout(autoRestartTimer);
-      autoRestartTimer = setTimeout(recordVoice, 300);
+setStatus("자동대화 준비 완료 - 말하기를 눌러 시작");
+setFlowState("", "말하기 버튼 대기");
     } else {
       stopAuto();
     }
@@ -170,13 +173,40 @@ function setListenMode(mode) {
       // 기억 저장 실패는 통역 흐름을 막지 않는다.
     }
   }
+  async function acquireMic() {
+    if (micStream) {
+      micReady = true;
+      return micStream;
+    }
 
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+
+    micReady = true;
+    return micStream;
+  }
+
+  function releaseMic() {
+    if (micStream) {
+      micStream.getTracks().forEach(function (t) {
+        t.stop();
+      });
+    }
+
+    micStream = null;
+    micReady = false;
+  }
   function stopAuto() {
     autoConversation = false;
     autoRunning = false;
     isRecording = false;
     clearTimeout(autoRestartTimer);
-
+releaseMic();
     const toggle = document.getElementById("autoToggle");
     if (toggle) toggle.className = "toggle";
 
@@ -352,9 +382,7 @@ function shouldSendToSTT(blob, meta) {
     let audioContext = null;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-      });
+stream = await acquireMic();
 
       audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(stream);
@@ -382,7 +410,6 @@ function shouldSendToSTT(blob, meta) {
       };
 
       recorder.onstop = async function () {
-        if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
         try { if (audioContext) audioContext.close(); } catch (e) {}
 
         isRecording = false;
