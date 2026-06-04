@@ -185,6 +185,7 @@ async function translateText(text, source) {
     fd.append("service", "travel");
     fd.append("session_id", sessionId);
     fd.append("source", source || "text");
+fd.append("source_language", "auto");
     fd.append("target_language", targetLanguage);
     fd.append("lat", ctx.lat || "");
     fd.append("lng", ctx.lng || "");
@@ -368,6 +369,7 @@ if (!gate.ok) {
         fd.append("session_id", sessionId);
         fd.append("duration", String(Math.round((Date.now() - startedAt) / 1000)));
         fd.append("user_language_mode", "auto");
+fd.append("source_language", "auto");
         fd.append("target_language", targetLanguage);
         fd.append("lat", ctx.lat || "");
         fd.append("lng", ctx.lng || "");
