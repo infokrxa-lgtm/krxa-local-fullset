@@ -439,7 +439,7 @@ await translateText(currentText, "voice");
     }
   }
 
-  function openQuickInput() {
+   function openQuickInput() {
     if (window.KRXA_App && window.KRXA_App.openModal) {
       window.KRXA_App.openModal(
         "말하기 / 텍스트 입력",
@@ -454,7 +454,10 @@ await translateText(currentText, "voice");
     if (text && text.trim()) translateText(text.trim(), "quick_text");
   }
 
-     translateText(text, "quick_text");
+  function sendQuickText() {
+    const el = document.getElementById("quickTranslateText");
+    const text = el ? el.value : "";
+    translateText(text, "quick_text");
   }
 
   function init() {
