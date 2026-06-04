@@ -624,3 +624,62 @@ def krxai_memory_get():
         return {"ok": False, "error": str(e)}
 # ===== End KRXAI Memory Loop Report API =====
 
+
+
+# ===== KRXAI Auto Memory Event API =====
+@app.post("/api/krxai-memory/event")
+async def krxai_memory_event(request: Request):
+    import json
+    from datetime import datetime
+
+    path = Path("storage/krxai_memory_loop.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {}
+    else:
+        data = {
+            "name": "KRXAI Auto Memory Loop v01",
+            "mode": "auto_execution_loop",
+            "project": "Travel V1",
+            "events": []
+        }
+
+    events = data.get("events", [])
+
+    event = {
+        "time": datetime.now().isoformat(timespec="seconds"),
+        "project": "Travel V1",
+        "type": body.get("type", "unknown"),
+        "source": body.get("source", "m2m_translate"),
+        "status": body.get("status", ""),
+        "input": body.get("input", ""),
+        "output": body.get("output", ""),
+        "message": body.get("message", "")
+    }
+
+    events.insert(0, event)
+    data["events"] = events[:100]
+
+    # 간단 자동분석
+    fails = [e for e in events if "fail" in str(e.get("type","")) or "error" in str(e.get("type",""))]
+    data["auto_analysis"] = {
+        "total_events": len(events),
+        "fail_events": len(fails),
+        "next_candidate": "STT 전 Conversation Gate 개선" if len(fails) >= 3 else "통역 사용 데이터 계속 수집"
+    }
+    data["next_action"] = data["auto_analysis"]["next_candidate"]
+
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {"ok": True, "event": event, "next_action": data["next_action"]}
+# ===== End KRXAI Auto Memory Event API =====
+

@@ -108,6 +108,7 @@ let lastSttText = "";
     const toggle = document.getElementById("autoToggle");
     if (toggle) toggle.className = "toggle";
 
+    saveMemoryEvent("user_stop", "ok", "", "", "사용자 종료");
     setStatus("대기 중");
     setFlowState("", "자동대화 종료");
   }
@@ -178,6 +179,7 @@ async function translateText(text, source) {
 
       if (resultEl) resultEl.innerText = result || "-";
       lastAudioText = result;
+      saveMemoryEvent("translate_success", "ok", cleanText, result, "번역 성공");
 
       setStatus("통역 완료");
       setFlowState("speak", "음성 출력 중");
@@ -193,6 +195,7 @@ async function translateText(text, source) {
         }, 1200);
       }
     } catch (e) {
+      saveMemoryEvent("translate_error", "error", cleanText, "", e.message);
       setStatus("통역 연결 오류");
       setFlowState("error", "API 확인 필요");
       if (resultEl) resultEl.innerText = "통역 API 오류: " + e.message;
@@ -384,8 +387,10 @@ if (autoConversation && isLikelyBackgroundCaption(currentText)) {
   return;
 }
 lastSttText = currentText;
+saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
 await translateText(currentText, "voice");
 } else {
+            saveMemoryEvent("stt_fail", "fail", "", "", "음성 인식 실패");
             setStatus("음성 인식 실패");
             setFlowState("error", "다시 말해주세요");
             if (autoConversation && autoRunning) {
@@ -394,6 +399,7 @@ await translateText(currentText, "voice");
             }
           }
         } catch (e) {
+          saveMemoryEvent("stt_error", "error", "", "", e.message);
           setStatus("STT 연결 오류");
           setFlowState("error", "STT API 확인 필요");
         }
