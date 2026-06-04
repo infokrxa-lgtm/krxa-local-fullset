@@ -230,7 +230,33 @@ async function translateText(text, source) {
   function replayTTS() {
     playTTS(lastAudioText);
   }
+function shouldSendToSTT(blob, meta) {
+  if (!blob || blob.size < 900) {
+    return {
+      ok: false,
+      reason: "음성 데이터가 너무 짧음"
+    };
+  }
 
+  if (!meta || !meta.speechStarted) {
+    return {
+      ok: false,
+      reason: "발화 시작 감지 안됨"
+    };
+  }
+
+  if (meta.durationMs < 800) {
+    return {
+      ok: false,
+      reason: "발화 시간이 너무 짧음"
+    };
+  }
+
+  return {
+    ok: true,
+    reason: "STT 전송 가능"
+  };
+}
   async function recordVoice() {
     if (isRecording || isTtsPlaying) {
       if (autoConversation && autoRunning) {
@@ -297,7 +323,22 @@ async function translateText(text, source) {
           }
           return;
         }
+const gate = shouldSendToSTT(blob, {
+  speechStarted: speechStarted,
+  durationMs: Date.now() - startedAt
+});
 
+if (!gate.ok) {
+  setStatus("STT 전 보류");
+  setFlowState("", gate.reason);
+
+  if (autoConversation && autoRunning) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = setTimeout(recordVoice, 1200);
+  }
+
+  return;
+}
         setStatus("음성 인식 중...");
         setFlowState("translate", "STT 처리 중");
 
