@@ -410,7 +410,11 @@ stream = await acquireMic();
       };
 
       recorder.onstop = async function () {
-        try { if (audioContext) audioContext.close(); } catch (e) {}
+       try {
+  if (audioContext && audioContext.state !== "closed") {
+    audioContext.close();
+  }
+} catch (e) {}
 
         isRecording = false;
 
@@ -540,12 +544,17 @@ await translateText(currentText, "voice");
 
       detect();
     } catch (e) {
-      isRecording = false;
-      if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
-      try { if (audioContext) audioContext.close(); } catch (err) {}
+isRecording = false;
+// if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
 
-      setStatus("마이크 권한 필요");
-      setFlowState("error", "마이크 오류");
+try {
+  if (audioContext && audioContext.state !== "closed") {
+    audioContext.close();
+  }
+} catch (err) {}
+
+setStatus("마이크 권한 필요");
+setFlowState("error", "마이크 오류");
     }
   }
 
