@@ -320,8 +320,8 @@ document.addEventListener("keydown", function(e){
     });
     const t=document.createElement("div");
     t.className="card";
-    t.onclick=()=>goPage(3);
-    t.innerHTML="<span>🎙️</span>통역<small>자동대화</small>";
+    t.onclick=()=>{KRXA_Translate.setListenMode("tv");goPage(3);};
+    t.innerHTML="<span>📺</span>TV시청<small>실시간 자막통역</small>";
     box.appendChild(t);
     const c=document.createElement("div");
     c.className="card";
