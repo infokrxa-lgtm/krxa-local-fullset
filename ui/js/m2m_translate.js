@@ -23,29 +23,29 @@
   const LISTEN_PRESETS = {
     conversation: {
       name: "대화 모드",
-      volumeThreshold: 10,
-      minSpeechMs: 350,
-      endSilenceMs: 650,
-      maxSilenceMs: 2200,
-      minBlobSize: 350,
+      volumeThreshold: 8,
+      minSpeechMs: 250,
+      endSilenceMs: 450,
+      maxSilenceMs: 1600,
+      minBlobSize: 250,
       blockBackgroundCaption: true
     },
     restaurant: {
       name: "식당 모드",
-      volumeThreshold: 20,
-      minSpeechMs: 800,
-      endSilenceMs: 1500,
-      maxSilenceMs: 7000,
-      minBlobSize: 900,
+      volumeThreshold: 9,
+      minSpeechMs: 300,
+      endSilenceMs: 550,
+      maxSilenceMs: 2000,
+      minBlobSize: 300,
       blockBackgroundCaption: true
     },
     call: {
       name: "통화 모드",
-      volumeThreshold: 18,
-      minSpeechMs: 900,
-      endSilenceMs: 1600,
-      maxSilenceMs: 8000,
-      minBlobSize: 1000,
+      volumeThreshold: 8,
+      minSpeechMs: 350,
+      endSilenceMs: 650,
+      maxSilenceMs: 2400,
+      minBlobSize: 350,
       blockBackgroundCaption: false
     }
   };
