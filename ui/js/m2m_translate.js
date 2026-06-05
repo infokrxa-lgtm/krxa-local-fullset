@@ -23,11 +23,11 @@
   const LISTEN_PRESETS = {
     conversation: {
       name: "대화 모드",
-      volumeThreshold: 20,
-      minSpeechMs: 700,
-      endSilenceMs: 1200,
-      maxSilenceMs: 6000,
-      minBlobSize: 900,
+      volumeThreshold: 10,
+      minSpeechMs: 350,
+      endSilenceMs: 650,
+      maxSilenceMs: 2200,
+      minBlobSize: 350,
       blockBackgroundCaption: true
     },
     restaurant: {
@@ -168,6 +168,24 @@
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.get) {
       return window.KRXA_DeviceContext.get();
     }
+function guessLangByText(text) {
+  const t = String(text || "");
+  if (/[가-힣]/.test(t)) return "ko";
+  if (/[\u4e00-\u9fff]/.test(t)) return "zh";
+  if (/[\u3040-\u30ff]/.test(t)) return "ja";
+  if (/[a-zA-Z]/.test(t)) return "en";
+  return "auto";
+}
+
+function resolveTargetLanguageByText(text) {
+  const src = guessLangByText(text);
+
+  if (targetLanguage === "zh") return src === "zh" ? "ko" : "zh";
+  if (targetLanguage === "ja") return src === "ja" ? "ko" : "ja";
+  if (targetLanguage === "en") return src === "en" ? "ko" : "en";
+
+  return targetLanguage;
+}
 
     return {
       locale: navigator.language || "",
@@ -322,7 +340,7 @@
     fd.append("session_id", sessionId);
     fd.append("source", source || "text");
     fd.append("source_language", "auto");
-    fd.append("target_language", targetLanguage);
+    fd.append("target_language", resolveTargetLanguageByText(cleanText));
     fd.append("lat", ctx.lat || "");
     fd.append("lng", ctx.lng || "");
     fd.append("device_locale", ctx.locale || navigator.language || "");
