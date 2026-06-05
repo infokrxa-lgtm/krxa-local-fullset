@@ -598,7 +598,7 @@ setFlowState("error", "마이크 오류");
 
 let recognition = null;
 
-function createKRXARecognition() {
+function //createKRXARecognition() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -633,4 +633,4 @@ function createKRXARecognition() {
 })();
 
 // KRXA MIC GLOBAL EXPORT
-window.createKRXARecognition = createKRXARecognition;
+window.//createKRXARecognition = createKRXARecognition;
