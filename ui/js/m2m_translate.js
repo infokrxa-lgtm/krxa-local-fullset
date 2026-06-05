@@ -638,3 +638,6 @@ function createKRXARecognition() {
     getListenPreset: getListenPreset
   };
 })();
+
+// KRXA MIC GLOBAL EXPORT
+window.createKRXARecognition = createKRXARecognition;
