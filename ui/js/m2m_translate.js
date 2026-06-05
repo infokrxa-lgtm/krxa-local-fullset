@@ -557,8 +557,32 @@ function resolveTargetLanguageByText(text) {
               return;
             }
 
-            saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
-            await translateText(currentText, "voice");
+saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
+
+try {
+  await translateText(currentText, "voice");
+} catch (translateErr) {
+  saveMemoryEvent(
+    "after_stt_translate_error",
+    "error",
+    currentText,
+    "",
+    translateErr.message
+  );
+
+  setStatus("번역 연결 오류");
+  setFlowState("error", "STT 성공 · 번역 단계 확인 필요");
+
+  const resultEl = document.getElementById("resultText");
+  if (resultEl) {
+    resultEl.innerText = "STT 성공 / 번역 오류: " + translateErr.message;
+  }
+
+  if (autoConversation && autoRunning) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = setTimeout(recordVoice, 1200);
+  }
+}
           } else {
             saveMemoryEvent("stt_fail", "fail", "", "", "음성 인식 실패");
             setStatus("음성 인식 실패");
