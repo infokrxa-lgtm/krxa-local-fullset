@@ -52,16 +52,6 @@ const LISTEN_PRESETS = {
     minBlobSize: 1000,
     blockBackgroundCaption: false
   },
-tv: {
-  name: "TV 시청 모드",
-  volumeThreshold: 12,
-  minSpeechMs: 600,
-  endSilenceMs: 2200,
-  maxSilenceMs: 12000,
-  minBlobSize: 500,
-  blockBackgroundCaption: false
-}
-};
 
 function getListenPreset() {
   return LISTEN_PRESETS[currentListenMode] || LISTEN_PRESETS.conversation;
@@ -588,16 +578,19 @@ setFlowState("error", "마이크 오류");
       window.KRXA_App.openModal(
         "마이크 사용 안내",
         "<p>통역을 시작하려면 마이크 권한이 필요합니다.</p>" +
-        "<button class='btn green' style='width:100%;margin-top:8px' onclick='window.krxaMicStart()'>🎙 마이크 허용하고 시작</button>"
+        "<button class='btn green' style='width:100%;margin-top:8px' onclick='window.krxaMicStart();KRXA_App.closeModal()'>🎙 마이크 허용하고 시작</button>"
       );
       return;
     }
 
     recordVoice();
   }
-  window.krxaMicStart = function () {
-    recordVoice();
-  };
+ window.krxaMicStart = function () {
+  if (window.KRXA_App && window.KRXA_App.closeModal) {
+    window.KRXA_App.closeModal();
+  }
+  recordVoice();
+};
 // =====================================================
 // KRXA MIC GLOBAL INIT
 // recognition is not defined 오류 방지
