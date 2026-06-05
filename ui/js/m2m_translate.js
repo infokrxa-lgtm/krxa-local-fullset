@@ -164,28 +164,10 @@
     setLang(targetLanguage);
   }
 
-  function getDeviceContext() {
+   function getDeviceContext() {
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.get) {
       return window.KRXA_DeviceContext.get();
     }
-function guessLangByText(text) {
-  const t = String(text || "");
-  if (/[가-힣]/.test(t)) return "ko";
-  if (/[\u4e00-\u9fff]/.test(t)) return "zh";
-  if (/[\u3040-\u30ff]/.test(t)) return "ja";
-  if (/[a-zA-Z]/.test(t)) return "en";
-  return "auto";
-}
-
-function resolveTargetLanguageByText(text) {
-  const src = guessLangByText(text);
-
-  if (targetLanguage === "zh") return src === "zh" ? "ko" : "zh";
-  if (targetLanguage === "ja") return src === "ja" ? "ko" : "ja";
-  if (targetLanguage === "en") return src === "en" ? "ko" : "en";
-
-  return targetLanguage;
-}
 
     return {
       locale: navigator.language || "",
@@ -195,6 +177,26 @@ function resolveTargetLanguageByText(text) {
     };
   }
 
+  function guessLangByText(text) {
+    const t = String(text || "");
+
+    if (/[가-힣]/.test(t)) return "ko";
+    if (/[\u4e00-\u9fff]/.test(t)) return "zh";
+    if (/[\u3040-\u30ff]/.test(t)) return "ja";
+    if (/[a-zA-Z]/.test(t)) return "en";
+
+    return "auto";
+  }
+
+  function resolveTargetLanguageByText(text) {
+    const src = guessLangByText(text);
+
+    if (targetLanguage === "zh") return src === "zh" ? "ko" : "zh";
+    if (targetLanguage === "ja") return src === "ja" ? "ko" : "ja";
+    if (targetLanguage === "en") return src === "en" ? "ko" : "en";
+
+    return targetLanguage;
+  }
   async function saveMemoryEvent(type, status, input, output, message) {
     try {
       await fetch("/api/krxai-memory/event", {

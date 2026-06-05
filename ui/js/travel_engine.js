@@ -510,7 +510,7 @@
     html +=
       "<button class='btn blue' style='width:100%;margin-top:6px' onclick=\"KRXA_App.openMedia('video')\">🎥 동영상촬영</button>";
     html +=
-      "<button class='btn green' style='width:100%;margin-top:6px' onclick=\"KRXA_App.openQuickInput()\">🎙 말하기</button>";
+      "<button class='btn green' style='width:100%;margin-top:6px' onclick=\"KRXA_Translate.openQuickInput()\">🎙 말하기</button>";
 
     return html;
   }
