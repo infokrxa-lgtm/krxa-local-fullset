@@ -598,7 +598,30 @@ setFlowState("error", "마이크 오류");
   window.krxaMicStart = function () {
     recordVoice();
   };
+// =====================================================
+// KRXA MIC GLOBAL INIT
+// recognition is not defined 오류 방지
+// =====================================================
 
+let recognition = null;
+
+function createKRXARecognition() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("이 브라우저는 음성 인식을 지원하지 않습니다. Chrome을 사용하세요.");
+    return null;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.lang = "ko-KR";
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+
+  return rec;
+}
   window.KRXA_Translate = {
     init: init,
     setLang: setLang,
