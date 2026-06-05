@@ -320,7 +320,7 @@ document.addEventListener("keydown", function(e){
     });
     const t=document.createElement("div");
     t.className="card";
-    t.onclick=()=>{KRXA_Translate.setListenMode("tv");goPage(3);};
+    t.onclick=()=>{window.open('/ui/tv.html','_blank');};
     t.innerHTML="<span>📺</span>TV시청<small>실시간 자막통역</small>";
     box.appendChild(t);
     const c=document.createElement("div");
