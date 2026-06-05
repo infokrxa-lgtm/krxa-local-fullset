@@ -354,7 +354,17 @@
         body: fd
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+
+let data = null;
+try {
+  data = JSON.parse(raw);
+} catch (jsonErr) {
+  throw new Error(
+    "번역 API가 JSON이 아닌 응답을 반환했습니다: " +
+    raw.slice(0, 80)
+  );
+}
       const result = data.result || data.text || "";
 
       if (resultEl) resultEl.innerText = result || "-";
