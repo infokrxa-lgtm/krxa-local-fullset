@@ -23,7 +23,7 @@
   const LISTEN_PRESETS = {
     conversation: {
       name: "대화 모드",
-      volumeThreshold: 12,
+      volumeThreshold: 10,
       minSpeechMs: 350,
       endSilenceMs: 650,
       maxSilenceMs: 2200,
