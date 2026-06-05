@@ -250,7 +250,8 @@
     if (toggle) toggle.className = "toggle" + (autoConversation ? " on" : "");
 
     if (autoConversation) {
-      autoRunning = true;
+  autoRunning = true;
+  acquireMic().catch(function () {});
       clearTimeout(autoRestartTimer);
       setStatus("자동대화 준비 완료");
       setFlowState("", "말하기 버튼을 눌러 시작하세요");
