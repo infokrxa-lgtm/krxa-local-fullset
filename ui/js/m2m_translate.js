@@ -23,29 +23,29 @@
   const LISTEN_PRESETS = {
     conversation: {
       name: "대화 모드",
-      volumeThreshold: 8,
-      minSpeechMs: 250,
-      endSilenceMs: 450,
-      maxSilenceMs: 1600,
-      minBlobSize: 250,
+      volumeThreshold: 6,
+      minSpeechMs: 200,
+      endSilenceMs: 420,
+      maxSilenceMs: 1400,
+      minBlobSize: 220,
       blockBackgroundCaption: true
     },
     restaurant: {
       name: "식당 모드",
-      volumeThreshold: 9,
-      minSpeechMs: 300,
-      endSilenceMs: 550,
-      maxSilenceMs: 2000,
-      minBlobSize: 300,
+      volumeThreshold: 6,
+      minSpeechMs: 200,
+      endSilenceMs: 420,
+      maxSilenceMs: 1400,
+      minBlobSize: 220,
       blockBackgroundCaption: true
     },
     call: {
       name: "통화 모드",
-      volumeThreshold: 8,
-      minSpeechMs: 350,
-      endSilenceMs: 650,
-      maxSilenceMs: 2400,
-      minBlobSize: 350,
+      volumeThreshold: 6,
+      minSpeechMs: 200,
+      endSilenceMs: 420,
+      maxSilenceMs: 1400,
+      minBlobSize: 220,
       blockBackgroundCaption: false
     }
   };
@@ -302,23 +302,44 @@
     });
   }
 
-  function shouldSendToSTT(blob, meta) {
-    const preset = getListenPreset();
+function shouldSendToSTT(blob, meta) {
+  const preset = getListenPreset();
+  const size = blob ? blob.size : 0;
+  const duration = meta ? meta.durationMs : 0;
 
-    if (!blob || blob.size < preset.minBlobSize) {
-      return { ok: false, reason: "음성 데이터가 너무 짧음" };
-    }
-
-    if (!meta || !meta.speechStarted) {
-      return { ok: false, reason: "발화 시작 감지 안됨" };
-    }
-
-    if (meta.durationMs < preset.minSpeechMs) {
-      return { ok: false, reason: "발화 시간이 너무 짧음" };
-    }
-
-    return { ok: true, reason: "STT 전송 가능" };
+  if (!blob || size < preset.minBlobSize) {
+    return {
+      ok: false,
+      reason: "음성 데이터가 너무 짧음"
+    };
   }
+
+  if (!meta || !meta.speechStarted) {
+    if (size >= preset.minBlobSize * 2 && duration >= 600) {
+      return {
+        ok: true,
+        reason: "약한 발화 STT 전송"
+      };
+    }
+
+    return {
+      ok: false,
+      reason: "발화 시작 감지 안됨"
+    };
+  }
+
+  if (duration < 500) {
+    return {
+      ok: false,
+      reason: "발화 시간이 너무 짧음"
+    };
+  }
+
+  return {
+    ok: true,
+    reason: "STT 전송 가능"
+  };
+}
 
   async function translateText(text, source) {
     const cleanText = String(text || "").trim();
