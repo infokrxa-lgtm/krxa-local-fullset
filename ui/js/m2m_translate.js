@@ -539,7 +539,18 @@ try {
 
           if (sttData.ok && sttData.text) {
             const currentText = String(sttData.text || "").trim();
+            if (currentText.length < 2) {
+              saveMemoryEvent("stt_too_short", "hold", currentText, "", "STT 결과 너무 짧음");
+              setStatus("음성 없음");
+              setFlowState("", "인식 문장이 너무 짧음");
 
+              if (autoConversation && autoRunning) {
+                clearTimeout(autoRestartTimer);
+                autoRestartTimer = setTimeout(recordVoice, 1000);
+              }
+
+              return;
+            }
             if (!currentText || currentText === "-") {
               saveMemoryEvent("stt_empty", "hold", "", "", "인식 문장 없음");
               setStatus("음성 없음");
@@ -684,6 +695,11 @@ try {
     }
   }
   function requestMicAndStart() {
+    if (micStream) {
+      recordVoice();
+      return;
+    }
+
     if (window.KRXA_App && window.KRXA_App.openModal) {
       window.KRXA_App.openModal(
         "마이크 사용 안내",
