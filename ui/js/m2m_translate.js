@@ -665,7 +665,24 @@ try {
       setFlowState("error", "마이크 오류");
     }
   }
+  async function prepareMicAndGo(pageNo) {
+    setStatus("마이크 준비 중...");
+    setFlowState("listen", "마이크 권한 확인 중");
 
+    try {
+      await acquireMic();
+      setStatus("마이크 준비 완료");
+      setFlowState("", "MIC_READY");
+
+      if (window.KRXA_App && window.KRXA_App.goPage) {
+        window.KRXA_App.goPage(pageNo || 3);
+      }
+    } catch (e) {
+      setStatus("마이크 권한 필요");
+      setFlowState("error", "마이크 허용 후 다시 시도");
+      requestMicAndStart();
+    }
+  }
   function requestMicAndStart() {
     if (window.KRXA_App && window.KRXA_App.openModal) {
       window.KRXA_App.openModal(
@@ -727,6 +744,7 @@ try {
     stopAuto: stopAuto,
     recordVoice: recordVoice,
     requestMicAndStart: requestMicAndStart,
+    prepareMicAndGo: prepareMicAndGo,
     translateText: translateText,
     playTTS: playTTS,
     replayTTS: replayTTS,
