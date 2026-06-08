@@ -60,16 +60,31 @@ COMMAND_PATTERNS = [
 
 SHORT_VALID_WORDS = [
     "네",
+    "응",
+    "어",
+    "아",
+    "오",
+    "음",
+    "아니",
     "아니요",
+    "싫어",
+    "좋아",
+    "좋아요",
+    "맞아",
+    "맞아요",
+    "괜찮아",
+    "괜찮아요",
+    "안돼",
+    "돼",
+    "가자",
+    "먹자",
+    "자자",
+    "여기",
+    "저기",
     "안녕",
     "안녕하세요",
     "고마워",
     "감사합니다",
-    "여기",
-    "저기",
-    "좋아요",
-    "맞아요",
-    "아니",
 ]
 
 
@@ -141,7 +156,7 @@ def judge_utterance(text: str, source="stt", context=None):
     if len(clean) >= 3:
         score += 1
 
-    if score >= 2:
+    if score >= 1:
         result.update({
             "ok": True,
             "utterance_type": utterance_type,
