@@ -58,6 +58,12 @@ pre{background:#0f172a;color:white;padding:12px;border-radius:10px;white-space:p
 핵심 원칙: 흐름은 멈추지 않고, 호출만 늦춘다.
 </p>
 </div>
+<hr>
+<h2>KRXAI DEV 요청 목록</h2>
+<p>CONTROL에서 DEV 수정요청된 패치를 확인합니다.</p>
+
+<button onclick="loadDevRequests()">DEV 요청 확인</button>
+<pre id="devRequestBox" style="margin-top:12px;background:#111827;color:#d1fae5;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 DEV 요청을 불러오지 않았습니다.</pre>
 
 <div class="card">
 <h3>현재 LOCAL_FULLSET 핵심 구조</h3>
@@ -221,5 +227,47 @@ TEST VOICE에서 아래 결과 확인:
 </div>
 
 </div>
+<script>
+async function loadDevRequests(){
+  const box = document.getElementById("devRequestBox");
+  if(box) box.textContent = "DEV 요청 확인 중...";
+
+  try{
+    const res = await fetch("/api/krxai-patches");
+    const data = await res.json();
+
+    const items = (data.items || []).filter(function(item){
+      return item.status === "dev_requested";
+    });
+
+    if(!items.length){
+      box.textContent = "DEV 수정요청 항목이 없습니다.";
+      return;
+    }
+
+    let text = "";
+    items.forEach(function(item){
+      text +=
+        "ID: " + item.id + "\n" +
+        "Project: " + item.project + "\n" +
+        "Problem: " + item.problem + "\n" +
+        "Proposal: " + item.proposal + "\n" +
+        "Target files: " + (item.target_files || []).join(", ") + "\n" +
+        "Risk: " + item.risk + "\n" +
+        "Status: " + item.status + "\n\n" +
+        "다음 DEV 작업:\n" +
+        "1. 대상 파일 열기\n" +
+        "2. 수정안 작성\n" +
+        "3. 저장\n" +
+        "4. CONTROL에 재승인 요청\n\n" +
+        "----------------------------------------\n\n";
+    });
+
+    box.textContent = text;
+  }catch(e){
+    if(box) box.textContent = "DEV 요청 조회 오류: " + e.message;
+  }
+}
+</script>
 </body>
 </html>
