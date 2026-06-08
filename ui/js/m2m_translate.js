@@ -267,8 +267,7 @@
     isRecording = false;
 
     clearTimeout(autoRestartTimer);
-    releaseMic();
-
+    
     const toggle = document.getElementById("autoToggle");
     if (toggle) toggle.className = "toggle";
 
@@ -604,10 +603,32 @@ try {
 
 saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
 
+if (
+  sttData.should_call_llm === false ||
+  (sttData.turn_analysis && sttData.turn_analysis.should_call_llm === false)
+) {
+  saveMemoryEvent(
+    "turn_gate_hold",
+    "hold",
+    currentText,
+    "",
+    sttData.flow_signal || "Turn Gate hold"
+  );
+
+  setStatus("대기 중");
+  setFlowState("", sttData.flow_signal || "흐름 유지 중");
+
+  if (autoConversation && autoRunning) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = setTimeout(recordVoice, 1200);
+  }
+
+  return;
+}
+
 try {
   await translateText(currentText, "voice");
-} catch (translateErr) {
-  saveMemoryEvent(
+} catch (translateErr) {  saveMemoryEvent(
     "after_stt_translate_error",
     "error",
     currentText,
@@ -697,25 +718,7 @@ try {
       setFlowState("error", "마이크 오류");
     }
   }
-  async function prepareMicAndGo(pageNo) {
-    setStatus("마이크 준비 중...");
-    setFlowState("listen", "마이크 권한 확인 중");
-
-    try {
-      await acquireMic();
-      setStatus("마이크 준비 완료");
-      setFlowState("", "MIC_READY");
-
-      if (window.KRXA_App && window.KRXA_App.goPage) {
-        window.KRXA_App.goPage(pageNo || 3);
-      }
-    } catch (e) {
-      setStatus("마이크 권한 필요");
-      setFlowState("error", "마이크 허용 후 다시 시도");
-      requestMicAndStart();
-    }
-  }
-  function requestMicAndStart() {
+   function requestMicAndStart() {
     if (micStream) {
       recordVoice();
       return;
@@ -781,7 +784,6 @@ try {
     stopAuto: stopAuto,
     recordVoice: recordVoice,
     requestMicAndStart: requestMicAndStart,
-    prepareMicAndGo: prepareMicAndGo,
     translateText: translateText,
     playTTS: playTTS,
     replayTTS: replayTTS,
