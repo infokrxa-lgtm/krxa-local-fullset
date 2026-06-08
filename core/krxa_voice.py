@@ -110,8 +110,10 @@ async def stt_with_detail(
                 "file": f
             }
 
-            if language_hint in ["ko", "en", "ja", "zh"]:
-                kwargs["language"] = language_hint
+            # STT 입력 언어는 자동 감지를 우선한다.
+            # 번역 목표 언어와 사용자 발화 언어는 다르다.
+            # if language_hint in ["ko", "en", "ja", "zh"]:
+            #     kwargs["language"] = language_hint
 
             tr = client.audio.transcriptions.create(**kwargs)
 
