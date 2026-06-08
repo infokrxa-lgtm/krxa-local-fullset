@@ -377,7 +377,8 @@ renderLogs();
   <button onclick="window.open('/dev','_blank')">DEV 새창 열기</button>
   <button onclick="window.open('/api/state','_blank')">STATE JSON 새창</button>
   <button onclick="createKrxaiReport()">관제 보고 생성</button>
-  <pre id="krxaiReportBox" style="margin-top:12px;background:#020617;color:#dbeafe;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 보고가 생성되지 않았습니다.</pre>
+  <pre id="krxaiReportBox" style="margin-top:12px;background:#020617;color:<button onclick="loadKrxaiPatches()">패치 승인 대기 확인</button>
+<pre id="krxaiPatchBox" style="margin-top:12px;background:#111827;color:#d1fae5;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 패치 대기열을 불러오지 않았습니다.</pre>
 
   <script>
     async function createKrxaiReport(){
@@ -398,6 +399,22 @@ renderLogs();
         }
       }catch(e){
         if(box) box.innerText = "관제 보고 생성 실패: " + e.message;
+      }
+    }
+
+    async function loadKrxaiPatches(){
+      const box = document.getElementById("krxaiPatchBox");
+      if(box) box.textContent = "패치 대기열 확인 중...";
+
+      try{
+        const res = await fetch("/api/krxai-patches");
+        const data = await res.json();
+
+        if(box){
+          box.textContent = JSON.stringify(data, null, 2);
+        }
+      }catch(e){
+        if(box) box.textContent = "패치 대기열 조회 오류: " + e.message;
       }
     }
   </script>
