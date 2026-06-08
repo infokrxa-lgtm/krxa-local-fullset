@@ -632,6 +632,41 @@ def krxai_patches_get():
             "error": str(e),
             "items": []
         }
+
+
+@app.post("/api/krxai-patches/action")
+async def krxai_patches_action(request: Request):
+    body = await request.json()
+    patch_id = body.get("id")
+    action = body.get("action")
+
+    path = Path("storage/krxai_patch_queue.json")
+    if not path.exists():
+        return {"ok": False, "message": "patch queue file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    for item in data.get("items", []):
+        if item.get("id") == patch_id:
+            if action == "approve":
+                item["status"] = "approved"
+            elif action == "hold":
+                item["status"] = "hold"
+            elif action == "dev_request":
+                item["status"] = "dev_requested"
+            else:
+                return {"ok": False, "message": "unknown action"}
+
+            item["last_action"] = action
+            path.write_text(
+                json.dumps(data, ensure_ascii=True, indent=2),
+                encoding="utf-8"
+            )
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "patch not found"}
+
+
 # ===== End KRXAI Memory Loop Report API =====
 
 
