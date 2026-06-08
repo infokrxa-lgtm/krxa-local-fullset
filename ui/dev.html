@@ -62,7 +62,7 @@ pre{background:#0f172a;color:white;padding:12px;border-radius:10px;white-space:p
 <h2>KRXAI DEV 요청 목록</h2>
 <p>CONTROL에서 DEV 수정요청된 패치를 확인합니다.</p>
 
-<button onclick="loadDevRequests()">DEV 요청 확인</button>
+<button onclick="loadDevRequests()">DEV 요청 확인</button><button onclick="devRequestApproval('patch-001')">CONTROL 재승인 요청</button>
 <pre id="devRequestBox" style="margin-top:12px;background:#111827;color:#d1fae5;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 DEV 요청을 불러오지 않았습니다.</pre>
 
 <div class="card">
@@ -266,6 +266,23 @@ async function loadDevRequests(){
     box.textContent = text;
   }catch(e){
     if(box) box.textContent = "DEV 요청 조회 오류: " + e.message;
+  }
+}
+async function devRequestApproval(id){
+  const box = document.getElementById("devRequestBox");
+  if(box) box.textContent = "CONTROL 재승인 요청 중...";
+
+  try{
+    const res = await fetch("/api/krxai-patches/action", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({id:id, action:"request_approval"})
+    });
+
+    const data = await res.json();
+    if(box) box.textContent = JSON.stringify(data, null, 2);
+  }catch(e){
+    if(box) box.textContent = "재승인 요청 실패: " + e.message;
   }
 }
 </script>
