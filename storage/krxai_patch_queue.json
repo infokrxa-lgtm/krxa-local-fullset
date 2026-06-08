@@ -1,0 +1,20 @@
+{
+  "name": "KRXAI Patch Proposal Queue",
+  "status": "active",
+  "items": [
+    {
+      "id": "patch-001",
+      "project": "Travel V1",
+      "problem": "Auto conversation ON sends non-user STT text such as you, Thank you, Beep into translation",
+      "target_files": [
+        "core/krxa_voice.py",
+        "ui/js/m2m_translate.js"
+      ],
+      "proposal": "Block obvious noise/background STT text and keep Auto ON as one-turn translation flow like OFF",
+      "risk": "low",
+      "status": "pending_approval",
+      "created_at": "2026-06-08",
+      "approval_required": true
+    }
+  ]
+}
