@@ -613,15 +613,25 @@ def krxai_memory_report():
     }
 
 
-@app.get("/api/krxai-memory")
-def krxai_memory_get():
-    path = Path("storage/krxai_memory_loop.json")
+@app.get("/api/krxai-patches")
+def krxai_patches_get():
+    path = Path("storage/krxai_patch_queue.json")
     if not path.exists():
-        return {"ok": False, "message": "memory loop file not found"}
+        return {
+            "ok": False,
+            "message": "patch queue file not found",
+            "items": []
+        }
+
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        return {
+            "ok": False,
+            "message": "patch queue read error",
+            "error": str(e),
+            "items": []
+        }
 # ===== End KRXAI Memory Loop Report API =====
 
 
