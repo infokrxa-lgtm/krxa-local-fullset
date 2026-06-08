@@ -139,10 +139,9 @@ async def stt_with_detail(
 
         turn_accept = should_accept_by_turn(text, turn_analysis)
 
-        final_ok = ok_text or turn_accept
-        final_reason = "ok" if ok_text else (
-            "ok_turn_override" if turn_accept else text_reason
-        )
+        clean_text = (text or "").strip()
+        final_ok = bool(clean_text and clean_text != "-")
+        final_reason = "ok" if final_ok else "empty_or_invalid_stt"
 
         log_vad_decision(
             final_ok,
