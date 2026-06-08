@@ -400,12 +400,6 @@ try {
       setFlowState("", "다음 말을 기다립니다");
       setStatus(autoConversation ? "자동대화 대기 중" : "대기 중");
 
-      if (autoConversation && autoRunning) {
-        clearTimeout(autoRestartTimer);
-        autoRestartTimer = setTimeout(function () {
-          if (!isTtsPlaying && !isRecording) recordVoice();
-        }, 400);
-      }
     } catch (e) {
       saveMemoryEvent("translate_error", "error", cleanText, "", e.message);
       setStatus("통역 연결 오류");
@@ -460,11 +454,7 @@ try {
     );
 
     if (isRecording || isTtsPlaying) {
-      if (autoConversation && autoRunning) {
-        clearTimeout(autoRestartTimer);
-        autoRestartTimer = setTimeout(recordVoice, 900);
-      }
-      return;
+            return;
     }
 
     isRecording = true;
@@ -532,12 +522,7 @@ try {
           setStatus("STT 전 보류");
           setFlowState("", gate.reason);
 
-          if (autoConversation && autoRunning) {
-            clearTimeout(autoRestartTimer);
-            autoRestartTimer = setTimeout(recordVoice, 1000);
-          }
-
-          return;
+                    return;
         }
 
         setStatus("음성 인식 중...");
@@ -571,24 +556,14 @@ try {
               setStatus("음성 없음");
               setFlowState("", "인식 문장이 너무 짧음");
 
-              if (autoConversation && autoRunning) {
-                clearTimeout(autoRestartTimer);
-                autoRestartTimer = setTimeout(recordVoice, 1000);
-              }
-
-              return;
+                        return;
             }
             if (!currentText || currentText === "-") {
               saveMemoryEvent("stt_empty", "hold", "", "", "인식 문장 없음");
               setStatus("음성 없음");
               setFlowState("", "인식 문장 없음");
 
-              if (autoConversation && autoRunning) {
-                clearTimeout(autoRestartTimer);
-                autoRestartTimer = setTimeout(recordVoice, 1000);
-              }
-
-              return;
+                            return;
             }
 
             if (
@@ -600,12 +575,7 @@ try {
               setStatus("배경음 차단");
               setFlowState("", "사용자 발화 아님");
 
-              if (autoConversation && autoRunning) {
-                clearTimeout(autoRestartTimer);
-                autoRestartTimer = setTimeout(recordVoice, 1000);
-              }
-
-              return;
+ return;
             }
 
 saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
@@ -629,21 +599,13 @@ try {
     resultEl.innerText = "STT 성공 / 번역 오류: " + translateErr.message;
   }
 
-  if (autoConversation && autoRunning) {
-    clearTimeout(autoRestartTimer);
-    autoRestartTimer = setTimeout(recordVoice, 1200);
-  }
 }
           } else {
             saveMemoryEvent("stt_fail", "fail", "", "", "음성 인식 실패");
             setStatus("음성 인식 실패");
             setFlowState("error", "다시 말해주세요");
 
-            if (autoConversation && autoRunning) {
-              clearTimeout(autoRestartTimer);
-              autoRestartTimer = setTimeout(recordVoice, 1000);
-            }
-          }
+           }
         } catch (e) {
           saveMemoryEvent("stt_error", "error", "", "", e.message);
           setStatus("STT 연결 오류");
