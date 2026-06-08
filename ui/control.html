@@ -378,6 +378,10 @@ renderLogs();
   <button onclick="window.open('/api/state','_blank')">STATE JSON 새창</button>
   <button onclick="createKrxaiReport()">관제 보고 생성</button>
   <pre id="krxaiReportBox" style="margin-top:12px;background:#020617;color:<button onclick="loadKrxaiPatches()">패치 승인 대기 확인</button>
+<button onclick="patchAction('patch-001','approve')">승인</button>
+<button onclick="patchAction('patch-001','hold')">보류</button>
+<button onclick="patchAction('patch-001','dev_request')">DEV 수정요청</button>
+
 <pre id="krxaiPatchBox" style="margin-top:12px;background:#111827;color:#d1fae5;padding:12px;border-radius:8px;white-space:pre-wrap;">아직 패치 대기열을 불러오지 않았습니다.</pre>
 
   <script>
@@ -402,21 +406,45 @@ renderLogs();
       }
     }
 
-    async function loadKrxaiPatches(){
-      const box = document.getElementById("krxaiPatchBox");
-      if(box) box.textContent = "패치 대기열 확인 중...";
+async function loadKrxaiPatches(){
+  const box = document.getElementById("krxaiPatchBox");
+  if(box) box.textContent = "패치 대기열 확인 중...";
 
-      try{
-        const res = await fetch("/api/krxai-patches");
-        const data = await res.json();
+  try{
+    const res = await fetch("/api/krxai-patches");
+    const data = await res.json();
 
-        if(box){
-          box.textContent = JSON.stringify(data, null, 2);
-        }
-      }catch(e){
-        if(box) box.textContent = "패치 대기열 조회 오류: " + e.message;
-      }
+    if(box){
+      let html = "";
+      (data.items || []).forEach(function(item){
+        html +=
+          "ID: " + item.id + "\n" +
+          "Project: " + item.project + "\n" +
+          "Problem: " + item.problem + "\n" +
+          "Proposal: " + item.proposal + "\n" +
+          "Risk: " + item.risk + "\n" +
+          "Status: " + item.status + "\n\n";
+      });
+      box.textContent = html || "대기 중인 패치가 없습니다.";
     }
+  }catch(e){
+    if(box) box.textContent = "패치 대기열 조회 오류: " + e.message;
+  }
+}
+
+async function patchAction(id, action){
+  const box = document.getElementById("krxaiPatchBox");
+  if(box) box.textContent = "처리 중: " + action;
+
+  const res = await fetch("/api/krxai-patches/action", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({id:id, action:action})
+  });
+
+  const data = await res.json();
+  if(box) box.textContent = JSON.stringify(data, null, 2);
+}
   </script>
 </section>
 
