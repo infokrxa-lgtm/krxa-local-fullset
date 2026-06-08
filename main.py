@@ -656,6 +656,8 @@ async def krxai_patches_action(request: Request):
                 item["status"] = "dev_requested"
             elif action == "request_approval":
                 item["status"] = "pending_approval"
+            elif action == "apply_ready":
+                item["status"] = "apply_ready"
             else:
                 return {"ok": False, "message": "unknown action"}
 
