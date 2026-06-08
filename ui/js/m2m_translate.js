@@ -282,7 +282,6 @@
 
     const blocked = [
       "시청해 주셔서 감사합니다",
-      "시청해주셔서 감사합니다",
       "구독",
       "좋아요",
       "알림 설정",
@@ -405,7 +404,7 @@ try {
         clearTimeout(autoRestartTimer);
         autoRestartTimer = setTimeout(function () {
           if (!isTtsPlaying && !isRecording) recordVoice();
-        }, 1000);
+        }, 400);
       }
     } catch (e) {
       saveMemoryEvent("translate_error", "error", cleanText, "", e.message);
@@ -451,7 +450,15 @@ try {
     playTTS(lastAudioText);
   }
 
-  async function recordVoice() {
+    async function recordVoice() {
+    saveMemoryEvent(
+      "record_voice_called",
+      "debug",
+      "",
+      "",
+      "autoConversation=" + autoConversation + ", autoRunning=" + autoRunning
+    );
+
     if (isRecording || isTtsPlaying) {
       if (autoConversation && autoRunning) {
         clearTimeout(autoRestartTimer);
