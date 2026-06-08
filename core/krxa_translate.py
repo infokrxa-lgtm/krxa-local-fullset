@@ -95,10 +95,6 @@ def translate_only(
     target_language = (target_language or "auto").strip().lower()
     target_name = LANGUAGE_NAMES.get(target_language, target_language)
 
-    history = load_history(
-        session_id + "_translate",
-        limit=4
-    )
 
     messages = [
         {"role": "system", "content": TRANSLATE_ONLY_PROMPT},
@@ -132,14 +128,6 @@ def translate_only(
             "content": f"gps_reference_only_do_not_recommend_places: {lat},{lng}"
         })
 
-    for h in history[-2:]:
-        u = h.get("user", "")
-        k = h.get("krxa", "")
-
-        if u:
-            messages.append({"role": "user", "content": u})
-        if k:
-            messages.append({"role": "assistant", "content": k})
 
     messages.append({"role": "user", "content": text})
 

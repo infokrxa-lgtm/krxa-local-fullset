@@ -763,6 +763,14 @@ try {
     const el = document.getElementById("quickTranslateText");
     const text = el ? el.value : "";
 
+    autoConversation = false;
+    autoRunning = false;
+    isRecording = false;
+    clearTimeout(autoRestartTimer);
+
+    const toggle = document.getElementById("autoToggle");
+    if (toggle) toggle.className = "toggle";
+
     if (window.KRXA_App && window.KRXA_App.closeModal) {
       window.KRXA_App.closeModal();
     }

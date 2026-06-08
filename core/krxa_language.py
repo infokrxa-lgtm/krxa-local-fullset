@@ -59,8 +59,25 @@ def decide_stt_language(
     user_language_mode = normalize_language(user_language_mode)
 
     if user_language_mode in ["ko", "en", "ja", "zh"]:
-        result = user_language_mode
-        reason = "user_selected"
+        if device_locale:
+            if device_locale.startswith("ko"):
+                result = "ko"
+                reason = "device_locale_override_user_selected"
+            elif device_locale.startswith("ja"):
+                result = "ja"
+                reason = "device_locale_override_user_selected"
+            elif device_locale.startswith("zh"):
+                result = "zh"
+                reason = "device_locale_override_user_selected"
+            elif device_locale.startswith("en"):
+                result = "en"
+                reason = "device_locale_override_user_selected"
+            else:
+                result = "auto"
+                reason = "auto_override_user_selected"
+        else:
+            result = "auto"
+            reason = "auto_override_user_selected"
     elif user_language_mode == "gps":
         result = language_from_gps(lat, lng)
         reason = "gps_based"
