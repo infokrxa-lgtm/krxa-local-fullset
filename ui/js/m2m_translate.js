@@ -559,7 +559,7 @@ try {
 
           if (sttData.ok && sttData.text) {
             const currentText = String(sttData.text || "").trim();
-            if (currentText.length < 2) {
+            if (currentText.length < 1) {
               saveMemoryEvent("stt_too_short", "hold", currentText, "", "STT 결과 너무 짧음");
               setStatus("음성 없음");
               setFlowState("", "인식 문장이 너무 짧음");
@@ -603,32 +603,10 @@ try {
 
 saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
 
-if (
-  sttData.should_call_llm === false ||
-  (sttData.turn_analysis && sttData.turn_analysis.should_call_llm === false)
-) {
-  saveMemoryEvent(
-    "turn_gate_hold",
-    "hold",
-    currentText,
-    "",
-    sttData.flow_signal || "Turn Gate hold"
-  );
-
-  setStatus("대기 중");
-  setFlowState("", sttData.flow_signal || "흐름 유지 중");
-
-  if (autoConversation && autoRunning) {
-    clearTimeout(autoRestartTimer);
-    autoRestartTimer = setTimeout(recordVoice, 1200);
-  }
-
-  return;
-}
-
 try {
   await translateText(currentText, "voice");
-} catch (translateErr) {  saveMemoryEvent(
+} catch (translateErr) {
+  saveMemoryEvent(
     "after_stt_translate_error",
     "error",
     currentText,
