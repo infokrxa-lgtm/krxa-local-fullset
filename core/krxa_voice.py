@@ -140,8 +140,28 @@ async def stt_with_detail(
         turn_accept = should_accept_by_turn(text, turn_analysis)
 
         clean_text = (text or "").strip()
-        final_ok = bool(clean_text and clean_text != "-")
-        final_reason = "ok" if final_ok else "empty_or_invalid_stt"
+        noise_text = clean_text.lower()
+
+        stt_noise_patterns = [
+            "beep",
+            "thanks for watching",
+            "thank you for watching",
+            "mbc 뉴스",
+            "뉴스 이덕영",
+            "시청해 주셔서",
+            "구독",
+            "좋아요",
+            "광고",
+        ]
+
+        is_noise_text = any(p in noise_text for p in stt_noise_patterns)
+
+        final_ok = bool(clean_text and clean_text != "-" and not is_noise_text)
+        final_reason = (
+            "noise_or_background_stt"
+            if is_noise_text
+            else ("ok" if final_ok else "empty_or_invalid_stt")
+        )
 
         log_vad_decision(
             final_ok,
