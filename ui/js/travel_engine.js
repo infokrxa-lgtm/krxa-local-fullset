@@ -523,21 +523,21 @@
 })();
 // ===== Travel V1 Home quick actions =====
 (function () {
-  if (!window.KRXA_App) return;
+  window.KRXA_App = window.KRXA_App || {};
 
-window.KRXA_App.openTransport = function () {
-  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
-    window.KRXA_DeviceContext.openLocationSearch("taxi bus subway");
-    return;
-  }
-  window.open("https://www.google.com/search?q=nearby+taxi+bus+subway", "_blank");
-};
+  window.KRXA_App.openTravelInspiration = function () {
+    if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
+      window.KRXA_DeviceContext.openLocationSearch("tourist attractions");
+      return;
+    }
+    window.open("https://www.google.com/search?q=nearby+tourist+attractions", "_blank");
+  };
 
-window.KRXA_App.openTravelInspiration = function () {
-  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
-    window.KRXA_DeviceContext.openLocationSearch("tourist attractions");
-    return;
-  }
-  window.open("https://www.google.com/search?q=nearby+tourist+attractions", "_blank");
-};
+  window.KRXA_App.openTransport = function () {
+    if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
+      window.KRXA_DeviceContext.openLocationSearch("taxi bus subway");
+      return;
+    }
+    window.open("https://www.google.com/search?q=nearby+taxi+bus+subway", "_blank");
+  };
 })();
