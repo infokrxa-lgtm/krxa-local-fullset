@@ -41,11 +41,19 @@
 
     if (!el) return;
 
- el.innerText =
-  "📍 " + locationText +
-  " · " + dateText +
-  " · " + timeText +
-  " · " + langText;
+    const locationText = ctx.gpsReady
+      ? "위치 확인됨"
+      : (ctx.gpsStatus || "위치 확인 중");
+
+    const dateText = ctx.dateText || "";
+    const timeText = ctx.timeText || "";
+    const langText = ctx.language || "ko";
+
+    el.innerText =
+      "📍 " + locationText +
+      " · " + dateText +
+      " · " + timeText +
+      " · " + langText;
   }
 
   function updateTimeLoop() {
