@@ -406,10 +406,10 @@ def control():
     )
 
 @app.get("/patch", response_class=HTMLResponse)
-def patch():
+def patch(request: Request):
     return templates.TemplateResponse(
         "patch.html",
-        {"request": {}, "title": "KRXA PATCH"}
+        {"request": request, "title": "KRXA PATCH"}
     )
 
 @app.get("/dev", response_class=HTMLResponse)
