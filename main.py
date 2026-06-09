@@ -406,10 +406,9 @@ def control():
     )
 
 @app.get("/patch", response_class=HTMLResponse)
-def patch(request: Request):
-    return templates.TemplateResponse(
-        "patch.html",
-        {"request": request, "title": "KRXA PATCH"}
+def patch():
+    return HTMLResponse(
+        Path("ui/patch.html").read_text(encoding="utf-8")
     )
 
 @app.get("/dev", response_class=HTMLResponse)
