@@ -521,30 +521,31 @@
     buildGuideHtml: buildGuideHtml
   };
 })();
+
 // ===== Travel V1 Home quick actions =====
 (function () {
   window.KRXA_App = window.KRXA_App || {};
 
-window.KRXA_App.openTravelInspiration = function () {
-  window.open(
-    "https://www.google.com/search?q=" +
-      encodeURIComponent("주변 관광지 체험 여행지"),
-    "_blank"
-  );
-};
-
-window.KRXA_App.openTransport = function () {
-  if (window.KRXA_App && window.KRXA_App.openModal) {
-    window.KRXA_App.openModal(
-      "교통 선택",
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+airport+transport','_blank')\">✈️ 항공 / 공항 이동</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+subway+station','_blank')\">🚇 지하철</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+bus+stop','_blank')\">🚌 버스</button>" +
-      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+taxi','_blank')\">🚕 택시</button>"
+  window.KRXA_App.openTravelInspiration = function () {
+    window.open(
+      "https://www.google.com/search?q=" +
+        encodeURIComponent("주변 관광지 체험 여행지"),
+      "_blank"
     );
-    return;
-  }
+  };
 
-  window.open("https://www.google.com/search?q=nearby+transportation", "_blank");
-};
+  window.KRXA_App.openTransport = function () {
+    if (window.KRXA_App && window.KRXA_App.openModal) {
+      window.KRXA_App.openModal(
+        "교통 선택",
+        "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+airport+transport','_blank')\">✈️ 항공 / 공항 이동</button>" +
+          "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+subway+station','_blank')\">🚇 지하철</button>" +
+          "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+bus+stop','_blank')\">🚌 버스</button>" +
+          "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/search?q=nearby+taxi','_blank')\">🚕 택시</button>"
+      );
+      return;
+    }
+
+    window.open("https://www.google.com/search?q=nearby+transportation", "_blank");
+  };
 })();
