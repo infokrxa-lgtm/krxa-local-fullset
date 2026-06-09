@@ -1,15 +1,11 @@
-/* KRXA Travel V1 - Device Context Engine
-   역할:
-   - 사용자 기기 기준 날짜/시간/언어/GPS/네트워크 상태 확인
-   - HOME 상단 Device Context Bar 표시
-   - 여행 메뉴의 위치 기반 검색 URL 생성
-*/
+/* KRXA Travel V1 - Device Context Engine */
 
 (function () {
   window.KRXA_CONTEXT = {
     dateText: "",
     timeText: "",
     locale: navigator.language || "unknown",
+    language: "ko",
     lat: "",
     lng: "",
     gpsReady: false,
@@ -49,50 +45,16 @@
     const timeText = ctx.timeText || "";
     const langText = ctx.language || "ko";
 
-el.innerText =
-  "📍 " + locationText +
-  " · " + dateText +
-  " · " + timeText +
-  " · " + langText;
+    el.innerText =
+      "📍 " + locationText +
+      " · " + dateText +
+      " · " + timeText +
+      " · " + langText;
   }
 
-  function updateTimeLoop() {
-    formatDateTime();
-    renderContextBar();
-  }
-function requestLocationPermission() {
-  if (!navigator.geolocation) {
-    alert("이 기기는 위치 기능을 지원하지 않습니다.");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    function (pos) {
-      window.KRXA_CONTEXT.lat = pos.coords.latitude;
-      window.KRXA_CONTEXT.lng = pos.coords.longitude;
-      window.KRXA_CONTEXT.gpsReady = true;
-      window.KRXA_CONTEXT.gpsStatus = "위치 확인됨";
-      renderContextBar();
-      alert("위치 확인이 완료되었습니다.");
-    },
-    function () {
-      window.KRXA_CONTEXT.gpsReady = false;
-      window.KRXA_CONTEXT.gpsStatus = "위치 권한 없음";
-      renderContextBar();
-      alert("위치 권한이 필요합니다. 브라우저 사이트 설정에서 위치를 허용해 주세요.");
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 30000
-    }
-  );
-}
-  function initGPS() {
+  function requestLocationPermission() {
     if (!navigator.geolocation) {
-      window.KRXA_CONTEXT.gpsReady = false;
-      window.KRXA_CONTEXT.gpsStatus = "GPS 미지원";
-      renderContextBar();
+      alert("이 기기는 위치 기능을 지원하지 않습니다.");
       return;
     }
 
@@ -103,11 +65,13 @@ function requestLocationPermission() {
         window.KRXA_CONTEXT.gpsReady = true;
         window.KRXA_CONTEXT.gpsStatus = "위치 확인됨";
         renderContextBar();
+        alert("위치 확인이 완료되었습니다.");
       },
       function () {
         window.KRXA_CONTEXT.gpsReady = false;
         window.KRXA_CONTEXT.gpsStatus = "위치 권한 없음";
         renderContextBar();
+        alert("위치 권한이 필요합니다. 브라우저 사이트 설정에서 위치를 허용해 주세요.");
       },
       {
         enableHighAccuracy: true,
@@ -115,6 +79,10 @@ function requestLocationPermission() {
         maximumAge: 30000
       }
     );
+  }
+
+  function initGPS() {
+    requestLocationPermission();
   }
 
   function buildGoogleMapsSearchUrl(keyword) {
@@ -166,50 +134,16 @@ function requestLocationPermission() {
       return;
     }
 
-    window.open("https://www.google.com/maps", "_blank");
-  }
-function openMyLocationMap() {
-  const ctx = window.KRXA_CONTEXT;
-
-  if (ctx.gpsReady && ctx.lat && ctx.lng) {
-    window.open(
-      "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent(ctx.lat + "," + ctx.lng),
-      "_blank"
-    );
-    return;
+    requestLocationPermission();
   }
 
-  requestLocationPermission();
-}function openMyLocationMap() function openMapRouter(keyword) {
-  const ctx = window.KRXA_CONTEXT;
-  const locale = (ctx.locale || navigator.language || "").toLowerCase();
-  const isKorea = locale.includes("ko");
-
-  const q = keyword || "tourist attractions near me";
-
-  if (isKorea) {
-    // 1차: Google Maps 좌표 기반. 이후 Naver/Kakao 확장 예정.
-    return window.open(buildGoogleMapsSearchUrl(q), "_blank");
-  }
-
-  return window.open(buildGoogleMapsSearchUrl(q), "_blank");
-}{
-  const ctx = window.KRXA_CONTEXT;
-
-  if (ctx.gpsReady && ctx.lat && ctx.lng) {
-    window.open(
-      "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent(ctx.lat + "," + ctx.lng),
-      "_blank"
-    );
-    return;
-  }
-
-  requestLocationPermission();
-}
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
+  }
+
+  function openMapRouter(keyword) {
+    const q = keyword || "tourist attractions near me";
+    window.open(buildGoogleMapsSearchUrl(q), "_blank");
   }
 
   function getContextForApi() {
@@ -219,6 +153,7 @@ function openMyLocationMap() {
       date: ctx.dateText,
       time: ctx.timeText,
       locale: ctx.locale,
+      language: ctx.language,
       lat: ctx.lat,
       lng: ctx.lng,
       gpsReady: ctx.gpsReady,
@@ -226,6 +161,11 @@ function openMyLocationMap() {
       online: ctx.online,
       updatedAt: ctx.updatedAt
     };
+  }
+
+  function updateTimeLoop() {
+    formatDateTime();
+    renderContextBar();
   }
 
   function initDeviceContext() {
@@ -245,14 +185,15 @@ function openMyLocationMap() {
     });
   }
 
-window.KRXA_DeviceContext = {
-  init: initDeviceContext,
-  get: getContextForApi,
-  render: renderContextBar,
-  requestLocationPermission: requestLocationPermission,
-  openLocationSearch: openLocationSearch,
-  openMyLocationMap: openMyLocationMap,
-  openMapRouter: openMapRouter,
-  buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
-  buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
-};
+  window.KRXA_DeviceContext = {
+    init: initDeviceContext,
+    get: getContextForApi,
+    render: renderContextBar,
+    requestLocationPermission: requestLocationPermission,
+    openLocationSearch: openLocationSearch,
+    openMyLocationMap: openMyLocationMap,
+    openMapRouter: openMapRouter,
+    buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
+    buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
+  };
+})();
