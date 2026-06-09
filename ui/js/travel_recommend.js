@@ -158,5 +158,45 @@
     }
 
     window.open("https://www.google.com/search?q=nearby+travel+attractions+experiences+restaurants", "_blank");
+  };window.KRXA_Recommend.openGpsConsent = function () {
+  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.requestLocationPermission) {
+    window.KRXA_DeviceContext.requestLocationPermission();
+  }
+};
+
+window.KRXA_Recommend.openMarketBasedNearby = function (type) {
+  const map = {
+    attraction: "tourist attractions near me",
+    experience: "travel experiences near me",
+    food: "popular restaurants near me",
+    cafe: "popular cafe near me",
+    transport: "transportation near me"
   };
+
+  const keyword = map[type] || "tourist attractions near me";
+
+  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapRouter) {
+    window.KRXA_DeviceContext.openMapRouter(keyword);
+    return;
+  }
+
+  window.open(
+    "https://www.google.com/search?q=" + encodeURIComponent(keyword),
+    "_blank"
+  );
+};
+
+window.KRXA_Recommend.openLLMRecommendV1 = function () {
+  const html =
+    "<p><b>GPS 기반 현실 추천 v1</b></p>" +
+    "<p>현재는 지도/검색 기반으로 실행하고, 다음 단계에서 LLM 분석을 연결합니다.</p>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('attraction')\">🏖 관광지</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('experience')\">🎡 체험</button>" +
+    "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('food')\">🍜 맛집</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMyLocationMap()\">📍 내 위치 지도</button>";
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal("GPS 기반 추천", html);
+  }
+};
 })();

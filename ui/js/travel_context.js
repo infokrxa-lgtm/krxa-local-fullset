@@ -60,7 +60,34 @@ el.innerText =
     formatDateTime();
     renderContextBar();
   }
+function requestLocationPermission() {
+  if (!navigator.geolocation) {
+    alert("이 기기는 위치 기능을 지원하지 않습니다.");
+    return;
+  }
 
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      window.KRXA_CONTEXT.lat = pos.coords.latitude;
+      window.KRXA_CONTEXT.lng = pos.coords.longitude;
+      window.KRXA_CONTEXT.gpsReady = true;
+      window.KRXA_CONTEXT.gpsStatus = "위치 확인됨";
+      renderContextBar();
+      alert("위치 확인이 완료되었습니다.");
+    },
+    function () {
+      window.KRXA_CONTEXT.gpsReady = false;
+      window.KRXA_CONTEXT.gpsStatus = "위치 권한 없음";
+      renderContextBar();
+      alert("위치 권한이 필요합니다. 브라우저 사이트 설정에서 위치를 허용해 주세요.");
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 30000
+    }
+  );
+}
   function initGPS() {
     if (!navigator.geolocation) {
       window.KRXA_CONTEXT.gpsReady = false;
@@ -141,7 +168,46 @@ el.innerText =
 
     window.open("https://www.google.com/maps", "_blank");
   }
+function openMyLocationMap() {
+  const ctx = window.KRXA_CONTEXT;
 
+  if (ctx.gpsReady && ctx.lat && ctx.lng) {
+    window.open(
+      "https://www.google.com/maps/search/?api=1&query=" +
+        encodeURIComponent(ctx.lat + "," + ctx.lng),
+      "_blank"
+    );
+    return;
+  }
+
+  requestLocationPermission();
+}function openMyLocationMap() function openMapRouter(keyword) {
+  const ctx = window.KRXA_CONTEXT;
+  const locale = (ctx.locale || navigator.language || "").toLowerCase();
+  const isKorea = locale.includes("ko");
+
+  const q = keyword || "tourist attractions near me";
+
+  if (isKorea) {
+    // 1차: Google Maps 좌표 기반. 이후 Naver/Kakao 확장 예정.
+    return window.open(buildGoogleMapsSearchUrl(q), "_blank");
+  }
+
+  return window.open(buildGoogleMapsSearchUrl(q), "_blank");
+}{
+  const ctx = window.KRXA_CONTEXT;
+
+  if (ctx.gpsReady && ctx.lat && ctx.lng) {
+    window.open(
+      "https://www.google.com/maps/search/?api=1&query=" +
+        encodeURIComponent(ctx.lat + "," + ctx.lng),
+      "_blank"
+    );
+    return;
+  }
+
+  requestLocationPermission();
+}
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
   }
@@ -179,13 +245,14 @@ el.innerText =
     });
   }
 
-  window.KRXA_DeviceContext = {
-    init: initDeviceContext,
-    get: getContextForApi,
-    render: renderContextBar,
-    openLocationSearch: openLocationSearch,
-    openMyLocationMap: openMyLocationMap,
-    buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
-    buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
-  };
-})();
+window.KRXA_DeviceContext = {
+  init: initDeviceContext,
+  get: getContextForApi,
+  render: renderContextBar,
+  requestLocationPermission: requestLocationPermission,
+  openLocationSearch: openLocationSearch,
+  openMyLocationMap: openMyLocationMap,
+  openMapRouter: openMapRouter,
+  buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
+  buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
+};
