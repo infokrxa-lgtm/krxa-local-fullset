@@ -525,16 +525,19 @@
 (function () {
   if (!window.KRXA_App) return;
 
-  window.KRXA_App.openTravelInspiration = function () {
-    const url =
-      "https://www.google.com/search?q=" +
-      encodeURIComponent("famous travel experiences attractions");
-    window.open(url, "_blank");
-  };
+window.KRXA_App.openTransport = function () {
+  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
+    window.KRXA_DeviceContext.openLocationSearch("taxi bus subway");
+    return;
+  }
+  window.open("https://www.google.com/search?q=nearby+taxi+bus+subway", "_blank");
+};
 
-  window.KRXA_App.openTransport = function () {
-    if (window.KRXA_App.goPage) {
-      window.KRXA_App.goPage(1);
-    }
-  };
+window.KRXA_App.openTravelInspiration = function () {
+  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openLocationSearch) {
+    window.KRXA_DeviceContext.openLocationSearch("tourist attractions");
+    return;
+  }
+  window.open("https://www.google.com/search?q=nearby+tourist+attractions", "_blank");
+};
 })();
