@@ -405,6 +405,12 @@ def control():
         state=html.escape(json.dumps(payload, ensure_ascii=False, indent=2))
     )
 
+@app.get("/patch", response_class=HTMLResponse)
+def patch():
+    return templates.TemplateResponse(
+        "patch.html",
+        {"request": {}, "title": "KRXA PATCH"}
+    )
 
 @app.get("/dev", response_class=HTMLResponse)
 def dev(path: str = ""):
@@ -669,6 +675,48 @@ async def krxai_patches_action(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "patch not found"}
+
+
+@app.post("/api/krxai-patches/create")
+async def krxai_patches_create(request: Request):
+    body = await request.json()
+
+    path = Path("storage/krxai_patch_queue.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {"name": "KRXAI Patch Proposal Queue", "status": "active", "items": []}
+    else:
+        data = {"name": "KRXAI Patch Proposal Queue", "status": "active", "items": []}
+
+    items = data.get("items", [])
+
+    patch_id = body.get("id") or f"patch-{len(items)+1:03d}"
+
+    item = {
+        "id": patch_id,
+        "project": body.get("project", "Travel V1"),
+        "problem": body.get("problem", ""),
+        "target_files": body.get("target_files", []),
+        "proposal": body.get("proposal", ""),
+        "risk": body.get("risk", "low"),
+        "status": body.get("status", "pending_approval"),
+        "created_at": datetime.now().strftime("%Y-%m-%d"),
+        "approval_required": bool(body.get("approval_required", True))
+    }
+
+    items.append(item)
+    data["items"] = items
+
+    path.write_text(
+        json.dumps(data, ensure_ascii=True, indent=2),
+        encoding="utf-8"
+    )
+
+    return {"ok": True, "item": item, "total": len(items)}
 
 
 # ===== End KRXAI Memory Loop Report API =====

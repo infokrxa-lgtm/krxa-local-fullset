@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRXA PATCH</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;margin:0;padding:24px}
+.card{background:#111827;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:16px}
+textarea,input,select{width:100%;box-sizing:border-box;margin-top:6px;margin-bottom:12px;padding:10px;border-radius:8px;border:1px solid #475569;background:#020617;color:#e5e7eb}
+button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:white;font-weight:bold;cursor:pointer;margin-right:6px}
+pre{background:#020617;color:#d1fae5;padding:12px;border-radius:8px;white-space:pre-wrap}
+a{color:#93c5fd}
+</style>
+</head>
+<body>
+
+<h1>KRXA PATCH</h1>
+<p>
+<a href="/control" target="_blank">CONTROL</a> |
+<a href="/dev" target="_blank">DEV</a> |
+<a href="/api/krxai-patches" target="_blank">PATCH API</a>
+</p>
+
+<div class="card">
+  <h2>패치 제안 생성</h2>
+
+  <label>Patch ID</label>
+  <input id="patchId" value="patch-003">
+
+  <label>Project</label>
+  <input id="project" value="Travel V1">
+
+  <label>Problem</label>
+  <textarea id="problem" rows="4"></textarea>
+
+  <label>Target Files</label>
+  <input id="targetFiles" value="ui/js/m2m_translate.js">
+
+  <label>Proposal</label>
+  <textarea id="proposal" rows="5"></textarea>
+
+  <label>Risk</label>
+  <select id="risk">
+    <option value="low">low</option>
+    <option value="medium">medium</option>
+    <option value="high">high</option>
+  </select>
+
+  <button onclick="savePatch()">Patch Queue 저장</button>
+  <button onclick="loadPatches()">현재 Queue 확인</button>
+</div>
+
+<pre id="resultBox">아직 실행하지 않았습니다.</pre>
+
+<script>
+async function savePatch(){
+  const box = document.getElementById("resultBox");
+  box.textContent = "저장 중...";
+
+  const body = {
+    id: document.getElementById("patchId").value.trim(),
+    project: document.getElementById("project").value.trim(),
+    problem: document.getElementById("problem").value.trim(),
+    target_files: document.getElementById("targetFiles").value.split(",").map(x => x.trim()).filter(Boolean),
+    proposal: document.getElementById("proposal").value.trim(),
+    risk: document.getElementById("risk").value,
+    status: "pending_approval",
+    approval_required: true
+  };
+
+  try{
+    const res = await fetch("/api/krxai-patches/create", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    box.textContent = JSON.stringify(data, null, 2);
+  }catch(e){
+    box.textContent = "저장 실패: " + e.message;
+  }
+}
+
+async function loadPatches(){
+  const box = document.getElementById("resultBox");
+  box.textContent = "불러오는 중...";
+  try{
+    const res = await fetch("/api/krxai-patches");
+    const data = await res.json();
+    box.textContent = JSON.stringify(data, null, 2);
+  }catch(e){
+    box.textContent = "조회 실패: " + e.message;
+  }
+}
+</script>
+
+</body>
+</html>
