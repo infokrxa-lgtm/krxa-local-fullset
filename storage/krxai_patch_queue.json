@@ -28,7 +28,20 @@
       "risk": "low",
       "status": "pending_approval",
       "created_at": "2026-06-09",
-      "approval_required": true
-    }
-  ]
+        "approval_required": true
+        },
+        {
+            "id": "patch-003",
+            "project": "Travel V1",
+            "problem": "Auto conversation ON should not be removed. It needs to be redesigned as Conversation Engine V1 because current auto mode cannot reliably decide human turn ending.",
+            "target_files": [
+                "ui/js/m2m_translate.js"
+            ],
+            "proposal": "Redesign Auto Conversation ON as Conversation Engine V1. Keep OFF as one-turn push-to-talk. Apply ON-only timing changes first: minSpeechMs 200->600, endSilenceMs 420->1200, maxSilenceMs 1400->3000. Do not block normal words such as you or thank you. Focus on turn-taking timing instead of word blocking.",
+            "risk": "low",
+            "status": "pending_approval",
+            "created_at": "2026-06-09",
+            "approval_required": true
+        }
+    ]
 }
