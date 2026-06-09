@@ -49,12 +49,11 @@
     const timeText = ctx.timeText || "";
     const langText = ctx.language || "ko";
 
-   el.innerText =
+el.innerText =
   "📍 " + locationText +
   " · " + dateText +
   " · " + timeText +
-  " · " + langText +
-  " · " + (ctx.online ? "온라인" : "오프라인");
+  " · " + langText;
   }
 
   function updateTimeLoop() {
