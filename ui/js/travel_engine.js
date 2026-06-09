@@ -521,3 +521,20 @@
     buildGuideHtml: buildGuideHtml
   };
 })();
+// ===== Travel V1 Home quick actions =====
+(function () {
+  if (!window.KRXA_App) return;
+
+  window.KRXA_App.openTravelInspiration = function () {
+    const url =
+      "https://www.google.com/search?q=" +
+      encodeURIComponent("famous travel experiences attractions");
+    window.open(url, "_blank");
+  };
+
+  window.KRXA_App.openTransport = function () {
+    if (window.KRXA_App.goPage) {
+      window.KRXA_App.goPage(1);
+    }
+  };
+})();

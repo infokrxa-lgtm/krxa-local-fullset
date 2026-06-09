@@ -118,30 +118,129 @@
     .linkItem{display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:8px 0}
     .linkItem span{font-size:13px}
     ul{padding-left:18px;font-size:13px}
+.travelHero{
+  margin:58px 16px 12px;
+  min-height:150px;
+  border-radius:24px;
+  padding:18px;
+  color:white;
+  background:
+    linear-gradient(135deg,rgba(14,165,233,.92),rgba(59,130,246,.65)),
+    radial-gradient(circle at top right,rgba(255,255,255,.45),transparent 34%),
+    linear-gradient(160deg,#38bdf8,#2563eb);
+  box-shadow:0 14px 34px rgba(37,99,235,.28);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.travelHeroBadge{font-size:11px;font-weight:800;letter-spacing:.8px;opacity:.9}
+.travelHeroPlace{font-size:25px;font-weight:900;line-height:1.1;margin-top:10px}
+.travelHeroText{font-size:14px;opacity:.95;margin-top:4px}
+.travelHeroBtn{
+  align-self:flex-start;
+  margin-top:10px;
+  border:0;
+  border-radius:999px;
+  padding:8px 14px;
+  background:rgba(255,255,255,.92);
+  color:#0369a1;
+  font-weight:900;
+}
+.quickGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:0 16px;
+}
+.quickCard{
+  min-height:82px;
+  border-radius:18px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 8px 20px rgba(15,23,42,.08);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.quickCard b{font-size:26px}
+.quickCard strong{font-size:15px;margin-top:3px}
+.quickCard small{font-size:11px;color:#64748b;margin-top:3px}
+.quickCard.sos{background:#fff1f2}
+.homeMicDock{
+  position:absolute;
+  left:22px;
+  right:22px;
+  bottom:22px;
+  height:64px;
+  border-radius:999px;
+  background:#111827;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  box-shadow:0 12px 30px rgba(15,23,42,.25);
+}
+.homeMicBtn{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#22c55e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:23px;
+}
+.homeMicDock small{display:block;color:#cbd5e1;font-size:11px;margin-top:2px}
   </style>
 </head>
 <body>
 <div class="app" id="app">
   <div class="pages" id="pages">
 
-    <section class="page">
-      <div class="screen home">
-        <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
-        <div class="homeTitle"><h1>말대말</h1><p>어디서든, 누구와도<br>바로 통역!</p></div>
-        <div class="homeCard">
-          <div class="micCircle">🎙️</div>
-          <h2 style="margin:0">통역 시작하기</h2>
-          <p style="color:#64748b;margin:6px 0">말하면 바로 번역해드려요</p>
-      <button class="startBtn" onclick="KRXA_App.goPage(3)">통역 시작</button>
-        </div>
-        <div class="homeNav">
-          <div onclick="KRXA_App.goPage(1)"><b>🧭</b>여행상황</div>
-          <div onclick="KRXA_App.goPage(6)"><b>🆘</b>SOS</div>
-          <div onclick="KRXA_App.goPage(2)"><b>📘</b>상세</div>
-          <div onclick="KRXA_App.goPage(6)"><b>🔒</b>OFF</div>
-        </div>
+<section class="page">
+  <div class="screen home">
+    <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
+
+    <div class="travelHero" onclick="KRXA_App.openTravelInspiration()">
+      <div class="travelHeroBadge">TRAVEL · PLAY · EXPERIENCE</div>
+      <div class="travelHeroPlace" id="travelHeroPlace">🏖 몰디브 해변</div>
+      <div class="travelHeroText" id="travelHeroText">오늘 어디로 떠나시나요?</div>
+      <button class="travelHeroBtn">둘러보기</button>
+    </div>
+
+    <div class="quickGrid">
+      <div class="quickCard" onclick="KRXA_App.goPage(2)">
+        <b>🍜</b>
+        <strong>식당</strong>
+        <small>메뉴 · 주문</small>
       </div>
-    </section>
+      <div class="quickCard" onclick="KRXA_App.openTransport()">
+        <b>🚕</b>
+        <strong>교통</strong>
+        <small>택시 · 버스</small>
+      </div>
+      <div class="quickCard" onclick="KRXA_DeviceContext.openLocationSearch('route')">
+        <b>🗺</b>
+        <strong>길찾기</strong>
+        <small>지도 · 경로</small>
+      </div>
+      <div class="quickCard sos" onclick="KRXA_App.goPage(6)">
+        <b>🚨</b>
+        <strong>SOS</strong>
+        <small>긴급 도움</small>
+      </div>
+    </div>
+
+    <div class="homeMicDock" onclick="KRXA_App.goPage(3)">
+      <div class="homeMicBtn">🎤</div>
+      <div>
+        <b>말대말</b>
+        <small>말하면 바로 통역</small>
+      </div>
+    </div>
+  </div>
+</section>
 
     <section class="page">
       <div class="screen">
