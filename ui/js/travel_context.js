@@ -41,17 +41,11 @@
 
     if (!el) return;
 
-    el.innerText =
-      "📍 " +
-      ctx.gpsStatus +
-      " · " +
-      ctx.dateText +
-      " · " +
-      ctx.timeText +
-      " · " +
-      ctx.locale +
-      " · " +
-      (ctx.online ? "온라인" : "오프라인");
+ el.innerText =
+  "📍 " + locationText +
+  " · " + dateText +
+  " · " + timeText +
+  " · " + langText;
   }
 
   function updateTimeLoop() {
