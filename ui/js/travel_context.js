@@ -127,6 +127,21 @@ el.innerText =
     );
   }
 
+  function openMyLocationMap() {
+    const ctx = window.KRXA_CONTEXT;
+
+    if (ctx.gpsReady && ctx.lat && ctx.lng) {
+      window.open(
+        "https://www.google.com/maps/search/?api=1&query=" +
+          encodeURIComponent(ctx.lat + "," + ctx.lng),
+        "_blank"
+      );
+      return;
+    }
+
+    window.open("https://www.google.com/maps", "_blank");
+  }
+
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
   }
@@ -169,6 +184,7 @@ el.innerText =
     get: getContextForApi,
     render: renderContextBar,
     openLocationSearch: openLocationSearch,
+    openMyLocationMap: openMyLocationMap,
     buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
     buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
   };
