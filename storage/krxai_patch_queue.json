@@ -12,8 +12,22 @@
       ],
       "proposal": "Block obvious noise/background STT text and keep Auto ON as one-turn translation flow like OFF",
       "risk": "low",
-      "status": "pending_approval",
+      "status": "apply_ready",
       "created_at": "2026-06-08",
+      "approval_required": true,
+      "last_action": "apply_ready"
+    },
+    {
+      "id": "patch-002",
+      "project": "Travel V1",
+      "problem": "Auto conversation ends recording too early because endSilenceMs is too short for human turn taking",
+      "target_files": [
+        "ui/js/m2m_translate.js"
+      ],
+      "proposal": "Conversation Engine Timing V1: minSpeechMs 200->600, endSilenceMs 420->1200, maxSilenceMs 1400->3000 for auto conversation mode",
+      "risk": "low",
+      "status": "pending_approval",
+      "created_at": "2026-06-09",
       "approval_required": true
     }
   ]
