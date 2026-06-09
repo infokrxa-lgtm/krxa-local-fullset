@@ -24,9 +24,9 @@
     conversation: {
       name: "대화 모드",
       volumeThreshold: 6,
-      minSpeechMs: 200,
-      endSilenceMs: 420,
-      maxSilenceMs: 1400,
+      minSpeechMs: 600,
+      endSilenceMs: 1200,
+      maxSilenceMs: 3000,
       minBlobSize: 220,
       blockBackgroundCaption: true
     },
