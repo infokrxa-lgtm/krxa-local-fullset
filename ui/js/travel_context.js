@@ -122,20 +122,24 @@
     );
   }
 
-  function openMyLocationMap() {
-    const ctx = window.KRXA_CONTEXT;
+function openMyLocationMap() {
+  const ctx = window.KRXA_CONTEXT;
 
-    if (ctx.gpsReady && ctx.lat && ctx.lng) {
-      window.open(
-        "https://www.google.com/maps/search/?api=1&query=" +
-          encodeURIComponent(ctx.lat + "," + ctx.lng),
-        "_blank"
-      );
-      return;
-    }
-
-    requestLocationPermission();
+  if (ctx.gpsReady && ctx.lat && ctx.lng) {
+    const point = ctx.lat + "," + ctx.lng;
+    window.open(
+      "https://www.google.com/maps/place/" +
+        encodeURIComponent(point) +
+        "/@" +
+        point +
+        ",17z",
+      "_blank"
+    );
+    return;
   }
+
+  requestLocationPermission();
+}
 
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
@@ -196,4 +200,46 @@
     buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
     buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
   };
+window.KRXA_Recommend.openMarketResearchV1 = function () {
+  const html =
+    "<p><b>GPS 기반 현실 시장조사 추천 v1</b></p>" +
+    "<p>TV·유튜브·먹방·뉴스·리뷰·별점·지도 검색을 기준으로 후보를 찾습니다.</p>" +
+
+    "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.searchMarket('food')\">🍜 맛집 찾기</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.searchMarket('attraction')\">🏖 관광지 찾기</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.searchMarket('experience')\">🎡 체험 찾기</button>" +
+
+    "<hr>" +
+    "<input id='krxaMarketKeyword' placeholder='직접 검색: 예) 돼지국밥, 야시장, 아이와 갈 곳' style='width:100%;margin-top:8px;padding:10px'>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.searchMarket('custom')\">🔎 직접 검색</button>";
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal("현실 시장조사 추천", html);
+  }
+};
+
+window.KRXA_Recommend.searchMarket = function (type) {
+  let keyword = "";
+
+  if (type === "food") {
+    keyword = "주변 맛집 TV 방송 유튜브 먹방 리뷰 별점";
+  } else if (type === "attraction") {
+    keyword = "주변 관광지 인기 명소 후기 뉴스";
+  } else if (type === "experience") {
+    keyword = "주변 체험 여행 예약 후기 인기";
+  } else {
+    const el = document.getElementById("krxaMarketKeyword");
+    keyword = el && el.value ? el.value : "주변 여행 추천";
+  }
+
+  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapRouter) {
+    window.KRXA_DeviceContext.openMapRouter(keyword);
+    return;
+  }
+
+  window.open(
+    "https://www.google.com/search?q=" + encodeURIComponent(keyword),
+    "_blank"
+  );
+};
 })();
