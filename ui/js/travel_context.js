@@ -141,9 +141,6 @@ function openMyLocationMap() {
   requestLocationPermission();
 }
 
-  requestLocationPermission();
-}
-
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
   }
