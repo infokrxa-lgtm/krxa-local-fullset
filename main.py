@@ -374,7 +374,40 @@ def state():
         "stats": stats(),
         "logs": load_logs(150)
     }
+@app.post("/api/recommend")
+async def api_recommend(request: Request):
+    body = await request.json()
 
+    category = body.get("category", "travel")
+    lat = body.get("lat", "")
+    lng = body.get("lng", "")
+    keyword = body.get("keyword", "")
+
+    return {
+        "ok": True,
+        "cards": [
+            {
+                "title": "주변 인기 장소",
+                "desc": f"{keyword or category} 기준으로 현재 위치 주변에서 먼저 확인할 후보입니다.",
+                "reason": "거리, 리뷰, 방문 가능성을 우선 확인하세요.",
+                "map_keyword": keyword or category
+            },
+            {
+                "title": "현지 후기 기반 후보",
+                "desc": "지도 리뷰와 블로그/영상 후기를 함께 확인할 후보입니다.",
+                "reason": "관광객 리뷰보다 현지 이용 흐름을 같이 보는 것이 좋습니다.",
+                "map_keyword": keyword or category
+            },
+            {
+                "title": "체험/실행 후보",
+                "desc": "바로 길찾기와 통역으로 연결할 수 있는 실행 후보입니다.",
+                "reason": "Travel V1은 추천 후 바로 실행하는 구조입니다.",
+                "map_keyword": keyword or category
+            }
+        ],
+        "gps": {"lat": lat, "lng": lng},
+        "next": "map_search"
+    }
 
 @app.get("/control", response_class=HTMLResponse)
 def control():

@@ -175,10 +175,8 @@ window.KRXA_Recommend.openMarketBasedNearby = function (type) {
 
   const keyword = map[type] || "tourist attractions near me";
 
-  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapRouter) {
-    window.KRXA_DeviceContext.openMapRouter(keyword);
-    return;
-  }
+  window.KRXA_Recommend.showLLMCards(type, keyword);
+  return;
 
   window.open(
     "https://www.google.com/search?q=" + encodeURIComponent(keyword),
@@ -197,6 +195,37 @@ window.KRXA_Recommend.openLLMRecommendV1 = function () {
 
   if (window.KRXA_App && window.KRXA_App.openModal) {
     window.KRXA_App.openModal("GPS 기반 추천", html);
+  }
+};
+window.KRXA_Recommend.showLLMCards = async function (category, keyword) {
+  const ctx = window.KRXA_DeviceContext ? window.KRXA_DeviceContext.get() : {};
+
+  const res = await fetch("/api/recommend", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      category: category,
+      keyword: keyword || category,
+      lat: ctx.lat || "",
+      lng: ctx.lng || ""
+    })
+  });
+
+  const data = await res.json();
+
+  let html = "<p><b>LLM 분석 추천 카드</b></p>";
+
+  (data.cards || []).forEach(function(card){
+    html +=
+      "<div class='msg' style='margin-top:10px'>" +
+      "<b>" + card.title + "</b>" +
+      "<span>" + card.desc + "<br><small>" + card.reason + "</small></span>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('" + card.map_keyword + "')\">지도에서 보기</button>" +
+      "</div>";
+  });
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal("추천 결과", html);
   }
 };
 })();
