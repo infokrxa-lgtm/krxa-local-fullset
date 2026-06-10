@@ -200,7 +200,7 @@ window.KRXA_Recommend.openLLMRecommendV1 = function () {
 window.KRXA_Recommend.showLLMCards = async function (category, keyword) {
   const ctx = window.KRXA_DeviceContext ? window.KRXA_DeviceContext.get() : {};
 
-  const res = await fetch("/api/recommend", {
+  const res = await fetch("/api/recommend-market", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({

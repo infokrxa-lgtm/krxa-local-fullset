@@ -85,23 +85,23 @@
     requestLocationPermission();
   }
 
-  function buildGoogleMapsSearchUrl(keyword) {
-    const ctx = window.KRXA_CONTEXT;
+function buildGoogleMapsSearchUrl(keyword) {
+  const ctx = window.KRXA_CONTEXT;
+  const q = keyword || "tourist attractions near me";
 
-    if (ctx.gpsReady && ctx.lat && ctx.lng) {
-      return (
-        "https://www.google.com/maps/search/" +
-        encodeURIComponent(keyword) +
-        "/@" +
-        ctx.lat +
-        "," +
-        ctx.lng +
-        ",15z"
-      );
-    }
-
-    return "https://www.google.com/maps/search/" + encodeURIComponent(keyword);
+  if (ctx.gpsReady && ctx.lat && ctx.lng) {
+    const point = ctx.lat + "," + ctx.lng;
+    return (
+      "https://www.google.com/maps/search/" +
+      encodeURIComponent(q + " near " + point) +
+      "/@" +
+      point +
+      ",15z"
+    );
   }
+
+  return "https://www.google.com/maps/search/" + encodeURIComponent(q);
+}
 
   function buildGoogleMapsRouteUrl(destination) {
     const ctx = window.KRXA_CONTEXT;
@@ -128,15 +128,18 @@ function openMyLocationMap() {
   if (ctx.gpsReady && ctx.lat && ctx.lng) {
     const point = ctx.lat + "," + ctx.lng;
     window.open(
-      "https://www.google.com/maps/place/" +
-        encodeURIComponent(point) +
+      "https://www.google.com/maps/search/" +
+        encodeURIComponent("내 위치 " + point) +
         "/@" +
         point +
-        ",17z",
+        ",18z",
       "_blank"
     );
     return;
   }
+
+  requestLocationPermission();
+}
 
   requestLocationPermission();
 }

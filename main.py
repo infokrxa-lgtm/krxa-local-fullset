@@ -408,7 +408,61 @@ async def api_recommend(request: Request):
         "gps": {"lat": lat, "lng": lng},
         "next": "map_search"
     }
+@app.post("/api/recommend-market")
+async def api_recommend_market(request: Request):
+    body = await request.json()
 
+    category = body.get("category", "travel")
+    keyword = body.get("keyword", "")
+    lat = body.get("lat", "")
+    lng = body.get("lng", "")
+
+    if category == "food":
+        base = "맛집"
+        research = ["TV 방송", "유튜브 먹방", "지도 리뷰", "별점", "현지인 후기"]
+    elif category == "attraction":
+        base = "관광지"
+        research = ["관광 후기", "뉴스", "블로그", "영상", "방문자 흐름"]
+    elif category == "experience":
+        base = "체험"
+        research = ["체험 후기", "예약 가능성", "유튜브", "SNS", "가족/연인 적합성"]
+    else:
+        base = "여행"
+        research = ["지도", "리뷰", "영상", "뉴스", "인기"]
+
+    q = keyword or base
+
+    cards = [
+        {
+            "title": "현실 인기 기반 추천",
+            "desc": f"{q} 후보를 TV·유튜브·리뷰·별점 기준으로 먼저 확인합니다.",
+            "reason": "방송/영상/리뷰 언급이 있는 장소는 여행자가 판단하기 쉽습니다.",
+            "map_keyword": q + " 인기"
+        },
+        {
+            "title": "현재 위치 주변 후보",
+            "desc": f"현재 GPS 주변에서 접근 가능한 {base} 후보를 확인합니다.",
+            "reason": "거리와 이동 편의성이 실제 여행 실행 가능성을 결정합니다.",
+            "map_keyword": q + " near me"
+        },
+        {
+            "title": "실행형 추천",
+            "desc": "선택 후 지도, 길찾기, 말대말 통역으로 바로 연결합니다.",
+            "reason": "Travel V1은 추천에서 끝나지 않고 실행까지 연결합니다.",
+            "map_keyword": q
+        }
+    ]
+
+    return {
+        "ok": True,
+        "mode": "market_research_v1",
+        "category": category,
+        "keyword": q,
+        "gps": {"lat": lat, "lng": lng},
+        "research_sources": research,
+        "cards": cards,
+        "next": "map_or_execute"
+    }
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {

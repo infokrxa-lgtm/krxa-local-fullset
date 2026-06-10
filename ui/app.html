@@ -206,7 +206,7 @@
       <div class="travelHeroBadge">TRAVEL · PLAY · EXPERIENCE</div>
 <div class="travelHeroPlace" id="travelHeroPlace">🌍 주변 여행지</div>
 <div class="travelHeroText" id="travelHeroText">현재 위치 기준 관광지·체험 찾기</div>
-      <button class="travelHeroBtn" onclick="event.stopPropagation(); KRXA_Recommend.openMarketResearchV1()">둘러보기</button>
+      <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); window.KRXA_Recommend.openMarketResearchV1();">둘러보기</button>
     </div>
 
     <div class="quickGrid">
