@@ -1,231 +1,105 @@
-// Travel V1 Recommendation / Execution Hub Engine
-// 1페이지 Home + 2페이지 여행상황 공통 사용
+// Travel V1 Market Research Recommendation Engine v1
 
 (function () {
   window.KRXA_Recommend = window.KRXA_Recommend || {};
 
-  const DEFAULT_LINKS = {
-    flight: [
-      { name: "Google Flights", url: "https://www.google.com/travel/flights" },
-      { name: "Skyscanner", url: "https://www.skyscanner.com" },
-      { name: "Trip.com", url: "https://www.trip.com/flights" },
-      { name: "Booking", url: "https://www.booking.com/flights" },
-      { name: "Agoda", url: "https://www.agoda.com/flights" }
-    ],
-    train: [
-      { name: "Google 기차 검색", url: "https://www.google.com/search?q=train+station+near+me" }
-    ],
-    subway: [
-      { name: "주변 지하철역", url: "https://www.google.com/maps/search/subway+station+near+me" }
-    ],
-    bus: [
-      { name: "주변 버스정류장", url: "https://www.google.com/maps/search/bus+stop+near+me" }
-    ],
-    taxi: [
-      { name: "주변 택시", url: "https://www.google.com/maps/search/taxi+near+me" }
-    ],
-    ship: [
-      { name: "주변 여객선 / 항구", url: "https://www.google.com/maps/search/ferry+terminal+near+me" }
-    ],
-    attraction: [
-      { name: "주변 관광지", url: "https://www.google.com/maps/search/tourist+attractions+near+me" }
-    ],
-    experience: [
-      { name: "주변 체험 여행", url: "https://www.google.com/search?q=nearby+travel+experiences" }
-    ],
-    food: [
-      { name: "주변 맛집", url: "https://www.google.com/maps/search/restaurants+near+me" }
-    ]
+  function getCtx() {
+    return window.KRXA_DeviceContext ? window.KRXA_DeviceContext.get() : {};
+  }
+
+  function openModal(title, html) {
+    if (window.KRXA_App && window.KRXA_App.openModal) {
+      window.KRXA_App.openModal(title, html);
+      return;
+    }
+    alert(title);
+  }
+
+  window.KRXA_Recommend.openMarketResearchV1 = function () {
+    const html =
+      "<p><b>GPS 기반 현실 시장조사 추천</b></p>" +
+      "<p>TV·유튜브·먹방·뉴스·리뷰·별점·지도 흐름을 기준으로 후보를 만듭니다.</p>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.showMarketCards('attraction','주변 관광지')\">🏖 관광지 추천</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.showMarketCards('experience','주변 체험')\">🎡 체험 추천</button>" +
+      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.showMarketCards('food','주변 맛집')\">🍜 맛집 추천</button>" +
+      "<hr>" +
+      "<input id='krxaMarketKeyword' placeholder='직접 검색 예: 방송 맛집, 야시장, 아이와 갈 곳' style='width:100%;margin-top:8px;padding:10px'>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.searchCustomMarket()\">🔎 직접 검색</button>";
+
+    openModal("현실 시장조사 추천", html);
   };
 
-  function getUserLinks(type) {
-    try {
-      const raw = localStorage.getItem("krxa_user_links_" + type);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  }
+  window.KRXA_Recommend.searchCustomMarket = function () {
+    const el = document.getElementById("krxaMarketKeyword");
+    const keyword = el && el.value ? el.value : "주변 여행 추천";
+    window.KRXA_Recommend.showMarketCards("custom", keyword);
+  };
 
-  function saveUserLinks(type, links) {
-    localStorage.setItem("krxa_user_links_" + type, JSON.stringify(links));
-  }
+  window.KRXA_Recommend.showMarketCards = async function (category, keyword) {
+    const ctx = getCtx();
 
-  function buildButtons(type) {
-    const links = DEFAULT_LINKS[type] || [];
-    const userLinks = getUserLinks(type);
-    const all = links.concat(userLinks);
+    const res = await fetch("/api/recommend-market", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        category: category,
+        keyword: keyword,
+        lat: ctx.lat || "",
+        lng: ctx.lng || ""
+      })
+    });
 
-    let html = "";
+    const data = await res.json();
 
-    all.forEach(function (link, index) {
+    let html =
+      "<p><b>LLM 분석 추천 카드</b></p>" +
+      "<p>현재 위치 기준 시장조사형 후보입니다.</p>";
+
+    (data.cards || []).forEach(function (card) {
       html +=
-        "<button class='btn blue' style='width:100%;margin-top:8px' " +
-        "onclick=\"window.open('" + link.url + "','_blank')\">" +
-        link.name +
-        "</button>";
-
-      if (index >= links.length) {
-        html +=
-          "<button class='btn red' style='width:100%;margin-top:4px' " +
-          "onclick=\"KRXA_Recommend.removeUserLink('" + type + "'," + (index - links.length) + ")\">" +
-          "삭제: " + link.name +
-          "</button>";
-      }
+        "<div class='msg' style='margin-top:10px'>" +
+        "<b>" + card.title + "</b>" +
+        "<span>" + card.desc + "<br><small>" + card.reason + "</small></span>" +
+        "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('" + card.map_keyword + "')\">지도에서 보기</button>" +
+        "</div>";
     });
 
     html +=
-      "<hr>" +
-      "<input id='krxaLinkName' placeholder='사이트 이름' style='width:100%;margin-top:8px;padding:10px'>" +
-      "<input id='krxaLinkUrl' placeholder='사이트 주소 https://...' style='width:100%;margin-top:8px;padding:10px'>" +
-      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.addUserLink('" + type + "')\">사용자 사이트 등록</button>";
+      "<button class='btn green' style='width:100%;margin-top:10px' onclick=\"KRXA_DeviceContext.openMyLocationMap()\">📍 내 위치 보기</button>";
 
-    return html;
-  }
-
-  function openPanel(title, type) {
-    if (window.KRXA_App && window.KRXA_App.openModal) {
-      window.KRXA_App.openModal(title, buildButtons(type));
-      return;
-    }
-
-    const links = DEFAULT_LINKS[type] || [];
-    if (links[0]) window.open(links[0].url, "_blank");
-  }
-
-  window.KRXA_Recommend.addUserLink = function (type) {
-    const nameEl = document.getElementById("krxaLinkName");
-    const urlEl = document.getElementById("krxaLinkUrl");
-
-    const name = nameEl ? nameEl.value.trim() : "";
-    const url = urlEl ? urlEl.value.trim() : "";
-
-    if (!name || !url) {
-      alert("사이트 이름과 주소를 입력하세요.");
-      return;
-    }
-
-    const links = getUserLinks(type);
-    links.push({ name: name, url: url });
-    saveUserLinks(type, links);
-
-    openPanel("사용자 등록 완료", type);
-  };
-
-  window.KRXA_Recommend.removeUserLink = function (type, index) {
-    const links = getUserLinks(type);
-    links.splice(index, 1);
-    saveUserLinks(type, links);
-
-    openPanel("사용자 사이트 삭제 완료", type);
+    openModal("추천 결과", html);
   };
 
   window.KRXA_Recommend.openNearby = function (type) {
-    if (type === "attraction") return openPanel("주변 관광지", "attraction");
-    if (type === "experience") return openPanel("주변 체험 여행", "experience");
-    if (type === "food") return openPanel("주변 맛집", "food");
+    if (type === "food") return window.KRXA_Recommend.showMarketCards("food", "주변 맛집");
+    if (type === "attraction") return window.KRXA_Recommend.showMarketCards("attraction", "주변 관광지");
+    if (type === "experience") return window.KRXA_Recommend.showMarketCards("experience", "주변 체험");
     if (type === "transport") return window.KRXA_Recommend.openTransportHub();
-
-    return openPanel("추천", type);
+    return window.KRXA_Recommend.openMarketResearchV1();
   };
 
   window.KRXA_Recommend.openTransportHub = function () {
     const html =
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('flight')\">✈️ 항공</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('train')\">🚄 기차</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('subway')\">🚇 지하철</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('bus')\">🚌 버스</button>" +
-      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('taxi')\">🚕 택시</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('ship')\">🚢 선박</button>";
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openFlightHub()\">✈️ 항공</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('train station near me')\">🚄 기차</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('subway station near me')\">🚇 지하철</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('bus stop near me')\">🚌 버스</button>" +
+      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('taxi stand near me')\">🚕 택시</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('ferry terminal near me')\">🚢 선박</button>";
 
-    if (window.KRXA_App && window.KRXA_App.openModal) {
-      window.KRXA_App.openModal("교통 선택", html);
-      return;
-    }
-
-    window.open("https://www.google.com/maps/search/transportation+near+me", "_blank");
+    openModal("교통 허브", html);
   };
 
-  window.KRXA_Recommend.openTodayRecommendation = function () {
+  window.KRXA_Recommend.openFlightHub = function () {
     const html =
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('attraction')\">🏖 주변 관광지</button>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('experience')\">🎡 주변 체험</button>" +
-      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openNearby('food')\">🍜 주변 맛집</button>";
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.google.com/travel/flights','_blank')\">Google Flights</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.skyscanner.com','_blank')\">Skyscanner</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.trip.com/flights','_blank')\">Trip.com</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.booking.com/flights','_blank')\">Booking</button>" +
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('https://www.agoda.com/flights','_blank')\">Agoda</button>" +
+      "<hr>" +
+      "<p><b>사용자 사이트 등록은 DEV/관리자 모드에서 확장</b></p>";
 
-    if (window.KRXA_App && window.KRXA_App.openModal) {
-      window.KRXA_App.openModal("오늘의 추천", html);
-      return;
-    }
-
-    window.open("https://www.google.com/search?q=nearby+travel+attractions+experiences+restaurants", "_blank");
-  };window.KRXA_Recommend.openGpsConsent = function () {
-  if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.requestLocationPermission) {
-    window.KRXA_DeviceContext.requestLocationPermission();
-  }
-};
-
-window.KRXA_Recommend.openMarketBasedNearby = function (type) {
-  const map = {
-    attraction: "tourist attractions near me",
-    experience: "travel experiences near me",
-    food: "popular restaurants near me",
-    cafe: "popular cafe near me",
-    transport: "transportation near me"
+    openModal("항공권 검색", html);
   };
-
-  const keyword = map[type] || "tourist attractions near me";
-
-  window.KRXA_Recommend.showLLMCards(type, keyword);
-  return;
-
-  window.open(
-    "https://www.google.com/search?q=" + encodeURIComponent(keyword),
-    "_blank"
-  );
-};
-
-window.KRXA_Recommend.openLLMRecommendV1 = function () {
-  const html =
-    "<p><b>GPS 기반 현실 추천 v1</b></p>" +
-    "<p>현재는 지도/검색 기반으로 실행하고, 다음 단계에서 LLM 분석을 연결합니다.</p>" +
-    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('attraction')\">🏖 관광지</button>" +
-    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('experience')\">🎡 체험</button>" +
-    "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openMarketBasedNearby('food')\">🍜 맛집</button>" +
-    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMyLocationMap()\">📍 내 위치 지도</button>";
-
-  if (window.KRXA_App && window.KRXA_App.openModal) {
-    window.KRXA_App.openModal("GPS 기반 추천", html);
-  }
-};
-window.KRXA_Recommend.showLLMCards = async function (category, keyword) {
-  const ctx = window.KRXA_DeviceContext ? window.KRXA_DeviceContext.get() : {};
-
-  const res = await fetch("/api/recommend-market", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      category: category,
-      keyword: keyword || category,
-      lat: ctx.lat || "",
-      lng: ctx.lng || ""
-    })
-  });
-
-  const data = await res.json();
-
-  let html = "<p><b>LLM 분석 추천 카드</b></p>";
-
-  (data.cards || []).forEach(function(card){
-    html +=
-      "<div class='msg' style='margin-top:10px'>" +
-      "<b>" + card.title + "</b>" +
-      "<span>" + card.desc + "<br><small>" + card.reason + "</small></span>" +
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('" + card.map_keyword + "')\">지도에서 보기</button>" +
-      "</div>";
-  });
-
-  if (window.KRXA_App && window.KRXA_App.openModal) {
-    window.KRXA_App.openModal("추천 결과", html);
-  }
-};
 })();
