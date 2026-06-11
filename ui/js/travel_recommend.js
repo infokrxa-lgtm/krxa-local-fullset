@@ -193,35 +193,29 @@ window.KRXA_Recommend.openServiceLinkHub = async function (group) {
 
   const items = (data.items || []).concat(data.user_items || []);
 
-  items.forEach(function (item) {
-    html +=
-      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('" +
-      item.url +
-      "','_blank')\">" +
-      item.name +
-      "</button>";
+items.forEach(function (item) {
+  const colorClass = item.source === "user" ? "green" : "blue";
 
-    if (item.source === "user") {
-      html +=
-        "<button class='btn red' style='width:100%;margin-top:4px' onclick=\"KRXA_Recommend.deleteUserServiceLink('" +
-        group +
-        "','" +
-        item.id +
-        "')\">삭제: " +
-        item.name +
-        "</button>";
-    }
+  html +=
+    "<button class='btn " + colorClass + "' style='width:100%;margin-top:8px' onclick=\"window.open('" +
+    item.url +
+    "','_blank')\">" +
+    item.name +
+    "</button>";
   });
 
   if (data.user_add_enabled) {
     html +=
       "<hr>" +
-      "<p><b>내가 쓰는 사이트 추가</b></p>" +
+      "<p><b>내 사이트 등록 / 수정 / 삭제</b></p>" +
       "<input id='krxaServiceName' placeholder='사이트 이름' style='width:100%;margin-top:8px;padding:10px'>" +
       "<input id='krxaServiceUrl' placeholder='사이트 주소 https://...' style='width:100%;margin-top:8px;padding:10px'>" +
-      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.addUserServiceLink('" +
-      group +
-      "')\">사용자 사이트 등록</button>";
+"<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.addUserServiceLink('" +
+group +
+"')\">사용자 사이트 등록</button>" +
+"<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openUserServiceManager('" +
+group +
+"')\">등록 사이트 관리</button>";
   }
 
   if (window.KRXA_App && window.KRXA_App.openModal) {
@@ -280,5 +274,46 @@ window.KRXA_Recommend.openFlightHub = function () {
 window.KRXA_Recommend.openMapHub = function () {
   window.KRXA_Recommend.openServiceLinkHub("map");
 };
+window.KRXA_Recommend.openUserServiceManager = async function (group) {
+  const res = await fetch("/api/travel-service-links?group=" + encodeURIComponent(group));
+  const data = await res.json();
 
+  if (!data.ok) {
+    alert(data.message || "사용자 사이트를 불러오지 못했습니다.");
+    return;
+  }
+
+  let html = "<p><b>등록 사이트 관리</b></p>";
+
+  const userItems = data.user_items || [];
+
+  if (!userItems.length) {
+    html += "<p>등록된 사용자 사이트가 없습니다.</p>";
+  }
+
+  userItems.forEach(function (item) {
+    html +=
+      "<div class='msg' style='margin-top:8px'>" +
+      "<b>" + item.name + "</b>" +
+      "<span>" + item.url + "</span>" +
+      "<button class='btn red' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.deleteUserServiceLink('" +
+      group +
+      "','" +
+      item.id +
+      "')\">삭제</button>" +
+      "</div>";
+  });
+
+  html +=
+    "<hr>" +
+    "<input id='krxaServiceName' placeholder='사이트 이름' style='width:100%;margin-top:8px;padding:10px'>" +
+    "<input id='krxaServiceUrl' placeholder='사이트 주소 https://...' style='width:100%;margin-top:8px;padding:10px'>" +
+    "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.addUserServiceLink('" +
+    group +
+    "')\">새 사이트 등록</button>";
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal("내 사이트 관리", html);
+  }
+};
 })();
