@@ -666,6 +666,35 @@ async def travel_discovery_delete(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "place not found"}
+@app.post("/api/travel-discovery/update")
+async def travel_discovery_update(request: Request):
+    body = await request.json()
+    place_id = body.get("id")
+
+    path = Path("storage/travel_discovery_places.json")
+    if not path.exists():
+        return {"ok": False, "message": "travel discovery file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+
+    for item in items:
+        if item.get("id") == place_id:
+            for key in [
+                "type", "title", "subtitle", "reason", "source",
+                "broadcast", "keyword", "map_keyword", "address",
+                "phone", "route_hint", "status"
+            ]:
+                if key in body:
+                    item[key] = body.get(key)
+
+            path.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "place not found"}
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {

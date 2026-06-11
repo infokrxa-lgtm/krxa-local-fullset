@@ -135,10 +135,37 @@ input{min-width:220px}
 </div>
 
 <div class="card">
-<h3>9. 원본 상태 JSON</h3>
-<pre id="raw">__STATE__</pre>
+<h3>9. Travel Discovery Admin</h3>
+<p class="small">0페이지 Discovery Hero에 표시될 추천 장소를 등록/수정/삭제합니다.</p>
+
+<button class="mode" onclick="loadDiscoveryPlaces()">추천 장소 불러오기</button>
+
+<h4>추천 장소 등록/수정</h4>
+<input id="dpId" placeholder="id 예: place-006 / 수정 시 기존 id">
+<input id="dpType" placeholder="type 예: food/tour/experience">
+<input id="dpTitle" placeholder="장소명/제목">
+<input id="dpSubtitle" placeholder="짧은 설명">
+<input id="dpReason" placeholder="추천 사유">
+<input id="dpSource" placeholder="출처 예: TV/YouTube/리뷰">
+<input id="dpBroadcast" placeholder="방송명/채널명">
+<input id="dpKeyword" placeholder="검색 키워드">
+<input id="dpMapKeyword" placeholder="지도 키워드">
+<input id="dpAddress" placeholder="주소">
+<input id="dpPhone" placeholder="전화번호">
+<input id="dpRouteHint" placeholder="가는 방법 안내">
+<button class="on" onclick="createDiscoveryPlace()">신규 등록</button>
+<button class="mode" onclick="updateDiscoveryPlace()">수정 저장</button>
+
+<h4>추천 장소 삭제</h4>
+<input id="dpDeleteId" placeholder="삭제할 id">
+<button class="off" onclick="deleteDiscoveryPlace()">삭제</button>
+
+<pre id="discoveryAdminBox">아직 로드 전입니다.</pre>
 </div>
 
+<div class="card">
+<h3>10. 원본 상태 JSON</h3>
+<pre id="raw">__STATE__</pre>
 </div>
 
 <script>
@@ -352,6 +379,74 @@ async function loadCandidates(){
 
 renderSummary();
 renderLogs();
+async function loadDiscoveryPlaces(){
+    const res = await fetch("/api/travel-discovery");
+    const data = await res.json();
+    document.getElementById("discoveryAdminBox").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+function getDiscoveryForm(){
+    return {
+        id: document.getElementById("dpId").value,
+        type: document.getElementById("dpType").value || "food",
+        title: document.getElementById("dpTitle").value,
+        subtitle: document.getElementById("dpSubtitle").value,
+        reason: document.getElementById("dpReason").value,
+        source: document.getElementById("dpSource").value,
+        broadcast: document.getElementById("dpBroadcast").value,
+        keyword: document.getElementById("dpKeyword").value,
+        map_keyword: document.getElementById("dpMapKeyword").value,
+        address: document.getElementById("dpAddress").value,
+        phone: document.getElementById("dpPhone").value,
+        route_hint: document.getElementById("dpRouteHint").value,
+        status: "active"
+    };
+}
+
+async function createDiscoveryPlace(){
+    const body = getDiscoveryForm();
+    const res = await fetch("/api/travel-discovery/create", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    document.getElementById("discoveryAdminBox").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function updateDiscoveryPlace(){
+    const body = getDiscoveryForm();
+    if(!body.id){
+        alert("수정할 id를 입력하세요.");
+        return;
+    }
+    const res = await fetch("/api/travel-discovery/update", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    document.getElementById("discoveryAdminBox").innerText =
+        JSON.stringify(data, null, 2);
+}
+
+async function deleteDiscoveryPlace(){
+    const id = document.getElementById("dpDeleteId").value;
+    if(!id){
+        alert("삭제할 id를 입력하세요.");
+        return;
+    }
+    const res = await fetch("/api/travel-discovery/delete", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id:id})
+    });
+    const data = await res.json();
+    document.getElementById("discoveryAdminBox").innerText =
+        JSON.stringify(data, null, 2);
+}
 </script>
 
 
