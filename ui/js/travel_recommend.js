@@ -102,4 +102,76 @@
 
     openModal("항공권 검색", html);
   };
+window.KRXA_Recommend.discoveryCards = [
+  {
+    type: "food",
+    title: "방송·유튜브 맛집",
+    subtitle: "현재 위치 기준 인기 맛집 후보",
+    keyword: "주변 방송 맛집 유튜브 먹방 리뷰"
+  },
+  {
+    type: "attraction",
+    title: "근처 인기 관광지",
+    subtitle: "리뷰·방문 흐름 기반 추천",
+    keyword: "주변 인기 관광지 후기"
+  },
+  {
+    type: "experience",
+    title: "근처 체험 여행",
+    subtitle: "가족·연인·당일치기 체험 후보",
+    keyword: "주변 체험 여행 인기 후기"
+  },
+  {
+    type: "hot",
+    title: "지금 많이 찾는 곳",
+    subtitle: "검색·리뷰 흐름 기반 인기 후보",
+    keyword: "주변 지금 인기 장소"
+  },
+  {
+    type: "custom",
+    title: "뉴스·방송에 나온 곳",
+    subtitle: "TV·뉴스·영상 기반 장소 찾기",
+    keyword: "주변 뉴스 방송 나온 맛집 관광지"
+  }
+];
+
+window.KRXA_Recommend.currentDiscoveryIndex = 0;
+
+window.KRXA_Recommend.renderDiscoveryHero = function () {
+  const cards = window.KRXA_Recommend.discoveryCards || [];
+  if (!cards.length) return;
+
+  const card = cards[window.KRXA_Recommend.currentDiscoveryIndex % cards.length];
+
+  const titleEl = document.getElementById("discoveryHeroTitle");
+  const subEl = document.getElementById("discoveryHeroSub");
+
+  if (titleEl) titleEl.innerText = card.title;
+  if (subEl) subEl.innerText = card.subtitle;
+};
+
+window.KRXA_Recommend.rotateDiscoveryHero = function () {
+  window.KRXA_Recommend.currentDiscoveryIndex =
+    (window.KRXA_Recommend.currentDiscoveryIndex + 1) %
+    window.KRXA_Recommend.discoveryCards.length;
+
+  window.KRXA_Recommend.renderDiscoveryHero();
+};
+
+window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
+  const cards = window.KRXA_Recommend.discoveryCards || [];
+  const card = cards[window.KRXA_Recommend.currentDiscoveryIndex % cards.length];
+
+  if (!card) {
+    window.KRXA_Recommend.openMarketResearchV1();
+    return;
+  }
+
+  window.KRXA_Recommend.showMarketCards(card.type, card.keyword);
+};
+
+setTimeout(function () {
+  window.KRXA_Recommend.renderDiscoveryHero();
+  setInterval(window.KRXA_Recommend.rotateDiscoveryHero, 5000);
+}, 500);
 })();
