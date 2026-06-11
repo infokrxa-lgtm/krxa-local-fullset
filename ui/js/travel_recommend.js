@@ -102,76 +102,80 @@
 
     openModal("항공권 검색", html);
   };
-window.KRXA_Recommend.discoveryCards = [
-  {
-    type: "food",
-    title: "방송·유튜브 맛집",
-    subtitle: "현재 위치 기준 인기 맛집 후보",
-    keyword: "주변 방송 맛집 유튜브 먹방 리뷰"
-  },
-  {
-    type: "attraction",
-    title: "근처 인기 관광지",
-    subtitle: "리뷰·방문 흐름 기반 추천",
-    keyword: "주변 인기 관광지 후기"
-  },
-  {
-    type: "experience",
-    title: "근처 체험 여행",
-    subtitle: "가족·연인·당일치기 체험 후보",
-    keyword: "주변 체험 여행 인기 후기"
-  },
-  {
-    type: "hot",
-    title: "지금 많이 찾는 곳",
-    subtitle: "검색·리뷰 흐름 기반 인기 후보",
-    keyword: "주변 지금 인기 장소"
-  },
-  {
-    type: "custom",
-    title: "뉴스·방송에 나온 곳",
-    subtitle: "TV·뉴스·영상 기반 장소 찾기",
-    keyword: "주변 뉴스 방송 나온 맛집 관광지"
+window.KRXA_Recommend.discoveryPlaces = [];
+window.KRXA_Recommend.currentDiscoveryPlaceIndex = 0;
+
+window.KRXA_Recommend.loadDiscoveryPlaces = async function () {
+  try {
+    const res = await fetch("/api/travel-discovery");
+    const data = await res.json();
+
+    if (data.ok && data.items && data.items.length) {
+      window.KRXA_Recommend.discoveryPlaces = data.items;
+      window.KRXA_Recommend.currentDiscoveryPlaceIndex = 0;
+      window.KRXA_Recommend.renderDiscoveryPlaceHero();
+      return;
+    }
+  } catch (e) {
+    console.log("travel discovery load failed", e);
   }
-];
+};
 
-window.KRXA_Recommend.currentDiscoveryIndex = 0;
+window.KRXA_Recommend.renderDiscoveryPlaceHero = function () {
+  const places = window.KRXA_Recommend.discoveryPlaces || [];
+  if (!places.length) return;
 
-window.KRXA_Recommend.renderDiscoveryHero = function () {
-  const cards = window.KRXA_Recommend.discoveryCards || [];
-  if (!cards.length) return;
-
-  const card = cards[window.KRXA_Recommend.currentDiscoveryIndex % cards.length];
+  const place =
+    places[window.KRXA_Recommend.currentDiscoveryPlaceIndex % places.length];
 
   const titleEl = document.getElementById("discoveryHeroTitle");
   const subEl = document.getElementById("discoveryHeroSub");
 
-  if (titleEl) titleEl.innerText = card.title;
-  if (subEl) subEl.innerText = card.subtitle;
+  if (titleEl) titleEl.innerText = place.title || "추천 장소";
+  if (subEl) subEl.innerText = place.subtitle || place.reason || "";
 };
 
-window.KRXA_Recommend.rotateDiscoveryHero = function () {
-  window.KRXA_Recommend.currentDiscoveryIndex =
-    (window.KRXA_Recommend.currentDiscoveryIndex + 1) %
-    window.KRXA_Recommend.discoveryCards.length;
+window.KRXA_Recommend.rotateDiscoveryPlaceHero = function () {
+  const places = window.KRXA_Recommend.discoveryPlaces || [];
+  if (!places.length) return;
 
-  window.KRXA_Recommend.renderDiscoveryHero();
+  window.KRXA_Recommend.currentDiscoveryPlaceIndex =
+    (window.KRXA_Recommend.currentDiscoveryPlaceIndex + 1) % places.length;
+
+  window.KRXA_Recommend.renderDiscoveryPlaceHero();
 };
 
 window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
-  const cards = window.KRXA_Recommend.discoveryCards || [];
-  const card = cards[window.KRXA_Recommend.currentDiscoveryIndex % cards.length];
+  const places = window.KRXA_Recommend.discoveryPlaces || [];
+  const place =
+    places[window.KRXA_Recommend.currentDiscoveryPlaceIndex % places.length];
 
-  if (!card) {
+  if (!place) {
     window.KRXA_Recommend.openMarketResearchV1();
     return;
   }
 
-  window.KRXA_Recommend.showMarketCards(card.type, card.keyword);
+  window.KRXA_Recommend.openPlaceRoute(place);
+};
+
+window.KRXA_Recommend.openPlaceRoute = function (place) {
+  const html =
+    "<p><b>" + (place.title || "추천 장소") + "</b></p>" +
+    "<p>" + (place.subtitle || "") + "</p>" +
+    "<div class='msg'><b>추천 사유</b><span>" + (place.reason || "") + "</span></div>" +
+    "<div class='msg'><b>출처</b><span>" + (place.broadcast || place.source || "추천 후보") + "</span></div>" +
+    "<div class='msg'><b>가는 방법</b><span>" + (place.route_hint || "현재 위치에서 이동수단을 선택해 확인합니다.") + "</span></div>" +
+    "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.openTransportHub()\">🚕 교통수단 선택</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('" + (place.map_keyword || place.keyword || place.title) + "')\">작게 보기: 지도에서 보기</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_App.goPage(3)\">🎤 말대말로 묻기</button>";
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal("가는 방법", html);
+  }
 };
 
 setTimeout(function () {
-  window.KRXA_Recommend.renderDiscoveryHero();
-  setInterval(window.KRXA_Recommend.rotateDiscoveryHero, 5000);
-}, 500);
+  window.KRXA_Recommend.loadDiscoveryPlaces();
+  setInterval(window.KRXA_Recommend.rotateDiscoveryPlaceHero, 5000);
+}, 800);
 })();

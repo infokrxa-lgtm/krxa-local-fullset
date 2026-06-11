@@ -463,6 +463,95 @@ async def api_recommend_market(request: Request):
         "cards": cards,
         "next": "map_or_execute"
     }
+@app.get("/api/travel-discovery")
+def travel_discovery_get():
+    path = Path("storage/travel_discovery_places.json")
+
+    if not path.exists():
+        return {
+            "ok": False,
+            "message": "travel discovery file not found",
+            "items": []
+        }
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        items = data.get("items", [])
+        active_items = [x for x in items if x.get("status") == "active"]
+        return {
+            "ok": True,
+            "name": data.get("name", "Travel V1 Discovery Places"),
+            "items": active_items
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "message": "travel discovery read error",
+            "error": str(e),
+            "items": []
+        }
+
+
+@app.post("/api/travel-discovery/create")
+async def travel_discovery_create(request: Request):
+    body = await request.json()
+    path = Path("storage/travel_discovery_places.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        data = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        data = {
+            "name": "Travel V1 Discovery Places",
+            "status": "active",
+            "items": []
+        }
+
+    items = data.get("items", [])
+
+    item = {
+        "id": body.get("id") or f"place-{len(items)+1:03d}",
+        "type": body.get("type", "food"),
+        "title": body.get("title", ""),
+        "subtitle": body.get("subtitle", ""),
+        "reason": body.get("reason", ""),
+        "source": body.get("source", ""),
+        "broadcast": body.get("broadcast", ""),
+        "keyword": body.get("keyword", ""),
+        "map_keyword": body.get("map_keyword", ""),
+        "address": body.get("address", ""),
+        "phone": body.get("phone", ""),
+        "route_hint": body.get("route_hint", ""),
+        "status": body.get("status", "active")
+    }
+
+    items.append(item)
+    data["items"] = items
+
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {"ok": True, "item": item, "total": len(items)}
+
+
+@app.post("/api/travel-discovery/delete")
+async def travel_discovery_delete(request: Request):
+    body = await request.json()
+    place_id = body.get("id")
+
+    path = Path("storage/travel_discovery_places.json")
+    if not path.exists():
+        return {"ok": False, "message": "travel discovery file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+
+    for item in items:
+        if item.get("id") == place_id:
+            item["status"] = "deleted"
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "place not found"}
 @app.get("/control", response_class=HTMLResponse)
 def control():
     payload = {

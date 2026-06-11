@@ -1,0 +1,81 @@
+{
+  "name": "Travel V1 Discovery Places",
+  "status": "active",
+  "items": [
+    {
+      "id": "place-001",
+      "type": "food",
+      "title": "주변 방송·유튜브 맛집",
+      "subtitle": "TV·유튜브·리뷰 기반 인기 맛집 후보",
+      "reason": "현재 위치 주변에서 방송, 유튜브 먹방, 리뷰, 별점 흐름을 기준으로 확인할 맛집 후보입니다.",
+      "source": "TV / YouTube / 리뷰 / 별점",
+      "broadcast": "방송·유튜브 언급 후보",
+      "keyword": "주변 방송 맛집 유튜브 먹방 리뷰",
+      "map_keyword": "주변 맛집",
+      "address": "",
+      "phone": "",
+      "route_hint": "현재 위치에서 택시, 대중교통, 도보 경로를 확인합니다.",
+      "status": "active"
+    },
+    {
+      "id": "place-002",
+      "type": "tour",
+      "title": "지금 근처 인기 관광지",
+      "subtitle": "방문 흐름·리뷰 기반 관광지 후보",
+      "reason": "현재 위치 주변에서 사람들이 많이 찾고 리뷰가 많은 관광지 후보입니다.",
+      "source": "지도 / 리뷰 / 블로그 / 뉴스",
+      "broadcast": "지역 인기 장소 후보",
+      "keyword": "주변 인기 관광지 후기 뉴스",
+      "map_keyword": "주변 관광지",
+      "address": "",
+      "phone": "",
+      "route_hint": "현재 위치에서 자동차, 대중교통, 도보 경로를 확인합니다.",
+      "status": "active"
+    },
+    {
+      "id": "place-003",
+      "type": "experience",
+      "title": "근처 체험 여행",
+      "subtitle": "가족·연인·당일치기 체험 후보",
+      "reason": "현재 위치 주변에서 체험, 놀이, 당일치기 여행으로 연결 가능한 후보입니다.",
+      "source": "체험앱 / 리뷰 / 영상 / 예약 흐름",
+      "broadcast": "체험·놀이 인기 후보",
+      "keyword": "주변 체험 여행 인기 후기 예약",
+      "map_keyword": "주변 체험 여행",
+      "address": "",
+      "phone": "",
+      "route_hint": "현재 위치에서 이동수단을 선택해 가는 방법을 확인합니다.",
+      "status": "active"
+    },
+    {
+      "id": "place-004",
+      "type": "hot",
+      "title": "뉴스·방송에 나온 곳",
+      "subtitle": "방금 본 방송·뉴스·영상 속 장소 찾기",
+      "reason": "TV, 뉴스, 유튜브에서 본 장소를 현재 위치와 연결해 찾아갈 수 있도록 하는 후보입니다.",
+      "source": "TV / 뉴스 / YouTube / SNS",
+      "broadcast": "방송·뉴스 기반 후보",
+      "keyword": "주변 뉴스 방송 나온 맛집 관광지",
+      "map_keyword": "주변 방송 나온 장소",
+      "address": "",
+      "phone": "",
+      "route_hint": "장소 후보를 확인한 뒤 지도와 교통수단을 선택합니다.",
+      "status": "active"
+    },
+    {
+      "id": "place-005",
+      "type": "shopping",
+      "title": "근처 시장·쇼핑 장소",
+      "subtitle": "마트·시장·쇼핑 거리 후보",
+      "reason": "현재 위치 주변에서 여행자가 바로 들를 수 있는 시장, 마트, 쇼핑 장소 후보입니다.",
+      "source": "지도 / 리뷰 / 지역 인기",
+      "broadcast": "지역 쇼핑 후보",
+      "keyword": "주변 시장 쇼핑 마트 인기",
+      "map_keyword": "주변 시장 쇼핑",
+      "address": "",
+      "phone": "",
+      "route_hint": "현재 위치 기준 이동 경로를 확인합니다.",
+      "status": "active"
+    }
+  ]
+}
