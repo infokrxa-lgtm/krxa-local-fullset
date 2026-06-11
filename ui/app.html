@@ -192,12 +192,64 @@
   font-size:23px;
 }
 .homeMicDock small{display:block;color:#cbd5e1;font-size:11px;margin-top:2px}
+.discoveryHero{
+  margin:96px 22px 0;
+  min-height:360px;
+  border-radius:30px;
+  padding:26px;
+  color:white;
+  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  box-shadow:0 18px 40px rgba(37,99,235,.32);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.discoveryBadge{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1px;
+  opacity:.9;
+  margin-bottom:24px;
+}
+.discoveryTitle{
+  font-size:34px;
+  line-height:1.15;
+  font-weight:900;
+}
+.discoverySub{
+  font-size:16px;
+  margin-top:14px;
+  opacity:.95;
+}
+.discoveryHero .travelHeroBtn{
+  margin-top:28px;
+  width:120px;
+}
   </style>
 </head>
 <body>
 <div class="app" id="app">
   <div class="pages" id="pages">
+<section class="page">
+  <div class="screen home">
+    <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
 
+    <div class="discoveryHero" onclick="KRXA_Recommend.openCurrentDiscoveryCard()">
+      <div class="discoveryBadge">LIVE TRAVEL DISCOVERY</div>
+      <div class="discoveryTitle" id="discoveryHeroTitle">주변 인기 장소를 찾는 중</div>
+      <div class="discoverySub" id="discoveryHeroSub">방송·유튜브·리뷰 기반 추천 준비 중</div>
+      <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_Recommend.openCurrentDiscoveryCard();">둘러보기</button>
+    </div>
+
+    <div class="homeMicDock" onclick="KRXA_App.goPage(4)">
+      <div class="homeMicBtn">🎤</div>
+      <div>
+        <b>말대말</b>
+        <small>말하면 바로 통역</small>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="page">
   <div class="screen home">
     <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
