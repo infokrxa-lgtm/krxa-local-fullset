@@ -366,7 +366,96 @@
 
   // boot
   setTimeout(function () {
+    window.KRXA_Recommend.loadHeroCards();
     window.KRXA_Recommend.loadDiscoveryPlaces();
-    setInterval(window.KRXA_Recommend.rotateDiscoveryPlaceHero, 5000);
+    setInterval(function(){
+      if (!window.KRXA_Recommend.rotateHeroCard()) {
+        window.KRXA_Recommend.rotateDiscoveryPlaceHero();
+      }
+    }, 5000);
   }, 800);
+
+// ===== Travel Hero Cards v1 =====
+window.KRXA_Recommend.heroCards = [];
+window.KRXA_Recommend.currentHeroCardIndex = 0;
+
+window.KRXA_Recommend.loadHeroCards = async function () {
+  try {
+    const res = await fetch("/api/travel-hero-cards");
+    const data = await res.json();
+
+    if (data.ok && data.items && data.items.length) {
+      window.KRXA_Recommend.heroCards = data.items;
+      window.KRXA_Recommend.currentHeroCardIndex = 0;
+      window.KRXA_Recommend.renderHeroCard();
+      return true;
+    }
+  } catch (e) {
+    console.log("hero cards load failed", e);
+  }
+  return false;
+};
+
+window.KRXA_Recommend.renderHeroCard = function () {
+  const cards = window.KRXA_Recommend.heroCards || [];
+  if (!cards.length) return false;
+
+  const card = cards[window.KRXA_Recommend.currentHeroCardIndex % cards.length];
+
+  const titleEl = document.getElementById("discoveryHeroTitle");
+  const subEl = document.getElementById("discoveryHeroSub");
+
+  if (titleEl) titleEl.innerText = card.title || "추천 카드";
+  if (subEl) subEl.innerText = card.subtitle || card.source || "";
+
+  return true;
+};
+
+window.KRXA_Recommend.rotateHeroCard = function () {
+  const cards = window.KRXA_Recommend.heroCards || [];
+  if (!cards.length) return false;
+
+  window.KRXA_Recommend.currentHeroCardIndex =
+    (window.KRXA_Recommend.currentHeroCardIndex + 1) % cards.length;
+
+  window.KRXA_Recommend.renderHeroCard();
+  return true;
+};
+
+window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
+  const cards = window.KRXA_Recommend.heroCards || [];
+
+  if (cards.length) {
+    const card = cards[window.KRXA_Recommend.currentHeroCardIndex % cards.length];
+
+    const place = {
+      title: card.title,
+      subtitle: card.subtitle,
+      reason: "관제 등록 Hero 카드 기반 추천입니다.",
+      source: card.source || "Travel Hero Card",
+      broadcast: card.source || "",
+      keyword: card.keyword || card.map_keyword || card.title,
+      map_keyword: card.map_keyword || card.keyword || card.title,
+      route_hint: "현재 위치에서 교통수단을 선택해 확인합니다.",
+      linked_group: card.linked_group || ""
+    };
+
+    window.KRXA_Recommend.openPlaceRoute(place);
+    return;
+  }
+
+  if (window.KRXA_Recommend.discoveryPlaces && window.KRXA_Recommend.discoveryPlaces.length) {
+    window.KRXA_Recommend.openPlaceRoute(
+      window.KRXA_Recommend.discoveryPlaces[
+        window.KRXA_Recommend.currentDiscoveryPlaceIndex %
+        window.KRXA_Recommend.discoveryPlaces.length
+      ]
+    );
+    return;
+  }
+
+  window.KRXA_Recommend.openMarketResearchV1();
+};
+
+
 })();
