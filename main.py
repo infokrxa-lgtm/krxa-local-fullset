@@ -1160,3 +1160,9 @@ async def travel_discovery_candidates_action(request: Request):
 
     cand_path.write_text(json.dumps(cand_data, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "action": action, "item": target}
+
+@app.get("/control/workspace")
+def control_workspace():
+    from fastapi.responses import HTMLResponse
+    path = Path("ui/control_workspace.html")
+    return HTMLResponse(path.read_text(encoding="utf-8"))

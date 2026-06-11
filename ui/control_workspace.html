@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRXA PC Control Workspace</title>
+<style>
+body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.side{background:#020617;padding:18px;border-right:1px solid #334155}
+.main{padding:18px}
+button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:10px;font-weight:bold;cursor:pointer}
+.mode{background:#2563eb;color:white}.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}
+.card{background:#1e293b;border-radius:14px;padding:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:0}
+pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space:pre-wrap;max-height:420px;overflow:auto}
+.small{font-size:13px;color:#cbd5e1}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="side">
+    <h2>KRXA PC WORKSPACE</h2>
+    <p class="small">관제 + DEV 통합 작업실</p>
+    <button class="mode" onclick="showPanel('dashboard')">대시보드</button>
+    <button class="mode" onclick="showPanel('travelDiscovery')">Travel 추천장소</button>
+    <button class="mode" onclick="showPanel('candidateFeed')">추천 후보 승인</button>
+    <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
+    <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
+    <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 열기</button>
+    <button class="mode" onclick="window.open('/api/state','_blank')">STATE JSON</button>
+  </div>
+
+  <div class="main">
+    <div id="panel"></div>
+  </div>
+</div>
+
+<script>
+function panel(html){document.getElementById("panel").innerHTML=html;}
+
+function showPanel(name){
+  if(name==="dashboard") return dashboard();
+  if(name==="travelDiscovery") return travelDiscovery();
+  if(name==="candidateFeed") return candidateFeed();
+  if(name==="serviceLinks") return serviceLinks();
+  if(name==="dev") return devPanel();
+}
+
+function dashboard(){
+  panel(`
+    <div class="card"><h2>대시보드</h2>
+    <p>Travel V1 / 말대말 / 관제 / DEV 통합 작업실입니다.</p>
+    <div class="grid">
+      <div class="card"><b>Travel V1</b><p>0페이지 Hero / 추천 / 교통 / 지도 / 말대말</p></div>
+      <div class="card"><b>Discovery Admin</b><p>추천 장소 등록·수정·삭제</p></div>
+      <div class="card"><b>Candidate Feed</b><p>LLM 추천 후보 승인·보류·삭제</p></div>
+      <div class="card"><b>Service Links</b><p>항공권·지도·교통 사이트 관리</p></div>
+    </div></div>
+  `);
+}
+
+function travelDiscovery(){
+  panel(`
+    <div class="card"><h2>Travel 추천장소 관리</h2>
+    <button class="mode" onclick="loadDiscoveryPlaces()">리스트 불러오기</button>
+    <div class="grid">
+      <div>
+        <h3>등록/수정</h3>
+        <input id="dpId" placeholder="id 예: place-006 / 수정 시 기존 id">
+        <input id="dpType" placeholder="type food/tour/experience">
+        <input id="dpTitle" placeholder="장소명/제목">
+        <input id="dpSubtitle" placeholder="짧은 설명">
+        <input id="dpReason" placeholder="추천 사유">
+        <input id="dpBroadcast" placeholder="방송명/채널명">
+        <input id="dpMapKeyword" placeholder="지도 검색어">
+        <input id="dpAddress" placeholder="주소">
+        <input id="dpPhone" placeholder="전화">
+        <textarea id="dpRouteHint" placeholder="가는 방법 안내"></textarea>
+        <button class="on" onclick="createDiscoveryPlace()">신규 등록</button>
+        <button class="mode" onclick="updateDiscoveryPlace()">수정 저장</button>
+        <input id="dpDeleteId" placeholder="삭제할 id">
+        <button class="off" onclick="deleteDiscoveryPlace()">삭제</button>
+      </div>
+      <div><h3>리스트</h3><pre id="discoveryBox">로드 전</pre></div>
+    </div></div>
+  `);
+}
+
+function getDiscoveryForm(){
+  return {
+    id: document.getElementById("dpId").value,
+    type: document.getElementById("dpType").value || "food",
+    title: document.getElementById("dpTitle").value,
+    subtitle: document.getElementById("dpSubtitle").value,
+    reason: document.getElementById("dpReason").value,
+    source: document.getElementById("dpBroadcast").value,
+    broadcast: document.getElementById("dpBroadcast").value,
+    keyword: document.getElementById("dpMapKeyword").value,
+    map_keyword: document.getElementById("dpMapKeyword").value,
+    address: document.getElementById("dpAddress").value,
+    phone: document.getElementById("dpPhone").value,
+    route_hint: document.getElementById("dpRouteHint").value,
+    status:"active"
+  };
+}
+async function loadDiscoveryPlaces(){
+  const r=await fetch("/api/travel-discovery"); const d=await r.json();
+  document.getElementById("discoveryBox").innerText=JSON.stringify(d,null,2);
+}
+async function createDiscoveryPlace(){
+  const r=await fetch("/api/travel-discovery/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(getDiscoveryForm())});
+  document.getElementById("discoveryBox").innerText=JSON.stringify(await r.json(),null,2);
+}
+async function updateDiscoveryPlace(){
+  const body=getDiscoveryForm(); if(!body.id){alert("id 필요");return;}
+  const r=await fetch("/api/travel-discovery/update",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  document.getElementById("discoveryBox").innerText=JSON.stringify(await r.json(),null,2);
+}
+async function deleteDiscoveryPlace(){
+  const id=document.getElementById("dpDeleteId").value; if(!id){alert("id 필요");return;}
+  const r=await fetch("/api/travel-discovery/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});
+  document.getElementById("discoveryBox").innerText=JSON.stringify(await r.json(),null,2);
+}
+
+function candidateFeed(){
+  panel(`<div class="card"><h2>추천 후보 승인</h2>
+  <button class="mode" onclick="loadCandidates()">후보 불러오기</button>
+  <pre id="candidateBox">로드 전</pre></div>`);
+}
+async function loadCandidates(){
+  const r=await fetch("/api/travel-discovery-candidates"); const d=await r.json();
+  let html="";
+  (d.items||[]).forEach(x=>{
+    html += `ID: ${x.id}\n제목: ${x.title}\n상태: ${x.status}\n\n`;
+  });
+  document.getElementById("candidateBox").innerText=html||"후보 없음";
+}
+
+function serviceLinks(){
+  panel(`<div class="card"><h2>서비스 링크 관리</h2>
+  <select id="svcGroup"><option value="flight">항공</option><option value="map">지도</option><option value="transport">교통</option><option value="hotel">숙소</option><option value="experience">체험</option></select>
+  <button class="mode" onclick="loadServiceLinks()">불러오기</button>
+  <pre id="svcBox">로드 전</pre></div>`);
+}
+async function loadServiceLinks(){
+  const g=document.getElementById("svcGroup").value;
+  const r=await fetch("/api/travel-service-links?group="+encodeURIComponent(g));
+  document.getElementById("svcBox").innerText=JSON.stringify(await r.json(),null,2);
+}
+
+function devPanel(){
+  panel(`<div class="card"><h2>DEV 작업</h2>
+  <button class="mode" onclick="window.open('/dev','_blank')">기존 DEV 열기</button>
+  <button class="mode" onclick="window.open('/api/state','_blank')">STATE 확인</button>
+  <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 테스트</button>
+  <p class="small">다음 단계에서 패치 승인/배포 체크리스트를 이 화면으로 통합합니다.</p></div>`);
+}
+
+dashboard();
+</script>
+</body>
+</html>
