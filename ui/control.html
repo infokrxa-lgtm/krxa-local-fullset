@@ -118,7 +118,24 @@ input{min-width:220px}
 </div>
 
 <div class="card">
-<h3>6. Travel Discovery Admin</h3>
+<h3>6. Auto-Programming Loop</h3>
+<button class="mode" onclick="analyzeAutoLoop()">AutoLoop 분석</button>
+<button class="mode" onclick="loadCandidates()">개선 후보 보기</button>
+<pre id="autoLoopBox">아직 분석 전입니다.</pre>
+</div>
+
+<div class="card">
+<h3>7. 상태 요약</h3>
+<div id="summary" class="grid"><div class="metric">로드 중...</div></div>
+</div>
+
+<div class="card">
+<h3>8. 최근 로그</h3>
+<div id="logs"></div>
+</div>
+
+<div class="card">
+<h3>9. Travel Discovery Admin</h3>
 <p class="small">0페이지 Discovery Hero에 표시될 추천 장소를 등록/수정/삭제합니다.</p>
 
 <button class="mode" onclick="loadDiscoveryPlaces()">추천 장소 불러오기</button>
@@ -145,25 +162,6 @@ input{min-width:220px}
 
 <pre id="discoveryAdminBox">아직 로드 전입니다.</pre>
 </div>
-
-<div class="card">
-<h3>6. Auto-Programming Loop</h3>
-<button class="mode" onclick="analyzeAutoLoop()">AutoLoop 분석</button>
-<button class="mode" onclick="loadCandidates()">개선 후보 보기</button>
-<pre id="autoLoopBox">아직 분석 전입니다.</pre>
-</div>
-
-<div class="card">
-<h3>7. 상태 요약</h3>
-<div id="summary" class="grid"><div class="metric">로드 중...</div></div>
-</div>
-
-<div class="card">
-<h3>8. 최근 로그</h3>
-<div id="logs"></div>
-</div>
-
-
 
 <div class="card">
 <h3>10. 원본 상태 JSON</h3>
@@ -381,8 +379,6 @@ async function loadCandidates(){
 
 renderSummary();
 renderLogs();
-
-
 async function loadDiscoveryPlaces(){
     const res = await fetch("/api/travel-discovery");
     const data = await res.json();
@@ -546,16 +542,7 @@ async function patchAction(id, action){
   if(box) box.textContent = JSON.stringify(data, null, 2);
 }
 window.addEventListener("load", loadKrxaiPatches);
-    const res = await fetch("/api/travel-discovery/delete", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id:id})
-    });
-    const data = await res.json();
-    document.getElementById("discoveryAdminBox").innerText =
-        JSON.stringify(data, null, 2);
-}
-</script>
+  </script>
 </section>
 
 </body>
