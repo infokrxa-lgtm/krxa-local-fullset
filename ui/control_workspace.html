@@ -26,6 +26,7 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
     <p class="small">관제 + DEV 통합 작업실</p>
     <button class="mode" onclick="showPanel('dashboard')">대시보드</button>
     <button class="mode" onclick="showPanel('travelDiscovery')">Travel 추천장소</button>
+    <button class="mode" onclick="showPanel('heroCards')">Hero 카드</button>
     <button class="mode" onclick="showPanel('candidateFeed')">추천 후보 승인</button>
     <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
     <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
@@ -44,6 +45,7 @@ function panel(html){document.getElementById("panel").innerHTML=html;}
 function showPanel(name){
   if(name==="dashboard") return dashboard();
   if(name==="travelDiscovery") return travelDiscovery();
+  if(name==="heroCards") return heroCards();
   if(name==="candidateFeed") return candidateFeed();
   if(name==="serviceLinks") return serviceLinks();
   if(name==="dev") return devPanel();
@@ -61,6 +63,93 @@ function dashboard(){
     </div></div>
   `);
 }
+
+
+function heroCards(){
+  panel(`
+    <div class="card"><h2>0페이지 Hero 카드 관리</h2>
+    <p class="small">0페이지 Discovery Hero에서 회전 표시될 카드를 등록/수정/삭제합니다.</p>
+    <button class="mode" onclick="loadHeroCards()">Hero 카드 불러오기</button>
+
+    <div class="grid">
+      <div>
+        <h3>등록/수정</h3>
+        <input id="heroId" placeholder="id 예: hero-003 / 수정 시 기존 id">
+        <input id="heroTitle" placeholder="Hero 제목 예: 허영만 백반기행 맛집">
+        <input id="heroSubtitle" placeholder="짧은 설명 예: 방송에 나온 맛집 리스트">
+        <input id="heroSource" placeholder="출처 예: 식객 허영만의 백반기행">
+        <input id="heroKeyword" placeholder="검색 키워드">
+        <input id="heroMapKeyword" placeholder="지도 검색어">
+        <input id="heroGroup" placeholder="연결 그룹 예: baekban">
+        <button class="on" onclick="createHeroCard()">신규 등록</button>
+        <button class="mode" onclick="updateHeroCard()">수정 저장</button>
+
+        <h3>삭제</h3>
+        <input id="heroDeleteId" placeholder="삭제할 hero id">
+        <button class="off" onclick="deleteHeroCard()">삭제</button>
+      </div>
+
+      <div>
+        <h3>Hero 카드 리스트</h3>
+        <pre id="heroCardBox">로드 전</pre>
+      </div>
+    </div>
+    </div>
+  `);
+}
+
+function getHeroCardForm(){
+  return {
+    id: document.getElementById("heroId").value,
+    title: document.getElementById("heroTitle").value,
+    subtitle: document.getElementById("heroSubtitle").value,
+    source: document.getElementById("heroSource").value,
+    keyword: document.getElementById("heroKeyword").value,
+    map_keyword: document.getElementById("heroMapKeyword").value,
+    linked_group: document.getElementById("heroGroup").value,
+    status: "active"
+  };
+}
+
+async function loadHeroCards(){
+  const r = await fetch("/api/travel-hero-cards");
+  const d = await r.json();
+  document.getElementById("heroCardBox").innerText = JSON.stringify(d, null, 2);
+}
+
+async function createHeroCard(){
+  const r = await fetch("/api/travel-hero-cards/create", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(getHeroCardForm())
+  });
+  document.getElementById("heroCardBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function updateHeroCard(){
+  const body = getHeroCardForm();
+  if(!body.id){ alert("수정할 hero id를 입력하세요."); return; }
+
+  const r = await fetch("/api/travel-hero-cards/update", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+  document.getElementById("heroCardBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function deleteHeroCard(){
+  const id = document.getElementById("heroDeleteId").value;
+  if(!id){ alert("삭제할 hero id를 입력하세요."); return; }
+
+  const r = await fetch("/api/travel-hero-cards/delete", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({id:id})
+  });
+  document.getElementById("heroCardBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
 
 function travelDiscovery(){
   panel(`
