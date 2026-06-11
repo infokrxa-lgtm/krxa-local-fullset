@@ -1,0 +1,26 @@
+{
+  "name": "Travel V1 Hero Cards",
+  "status": "active",
+  "items": [
+    {
+      "id": "hero-001",
+      "title": "허영만 백반기행 맛집",
+      "subtitle": "방송에 나온 맛집기행 리스트",
+      "source": "식객 허영만의 백반기행",
+      "keyword": "허영만 백반기행 맛집",
+      "map_keyword": "백반기행 맛집",
+      "linked_group": "baekban",
+      "status": "active"
+    },
+    {
+      "id": "hero-002",
+      "title": "지금 근처 인기 관광지",
+      "subtitle": "방문 흐름·리뷰 기반 관광지 후보",
+      "source": "지도 / 리뷰 / 블로그 / 뉴스",
+      "keyword": "주변 인기 관광지",
+      "map_keyword": "주변 관광지",
+      "linked_group": "nearby-tour",
+      "status": "active"
+    }
+  ]
+}

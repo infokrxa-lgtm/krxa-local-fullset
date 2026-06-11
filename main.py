@@ -1166,3 +1166,88 @@ def control_workspace():
     from fastapi.responses import HTMLResponse
     path = Path("ui/control_workspace.html")
     return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/travel-hero-cards")
+def travel_hero_cards_get():
+    path = Path("storage/travel_hero_cards.json")
+    if not path.exists():
+        return {"ok": True, "items": []}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = [x for x in data.get("items", []) if x.get("status") == "active"]
+    return {"ok": True, "items": items}
+
+
+@app.post("/api/travel-hero-cards/create")
+async def travel_hero_cards_create(request: Request):
+    body = await request.json()
+    path = Path("storage/travel_hero_cards.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        data = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        data = {"name": "Travel V1 Hero Cards", "status": "active", "items": []}
+
+    items = data.get("items", [])
+    item = {
+        "id": body.get("id") or f"hero-{len(items)+1:03d}",
+        "title": body.get("title", ""),
+        "subtitle": body.get("subtitle", ""),
+        "source": body.get("source", ""),
+        "keyword": body.get("keyword", ""),
+        "map_keyword": body.get("map_keyword", ""),
+        "linked_group": body.get("linked_group", ""),
+        "status": body.get("status", "active")
+    }
+
+    items.append(item)
+    data["items"] = items
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "item": item}
+
+
+@app.post("/api/travel-hero-cards/update")
+async def travel_hero_cards_update(request: Request):
+    body = await request.json()
+    hero_id = body.get("id")
+
+    path = Path("storage/travel_hero_cards.json")
+    if not path.exists():
+        return {"ok": False, "message": "hero cards file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+
+    for item in items:
+        if item.get("id") == hero_id:
+            for key in ["title", "subtitle", "source", "keyword", "map_keyword", "linked_group", "status"]:
+                if key in body:
+                    item[key] = body.get(key)
+
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "hero card not found"}
+
+
+@app.post("/api/travel-hero-cards/delete")
+async def travel_hero_cards_delete(request: Request):
+    body = await request.json()
+    hero_id = body.get("id")
+
+    path = Path("storage/travel_hero_cards.json")
+    if not path.exists():
+        return {"ok": False, "message": "hero cards file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+
+    for item in items:
+        if item.get("id") == hero_id:
+            item["status"] = "deleted"
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "hero card not found"}
