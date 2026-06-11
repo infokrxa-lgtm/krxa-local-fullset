@@ -1,0 +1,21 @@
+{
+  "name": "Travel V1 Discovery Candidates",
+  "status": "active",
+  "items": [
+    {
+      "id": "candidate-001",
+      "type": "food",
+      "title": "주변 방송·유튜브 맛집 후보",
+      "subtitle": "방송·유튜브·리뷰 기반 후보",
+      "reason": "LLM/시장조사 결과 등록 대기 후보입니다.",
+      "source": "TV / YouTube / 리뷰",
+      "broadcast": "방송·유튜브 후보",
+      "keyword": "주변 방송 맛집 유튜브 먹방",
+      "map_keyword": "주변 맛집",
+      "address": "",
+      "phone": "",
+      "route_hint": "현재 위치에서 교통수단을 선택해 확인합니다.",
+      "status": "pending"
+    }
+  ]
+}

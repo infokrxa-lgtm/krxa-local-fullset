@@ -1098,3 +1098,65 @@ async def krxai_memory_event(request: Request):
     return {"ok": True, "event": event, "next_action": data["next_action"]}
 # ===== End KRXAI Auto Memory Event API =====
 
+
+
+@app.get("/api/travel-discovery-candidates")
+def travel_discovery_candidates_get():
+    path = Path("storage/travel_discovery_candidates.json")
+    if not path.exists():
+        return {"ok": True, "items": []}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+    return {"ok": True, "items": items}
+
+
+@app.post("/api/travel-discovery-candidates/action")
+async def travel_discovery_candidates_action(request: Request):
+    body = await request.json()
+    candidate_id = body.get("id")
+    action = body.get("action")
+
+    cand_path = Path("storage/travel_discovery_candidates.json")
+    place_path = Path("storage/travel_discovery_places.json")
+
+    if not cand_path.exists():
+        return {"ok": False, "message": "candidate file not found"}
+
+    cand_data = json.loads(cand_path.read_text(encoding="utf-8"))
+    candidates = cand_data.get("items", [])
+
+    target = None
+    for item in candidates:
+        if item.get("id") == candidate_id:
+            target = item
+            break
+
+    if not target:
+        return {"ok": False, "message": "candidate not found"}
+
+    if action == "approve":
+        if place_path.exists():
+            place_data = json.loads(place_path.read_text(encoding="utf-8"))
+        else:
+            place_data = {"name": "Travel V1 Discovery Places", "status": "active", "items": []}
+
+        place_item = dict(target)
+        place_item["id"] = "place-" + candidate_id.replace("candidate-", "")
+        place_item["status"] = "active"
+
+        place_data.setdefault("items", []).append(place_item)
+        place_path.write_text(json.dumps(place_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        target["status"] = "approved"
+
+    elif action == "hold":
+        target["status"] = "hold"
+
+    elif action == "delete":
+        target["status"] = "deleted"
+
+    else:
+        return {"ok": False, "message": "unknown action"}
+
+    cand_path.write_text(json.dumps(cand_data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "action": action, "item": target}
