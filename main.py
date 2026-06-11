@@ -490,7 +490,121 @@ def travel_discovery_get():
             "error": str(e),
             "items": []
         }
+@app.get("/api/travel-service-links")
+def travel_service_links_get(group: str = ""):
+    path = Path("storage/travel_service_links.json")
 
+    if not path.exists():
+        return {
+            "ok": False,
+            "message": "travel service links file not found",
+            "groups": {}
+        }
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        groups = data.get("groups", {})
+
+        if group:
+            g = groups.get(group)
+            if not g:
+                return {"ok": False, "message": "group not found", "group": group}
+
+            items = [x for x in g.get("items", []) if x.get("status") == "active"]
+            user_items = [x for x in g.get("user_items", []) if x.get("status") == "active"]
+
+            return {
+                "ok": True,
+                "group": group,
+                "label": g.get("label", group),
+                "description": g.get("description", ""),
+                "user_add_enabled": g.get("user_add_enabled", True),
+                "items": items,
+                "user_items": user_items
+            }
+
+        return {"ok": True, "groups": groups}
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "message": "travel service links read error",
+            "error": str(e),
+            "groups": {}
+        }
+
+
+@app.post("/api/travel-service-links/user-add")
+async def travel_service_links_user_add(request: Request):
+    body = await request.json()
+
+    group = body.get("group", "")
+    name = body.get("name", "")
+    url = body.get("url", "")
+
+    if not group or not name or not url:
+        return {"ok": False, "message": "group, name, url required"}
+
+    path = Path("storage/travel_service_links.json")
+
+    if not path.exists():
+        return {"ok": False, "message": "travel service links file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    groups = data.get("groups", {})
+
+    if group not in groups:
+        return {"ok": False, "message": "group not found"}
+
+    user_items = groups[group].get("user_items", [])
+
+    item = {
+        "id": f"user-{group}-{len(user_items)+1:03d}",
+        "name": name,
+        "url": url,
+        "status": "active",
+        "source": "user"
+    }
+
+    user_items.append(item)
+    groups[group]["user_items"] = user_items
+    data["groups"] = groups
+
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {"ok": True, "item": item}
+
+
+@app.post("/api/travel-service-links/user-delete")
+async def travel_service_links_user_delete(request: Request):
+    body = await request.json()
+
+    group = body.get("group", "")
+    item_id = body.get("id", "")
+
+    if not group or not item_id:
+        return {"ok": False, "message": "group, id required"}
+
+    path = Path("storage/travel_service_links.json")
+
+    if not path.exists():
+        return {"ok": False, "message": "travel service links file not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    groups = data.get("groups", {})
+
+    if group not in groups:
+        return {"ok": False, "message": "group not found"}
+
+    user_items = groups[group].get("user_items", [])
+
+    for item in user_items:
+        if item.get("id") == item_id:
+            item["status"] = "deleted"
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "user item not found"}
 
 @app.post("/api/travel-discovery/create")
 async def travel_discovery_create(request: Request):

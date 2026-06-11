@@ -178,4 +178,107 @@ setTimeout(function () {
   window.KRXA_Recommend.loadDiscoveryPlaces();
   setInterval(window.KRXA_Recommend.rotateDiscoveryPlaceHero, 5000);
 }, 800);
+window.KRXA_Recommend.openServiceLinkHub = async function (group) {
+  const res = await fetch("/api/travel-service-links?group=" + encodeURIComponent(group));
+  const data = await res.json();
+
+  if (!data.ok) {
+    alert(data.message || "서비스 링크를 불러오지 못했습니다.");
+    return;
+  }
+
+  let html =
+    "<p><b>" + (data.label || group) + "</b></p>" +
+    "<p>" + (data.description || "") + "</p>";
+
+  const items = (data.items || []).concat(data.user_items || []);
+
+  items.forEach(function (item) {
+    html +=
+      "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('" +
+      item.url +
+      "','_blank')\">" +
+      item.name +
+      "</button>";
+
+    if (item.source === "user") {
+      html +=
+        "<button class='btn red' style='width:100%;margin-top:4px' onclick=\"KRXA_Recommend.deleteUserServiceLink('" +
+        group +
+        "','" +
+        item.id +
+        "')\">삭제: " +
+        item.name +
+        "</button>";
+    }
+  });
+
+  if (data.user_add_enabled) {
+    html +=
+      "<hr>" +
+      "<p><b>내가 쓰는 사이트 추가</b></p>" +
+      "<input id='krxaServiceName' placeholder='사이트 이름' style='width:100%;margin-top:8px;padding:10px'>" +
+      "<input id='krxaServiceUrl' placeholder='사이트 주소 https://...' style='width:100%;margin-top:8px;padding:10px'>" +
+      "<button class='btn green' style='width:100%;margin-top:8px' onclick=\"KRXA_Recommend.addUserServiceLink('" +
+      group +
+      "')\">사용자 사이트 등록</button>";
+  }
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal(data.label || "서비스 연결", html);
+  }
+};
+
+window.KRXA_Recommend.addUserServiceLink = async function (group) {
+  const nameEl = document.getElementById("krxaServiceName");
+  const urlEl = document.getElementById("krxaServiceUrl");
+
+  const name = nameEl ? nameEl.value.trim() : "";
+  const url = urlEl ? urlEl.value.trim() : "";
+
+  if (!name || !url) {
+    alert("사이트 이름과 주소를 입력하세요.");
+    return;
+  }
+
+  const res = await fetch("/api/travel-service-links/user-add", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({group: group, name: name, url: url})
+  });
+
+  const data = await res.json();
+
+  if (!data.ok) {
+    alert(data.message || "등록 실패");
+    return;
+  }
+
+  window.KRXA_Recommend.openServiceLinkHub(group);
+};
+
+window.KRXA_Recommend.deleteUserServiceLink = async function (group, id) {
+  const res = await fetch("/api/travel-service-links/user-delete", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({group: group, id: id})
+  });
+
+  const data = await res.json();
+
+  if (!data.ok) {
+    alert(data.message || "삭제 실패");
+    return;
+  }
+
+  window.KRXA_Recommend.openServiceLinkHub(group);
+};
+window.KRXA_Recommend.openFlightHub = function () {
+  window.KRXA_Recommend.openServiceLinkHub("flight");
+};
+
+window.KRXA_Recommend.openMapHub = function () {
+  window.KRXA_Recommend.openServiceLinkHub("map");
+};
+
 })();

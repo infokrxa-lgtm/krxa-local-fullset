@@ -1,0 +1,185 @@
+{
+  "name": "Travel V1 Service Links",
+  "status": "active",
+  "version": "v1",
+  "groups": {
+    "flight": {
+      "label": "항공권 검색",
+      "description": "항공권 검색/예약 사이트",
+      "managed_by": "control",
+      "user_add_enabled": true,
+      "items": [
+        {
+          "id": "flight-google-001",
+          "name": "Google Flights",
+          "url": "https://www.google.com/travel/flights",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "flight-skyscanner-001",
+          "name": "Skyscanner",
+          "url": "https://www.skyscanner.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "flight-trip-001",
+          "name": "Trip.com",
+          "url": "https://www.trip.com/flights",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "flight-booking-001",
+          "name": "Booking Flights",
+          "url": "https://www.booking.com/flights",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "flight-agoda-001",
+          "name": "Agoda Flights",
+          "url": "https://www.agoda.com/flights",
+          "status": "active",
+          "source": "default"
+        }
+      ],
+      "user_items": []
+    },
+    "map": {
+      "label": "지도 앱",
+      "description": "지도/길찾기 연결",
+      "managed_by": "control",
+      "user_add_enabled": true,
+      "items": [
+        {
+          "id": "map-google-001",
+          "name": "Google Maps",
+          "url": "https://www.google.com/maps",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "map-naver-001",
+          "name": "Naver Map",
+          "url": "https://map.naver.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "map-kakao-001",
+          "name": "Kakao Map",
+          "url": "https://map.kakao.com",
+          "status": "active",
+          "source": "default"
+        }
+      ],
+      "user_items": []
+    },
+    "transport": {
+      "label": "교통",
+      "description": "교통수단/이동 서비스",
+      "managed_by": "control",
+      "user_add_enabled": true,
+      "items": [
+        {
+          "id": "transport-korail-001",
+          "name": "KORAIL",
+          "url": "https://www.letskorail.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "transport-kobus-001",
+          "name": "KOBUS",
+          "url": "https://www.kobus.co.kr",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "transport-tmoney-001",
+          "name": "Tmoney",
+          "url": "https://www.t-money.co.kr",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "transport-uber-001",
+          "name": "Uber",
+          "url": "https://www.uber.com",
+          "status": "active",
+          "source": "default"
+        }
+      ],
+      "user_items": []
+    },
+    "hotel": {
+      "label": "숙소 예약",
+      "description": "호텔/숙소 예약 사이트",
+      "managed_by": "control",
+      "user_add_enabled": true,
+      "items": [
+        {
+          "id": "hotel-booking-001",
+          "name": "Booking.com",
+          "url": "https://www.booking.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "hotel-agoda-001",
+          "name": "Agoda",
+          "url": "https://www.agoda.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "hotel-airbnb-001",
+          "name": "Airbnb",
+          "url": "https://www.airbnb.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "hotel-trip-001",
+          "name": "Trip.com Hotels",
+          "url": "https://www.trip.com/hotels",
+          "status": "active",
+          "source": "default"
+        }
+      ],
+      "user_items": []
+    },
+    "experience": {
+      "label": "체험/티켓",
+      "description": "관광지/체험/티켓 예약",
+      "managed_by": "control",
+      "user_add_enabled": true,
+      "items": [
+        {
+          "id": "exp-klook-001",
+          "name": "Klook",
+          "url": "https://www.klook.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "exp-kkday-001",
+          "name": "KKday",
+          "url": "https://www.kkday.com",
+          "status": "active",
+          "source": "default"
+        },
+        {
+          "id": "exp-tripadvisor-001",
+          "name": "Tripadvisor",
+          "url": "https://www.tripadvisor.com",
+          "status": "active",
+          "source": "default"
+        }
+      ],
+      "user_items": []
+    }
+  }
+}
