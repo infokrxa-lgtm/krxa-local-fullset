@@ -518,4 +518,98 @@ window.KRXA_Recommend.openPlaceGroup = async function (groupId, fallbackCard) {
 };
 
 
+
+// ===== KRXA Place Group / Route Final Override =====
+window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
+  const cards = window.KRXA_Recommend.heroCards || [];
+  if (cards.length) {
+    const card = cards[window.KRXA_Recommend.currentHeroCardIndex % cards.length];
+
+    const fallbackPlace = {
+      title: card.title,
+      subtitle: card.subtitle,
+      reason: "관제 등록 Hero 카드 기반 추천입니다.",
+      source: card.source || "Travel Hero Card",
+      broadcast: card.source || "",
+      keyword: card.keyword || card.map_keyword || card.title,
+      map_keyword: card.map_keyword || card.keyword || card.title,
+      route_hint: "현재 위치에서 교통수단을 선택해 확인합니다.",
+      linked_group: card.linked_group || ""
+    };
+
+    if (card.linked_group) {
+      window.KRXA_Recommend.openPlaceGroup(card.linked_group, fallbackPlace);
+      return;
+    }
+
+    window.KRXA_Recommend.openPlaceRoute(fallbackPlace);
+    return;
+  }
+
+  window.KRXA_Recommend.openMarketResearchV1();
+};
+
+window.KRXA_Recommend.openPlaceGroup = async function (groupId, fallbackPlace) {
+  const res = await fetch("/api/travel-place-groups?group=" + encodeURIComponent(groupId));
+  const data = await res.json();
+
+  if (!data.ok || !data.items || !data.items.length) {
+    window.KRXA_Recommend.openPlaceRoute(fallbackPlace);
+    return;
+  }
+
+  let html =
+    "<p><b>" + (data.title || "장소 리스트") + "</b></p>" +
+    "<p>" + (data.source || "") + "</p>";
+
+  data.items.forEach(function (item) {
+    const place = {
+      title: item.title,
+      subtitle: (item.region || "") + " · " + (item.menu || ""),
+      reason: item.reason || "리스트 기반 추천 장소입니다.",
+      source: item.broadcast || data.source || "",
+      broadcast: item.broadcast || data.source || "",
+      keyword: item.map_keyword || item.title,
+      map_keyword: item.map_keyword || item.title,
+      address: item.address || "",
+      phone: item.phone || "",
+      route_hint: "현재 내 위치에서 이 목적지까지 가는 방법을 확인합니다."
+    };
+
+    html +=
+      "<div class='msg' style='margin-top:10px;cursor:pointer' onclick='KRXA_Recommend.openPlaceRoute(" +
+      JSON.stringify(place).replace(/'/g, "&#39;") +
+      ")'>" +
+      "<b>" + item.title + "</b>" +
+      "<span>" + (item.region || "") + " · " + (item.menu || "") +
+      "<br><small>" + (item.reason || "") + "</small></span></div>";
+  });
+
+  if (window.KRXA_App && window.KRXA_App.openModal) {
+    window.KRXA_App.openModal(data.title || "장소 리스트", html);
+  }
+};
+
+window.KRXA_Recommend.openMapHubForKeyword = function (keyword) {
+  const q = keyword || "nearby place";
+  const ctx = window.KRXA_DeviceContext ? window.KRXA_DeviceContext.get() : {};
+  const lat = ctx.lat || "";
+  const lng = ctx.lng || "";
+
+  let naverUrl = "https://map.naver.com/p/search/" + encodeURIComponent(q);
+  if (lat && lng) naverUrl += "?c=" + lng + "," + lat + ",15,0,0,0,dh";
+
+  let kakaoUrl = "https://map.kakao.com/?q=" + encodeURIComponent(q);
+  if (lat && lng) kakaoUrl += "&urlX=" + lng + "&urlY=" + lat;
+
+  const html =
+    "<p><b>지도앱 선택</b></p>" +
+    "<p>현재 위치 기준 검색입니다. 구글은 내 위치 표시가 가장 안정적입니다.</p>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"KRXA_DeviceContext.openMapRouter('" + q + "')\">Google Maps</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('" + naverUrl + "','_blank')\">Naver Map</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick=\"window.open('" + kakaoUrl + "','_blank')\">Kakao Map</button>";
+
+  window.KRXA_App.openModal("지도 허브", html);
+};
+
 })();
