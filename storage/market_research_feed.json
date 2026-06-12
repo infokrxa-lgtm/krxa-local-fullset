@@ -1,0 +1,32 @@
+{
+  "name": "KRXA Market Research Feed",
+  "version": "v1",
+  "categories": [
+    {
+      "id": "baekban",
+      "title": "허영만 백반기행",
+      "status": "active"
+    },
+    {
+      "id": "baekjongwon",
+      "title": "백종원 추천 맛집",
+      "status": "active"
+    },
+    {
+      "id": "youtube_food",
+      "title": "유튜브 맛집",
+      "status": "active"
+    },
+    {
+      "id": "festival",
+      "title": "지역 축제",
+      "status": "active"
+    },
+    {
+      "id": "news_tour",
+      "title": "뉴스 관광지",
+      "status": "active"
+    }
+  ],
+  "items": []
+}

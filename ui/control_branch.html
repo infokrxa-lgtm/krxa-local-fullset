@@ -86,7 +86,12 @@ function renderItems(){
       <button class="warn" onclick="actionItem('${item.id}','hold')">보류</button>
       <button class="off" onclick="actionItem('${item.id}','delete')">삭제</button>
       <button class="mode" onclick="window.open('/control/item?id=${item.id}','_blank')">상세 작업</button>\n      <button class="mode" onclick="devRequest('${item.id}')">DEV 지시</button>
-      <button class="mode" onclick="openMap('${item.map_keyword || item.title}')">지도 확인</button>
+      
+      <button class="mode" onclick="window.open('/control/item?id=${item.id}','_blank')">상세 작업</button>
+      <button class="mode" onclick="openGoogleRoute(item)">Google 길찾기</button>
+      <button class="mode" onclick="openNaverRoute(item)">Naver 길찾기</button>
+      <button class="mode" onclick="openKakaoRoute(item)">Kakao 길찾기</button>
+
     </div>`;
   });
   box.innerHTML = html || "<div class='card'>항목 없음</div>";
@@ -126,6 +131,37 @@ async function actionItem(id, action){
 
 function devRequest(id){
   window.open("/dev?request=" + encodeURIComponent(id), "_blank");
+}
+
+
+function getDest(item){
+  return item.address || item.map_keyword || item.title;
+}
+
+function openGoogleRoute(item){
+  const dest = getDest(item);
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      const origin = pos.coords.latitude + "," + pos.coords.longitude;
+      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
+        encodeURIComponent(origin) + "&destination=" + encodeURIComponent(dest);
+      window.open(url, "_blank");
+    }, function(){
+      window.open("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(dest), "_blank");
+    });
+  }else{
+    window.open("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(dest), "_blank");
+  }
+}
+
+function openNaverRoute(item){
+  const dest = getDest(item);
+  window.open("https://map.naver.com/p/search/" + encodeURIComponent(dest), "_blank");
+}
+
+function openKakaoRoute(item){
+  const dest = getDest(item);
+  window.open("https://map.kakao.com/?q=" + encodeURIComponent(dest), "_blank");
 }
 
 function openMap(q){
