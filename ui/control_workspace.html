@@ -25,14 +25,14 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
     <h2>KRXA PC WORKSPACE</h2>
     <p class="small">관제 + DEV 통합 작업실</p>
     <button class="mode" onclick="showPanel('dashboard')">대시보드</button>
-    <button class="mode" onclick="showPanel('travelDiscovery')">Travel 추천장소</button>
-    <button class="mode" onclick="showPanel('heroCards')">Hero 카드</button>
-    <button class="mode" onclick="showPanel('candidateFeed')">추천 후보 승인</button>
-    <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
-    <button class="mode" onclick="showPanel('mapDb')">KRXA Map DB</button>
-    <button class="mode" onclick="showPanel('marketResearch')">시장조사 엔진</button>
-    <button class="mode" onclick="showPanel('researchFeed')">시장조사 리스트</button>
-    <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
+    <button class="mode" onclick="showPanel('opTravel')">Travel 추천장소</button>
+    <button class="mode" onclick="showPanel('opHero')">Hero 카드</button>
+    <button class="mode" onclick="showPanel('opCandidates')">추천 후보 승인</button>
+    <button class="mode" onclick="showPanel('opLinks')">서비스 링크</button>
+    <button class="mode" onclick="showPanel('opMapDb')">KRXA Map DB</button>
+    <button class="mode" onclick="showPanel('opResearch')">시장조사 엔진</button>
+    <button class="mode" onclick="showPanel('opResearchList')">시장조사 리스트</button>
+    <button class="mode" onclick="window.open('/dev/workspace','_blank')">DEV 작업</button>
     <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 열기</button>
     <button class="mode" onclick="window.open('/api/state','_blank')">STATE JSON</button>
   </div>
@@ -46,6 +46,14 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
 function panel(html){document.getElementById("panel").innerHTML=html;}
 
 function showPanel(name){
+  if(name==="opTravel") return opMenu("Travel 추천장소", "travel");
+  if(name==="opHero") return opMenu("Hero 카드", "hero");
+  if(name==="opCandidates") return opMenu("추천 후보 승인", "candidate");
+  if(name==="opLinks") return opMenu("서비스 링크", "links");
+  if(name==="opMapDb") return opMenu("KRXA Map DB", "mapdb");
+  if(name==="opResearch") return opMenu("시장조사 엔진", "research");
+  if(name==="opResearchList") return opResearchList();
+
   if(name==="dashboard") return dashboard();
   if(name==="travelDiscovery") return travelDiscovery();
   if(name==="heroCards") return heroCards();
@@ -55,6 +63,81 @@ function showPanel(name){
   if(name==="marketResearch") return marketResearchPanel();
   if(name==="researchFeed") return researchFeedPanel();
   if(name==="dev") return devPanel();
+}
+
+
+function opMenu(title, type){
+  panel(`
+    <div class="card">
+      <h2>${title}</h2>
+      <p class="small">운영형 리스트 화면입니다. 세부 작업은 새창에서 진행합니다.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>허영만 백반기행</h3>
+          <p>실제 시장조사 장소 리스트</p>
+          <button class="mode" onclick="window.open('/control/branch?type=baekban','_blank')">작업창 열기</button>
+        </div>
+        <div class="card">
+          <h3>백종원 추천 맛집</h3>
+          <p>방송/골목식당/추천 장소</p>
+          <button class="mode" onclick="window.open('/control/branch?type=baekjongwon','_blank')">작업창 열기</button>
+        </div>
+        <div class="card">
+          <h3>유튜브 맛집</h3>
+          <p>유튜브 기반 검증 장소</p>
+          <button class="mode" onclick="window.open('/control/branch?type=youtube_food','_blank')">작업창 열기</button>
+        </div>
+        <div class="card">
+          <h3>지역 축제</h3>
+          <p>한국관광공사/지자체 기반 축제</p>
+          <button class="mode" onclick="window.open('/control/branch?type=festival','_blank')">작업창 열기</button>
+        </div>
+        <div class="card">
+          <h3>뉴스 관광지</h3>
+          <p>뉴스/관광공사 기반 관광지</p>
+          <button class="mode" onclick="window.open('/control/branch?type=news_tour','_blank')">작업창 열기</button>
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+function opResearchList(){
+  panel(`
+    <div class="card">
+      <h2>시장조사 리스트</h2>
+      <p class="small">KRXA가 조사한 실제 장소 리스트입니다. 각 항목은 새 작업창에서 관리합니다.</p>
+      <button class="mode" onclick="loadResearchFeedSummary()">전체 리스트 불러오기</button>
+      <div id="researchFeedSummary" class="grid"></div>
+      <pre id="researchFeedRaw">로드 전</pre>
+    </div>
+  `);
+}
+
+async function loadResearchFeedSummary(){
+  const r = await fetch("/api/market-research-feed");
+  const d = await r.json();
+  const box = document.getElementById("researchFeedSummary");
+  const raw = document.getElementById("researchFeedRaw");
+  raw.innerText = JSON.stringify(d, null, 2);
+
+  const categories = d.categories || [];
+  const items = d.items || [];
+
+  let html = "";
+  categories.forEach(c=>{
+    const count = items.filter(x=>x.category===c.id && x.status!=="deleted").length;
+    html += `
+      <div class="card">
+        <h3>${c.title}</h3>
+        <p>등록 장소: ${count}개</p>
+        <p>상태: ${c.status}</p>
+        <button class="mode" onclick="window.open('/control/branch?type=${c.id}','_blank')">작업창 열기</button>
+      </div>
+    `;
+  });
+
+  box.innerHTML = html || "<div class='card'>시장조사 리스트 없음</div>";
 }
 
 function dashboard(){

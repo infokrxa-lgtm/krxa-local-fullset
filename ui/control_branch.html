@@ -28,7 +28,21 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
 <button class="warn" onclick="alert('업로드 파일 처리 기능은 다음 단계에서 연결')">파일 업로드</button>
 </div>
 
+
+<div class="card">
+<h2>신규 장소 등록</h2>
+<input id="newTitle" placeholder="장소명">
+<input id="newRegion" placeholder="지역">
+<input id="newAddress" placeholder="주소">
+<input id="newPhone" placeholder="전화">
+<input id="newSourceTitle" placeholder="출처/방송/영상/기사명">
+<input id="newSourceUrl" placeholder="출처 URL">
+<input id="newMapKeyword" placeholder="지도 검색어">
+<textarea id="newReason" placeholder="검증/추천 메모"></textarea>
+<button class="on" onclick="createItem()">신규 등록</button>
+</div>
 <div id="list" class="grid"></div>
+
 <pre id="raw">로드 전</pre>
 </div>
 
@@ -76,6 +90,28 @@ function renderItems(){
     </div>`;
   });
   box.innerHTML = html || "<div class='card'>항목 없음</div>";
+}
+
+
+async function createItem(){
+  const body = {
+    category:type,
+    title:document.getElementById("newTitle").value,
+    region:document.getElementById("newRegion").value,
+    address:document.getElementById("newAddress").value,
+    phone:document.getElementById("newPhone").value,
+    source_title:document.getElementById("newSourceTitle").value,
+    source_url:document.getElementById("newSourceUrl").value,
+    map_keyword:document.getElementById("newMapKeyword").value,
+    reason:document.getElementById("newReason").value
+  };
+  const r = await fetch("/api/market-research-feed/create",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  document.getElementById("raw").innerText=JSON.stringify(await r.json(),null,2);
+  loadItems();
 }
 
 async function actionItem(id, action){

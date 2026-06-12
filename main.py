@@ -1562,3 +1562,46 @@ async def market_research_feed_update(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "item not found"}
+
+
+@app.get("/dev/workspace")
+def dev_workspace():
+    from fastapi.responses import HTMLResponse
+    path = Path("ui/dev_workspace.html")
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.post("/api/market-research-feed/create")
+async def market_research_feed_create(request: Request):
+    body = await request.json()
+    path = Path("storage/market_research_feed.json")
+
+    if not path.exists():
+        data = {
+            "name": "KRXA Market Research Feed",
+            "version": "v1",
+            "categories": [],
+            "items": []
+        }
+    else:
+        data = json.loads(path.read_text(encoding="utf-8"))
+
+    items = data.setdefault("items", [])
+    item = {
+        "id": body.get("id") or f"{body.get('category','item')}-{len(items)+1:03d}",
+        "category": body.get("category", "baekban"),
+        "title": body.get("title", ""),
+        "region": body.get("region", ""),
+        "address": body.get("address", ""),
+        "phone": body.get("phone", ""),
+        "source_title": body.get("source_title", ""),
+        "source_url": body.get("source_url", ""),
+        "map_keyword": body.get("map_keyword", body.get("title", "")),
+        "reason": body.get("reason", ""),
+        "verified": bool(body.get("source_url", "")),
+        "status": "review"
+    }
+
+    items.append(item)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "item": item}

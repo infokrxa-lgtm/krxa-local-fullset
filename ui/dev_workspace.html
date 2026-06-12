@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>KRXA DEV Workspace</title>
+<style>
+body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.side{background:#020617;padding:18px;border-right:1px solid #334155}
+.main{padding:18px}
+.card{background:#1e293b;border-radius:14px;padding:16px;margin:12px 0}
+button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:10px;background:#2563eb;color:white;font-weight:bold;cursor:pointer}
+pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="side">
+<h2>KRXA DEV</h2>
+<button onclick="openProgram('travel')">Travel V1</button>
+<button onclick="openProgram('m2m')">말대말</button>
+<button onclick="openProgram('control')">Control</button>
+<button onclick="openProgram('mapdb')">Map DB</button>
+<button onclick="window.open('/dev','_blank')">기존 DEV</button>
+</div>
+<div class="main">
+<div class="card">
+<h1>DEV 작업창</h1>
+<p>프로그램 클릭 시 개발/수정/삭제/패치/배포 작업을 분리해서 진행합니다.</p>
+<pre id="box">대기 중</pre>
+</div>
+</div>
+</div>
+<script>
+function openProgram(name){
+  document.getElementById("box").innerText =
+    "프로그램: " + name + "\\n" +
+    "작업: 신규 / 수정 / 삭제 / 패치 / Git / Render 배포\\n" +
+    "다음 단계에서 파일 단위 작업창으로 연결";
+}
+</script>
+</body>
+</html>
