@@ -731,4 +731,141 @@ window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
 };
 
 
+
+
+// ===== Travel V1 Page2 Card + Mini M2M Final =====
+window.KRXA_Recommend.openMiniM2M = function(){
+  const html =
+    "<p><b>말대말 미니 통역</b></p>" +
+    "<p>현재 화면을 유지한 채 말하기 / 번역 / 닫기만 실행합니다.</p>" +
+    "<textarea id='miniM2mText' style='width:100%;height:90px;border-radius:12px;padding:10px' placeholder='말하거나 번역할 내용을 입력하세요'></textarea>" +
+    "<button class='btn green' style='width:100%;margin-top:8px' onclick='KRXA_Recommend.miniM2mSpeak()'>🎤 말하기</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick='KRXA_Recommend.miniM2mTranslate()'>🌐 번역</button>" +
+    "<button class='btn blue' style='width:100%;margin-top:8px' onclick='KRXA_App.closeModal && KRXA_App.closeModal()'>닫기</button>" +
+    "<div id='miniM2mResult' style='margin-top:10px;padding:10px;background:#f1f5f9;border-radius:12px;color:#0f172a'>대기 중</div>";
+
+  if(window.KRXA_App && window.KRXA_App.openModal){
+    window.KRXA_App.openModal("말대말", html);
+  }else{
+    alert("말대말 미니 모달 준비");
+  }
+};
+
+window.KRXA_Recommend.miniM2mSpeak = function(){
+  const box = document.getElementById("miniM2mResult");
+  if(box) box.innerText = "말하기 준비 중입니다. 기존 말대말 음성 엔진과 연결됩니다.";
+  if(window.KRXA_M2M && window.KRXA_M2M.startListening){
+    window.KRXA_M2M.startListening();
+  }
+};
+
+window.KRXA_Recommend.miniM2mTranslate = async function(){
+  const text = (document.getElementById("miniM2mText") || {}).value || "";
+  const box = document.getElementById("miniM2mResult");
+  if(!text.trim()){
+    if(box) box.innerText = "번역할 내용을 입력하세요.";
+    return;
+  }
+  if(box) box.innerText = "번역 요청 중...";
+  try{
+    const res = await fetch("/api/translate", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text:text, target:"auto"})
+    });
+    const data = await res.json();
+    if(box) box.innerText = data.result || data.text || JSON.stringify(data);
+  }catch(e){
+    if(box) box.innerText = "번역 실패: " + e.message;
+  }
+};
+
+window.KRXA_Recommend.openPage2Card = function(kind){
+  if(kind === "airport"){
+    window.KRXA_Recommend.openFlightHub ? window.KRXA_Recommend.openFlightHub() : window.open("/travel-map?q=공항", "_blank");
+    return;
+  }
+
+  if(kind === "hotel"){
+    window.KRXA_Recommend.openServiceHub ? window.KRXA_Recommend.openServiceHub("hotel") : window.open("/travel-map?q=호텔", "_blank");
+    return;
+  }
+
+  if(kind === "food"){
+    if(window.KRXA_App && window.KRXA_App.goPage){
+      window.KRXA_App.goPage(2);
+    }else{
+      window.location.hash = "food";
+    }
+    return;
+  }
+
+  if(kind === "transport"){
+    window.KRXA_Recommend.openTransportHub ? window.KRXA_Recommend.openTransportHub() : window.open("/travel-map?q=교통", "_blank");
+    return;
+  }
+
+  if(kind === "tour"){
+    window.KRXA_Recommend.openMarketResearchV1 ? window.KRXA_Recommend.openMarketResearchV1() : window.open("/travel-map?q=관광지", "_blank");
+    return;
+  }
+
+  if(kind === "shopping"){
+    window.KRXA_Recommend.openServiceHub ? window.KRXA_Recommend.openServiceHub("shopping") : window.open("/travel-map?q=쇼핑 시장 마트", "_blank");
+    return;
+  }
+
+  if(kind === "tv"){
+    window.KRXA_Recommend.openMiniM2M();
+    return;
+  }
+
+  if(kind === "call"){
+    window.KRXA_Recommend.openMiniM2M();
+    return;
+  }
+
+  if(kind === "photo"){
+    window.KRXA_Recommend.openMiniM2M();
+    return;
+  }
+
+  if(kind === "video"){
+    alert("동영상 촬영 기능은 기기 카메라 권한 연결 후 활성화합니다.");
+    return;
+  }
+
+  if(kind === "music"){
+    alert("음악 기능은 현행 유지합니다.");
+    return;
+  }
+
+  if(kind === "sos"){
+    if(window.KRXA_App && window.KRXA_App.goPage){
+      window.KRXA_App.goPage(7);
+    }else{
+      alert("SOS 긴급 페이지로 이동합니다.");
+    }
+    return;
+  }
+};
+
+document.addEventListener("click", function(e){
+  const text = (e.target.innerText || "").trim();
+
+  if(text.includes("공항")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("airport"); }
+  else if(text.includes("호텔")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("hotel"); }
+  else if(text.includes("식당")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("food"); }
+  else if(text.includes("교통")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("transport"); }
+  else if(text.includes("관광")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("tour"); }
+  else if(text.includes("쇼핑")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("shopping"); }
+  else if(text.includes("TV")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("tv"); }
+  else if(text.includes("통화")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("call"); }
+  else if(text.includes("사진")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("photo"); }
+  else if(text.includes("동영상")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("video"); }
+  else if(text.includes("음악")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("music"); }
+  else if(text.includes("SOS") || text.includes("긴급")){ e.preventDefault(); window.KRXA_Recommend.openPage2Card("sos"); }
+}, true);
+
+
 })();
