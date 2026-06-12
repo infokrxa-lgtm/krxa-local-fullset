@@ -30,6 +30,7 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
     <button class="mode" onclick="showPanel('candidateFeed')">추천 후보 승인</button>
     <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
     <button class="mode" onclick="showPanel('mapDb')">KRXA Map DB</button>
+    <button class="mode" onclick="showPanel('marketResearch')">시장조사 엔진</button>
     <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
     <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 열기</button>
     <button class="mode" onclick="window.open('/api/state','_blank')">STATE JSON</button>
@@ -50,6 +51,7 @@ function showPanel(name){
   if(name==="candidateFeed") return candidateFeed();
   if(name==="serviceLinks") return serviceLinks();
   if(name==="mapDb") return mapDbPanel();
+  if(name==="marketResearch") return marketResearchPanel();
   if(name==="dev") return devPanel();
 }
 
@@ -345,6 +347,71 @@ async function deleteKrxaMapPlace(){
   document.getElementById("mapDbBox").innerText = JSON.stringify(await r.json(), null, 2);
 }
 
+
+
+function marketResearchPanel(){
+  panel(`
+    <div class="card"><h2>KRXA 시장조사 엔진</h2>
+    <p class="small">매일 밤 12시 KST 기준 재조사 구조. 현재는 수동 실행 → 이후 Cron 연결.</p>
+    <p class="small">가상 후보 금지. 출처 URL이 없으면 조사대기 상태로만 저장됩니다.</p>
+
+    <div class="grid">
+      <div>
+        <h3>시장조사 후보 입력</h3>
+        <input id="mrTitle" placeholder="실제 장소명 또는 조사 키워드">
+        <input id="mrRegion" placeholder="지역 예: 서울 / 안양 / 여수">
+        <input id="mrType" placeholder="type 예: food/tour/experience">
+        <input id="mrKeyword" placeholder="검색 키워드 예: 허영만 백반기행 수서 복어">
+        <input id="mrMapKeyword" placeholder="지도 검색어">
+        <input id="mrSourceType" placeholder="출처유형 TV/YouTube/News/Blog/Map">
+        <input id="mrSourceTitle" placeholder="방송명/영상명/기사명">
+        <input id="mrSourceUrl" placeholder="출처 URL">
+        <input id="mrAddress" placeholder="주소">
+        <input id="mrPhone" placeholder="전화번호">
+        <textarea id="mrNote" placeholder="시장조사 근거 메모"></textarea>
+        <button class="on" onclick="runMarketResearch()">시장조사 후보 생성</button>
+        <button class="mode" onclick="loadMarketResearchJobs()">시장조사 로그 보기</button>
+      </div>
+      <div>
+        <h3>결과</h3>
+        <pre id="marketResearchBox">아직 실행 전입니다.</pre>
+      </div>
+    </div>
+    </div>
+  `);
+}
+
+function getMarketResearchForm(){
+  return {
+    title: document.getElementById("mrTitle").value,
+    region: document.getElementById("mrRegion").value,
+    type: document.getElementById("mrType").value || "food",
+    keyword: document.getElementById("mrKeyword").value,
+    map_keyword: document.getElementById("mrMapKeyword").value,
+    source_type: document.getElementById("mrSourceType").value,
+    source_title: document.getElementById("mrSourceTitle").value,
+    source_url: document.getElementById("mrSourceUrl").value,
+    address: document.getElementById("mrAddress").value,
+    phone: document.getElementById("mrPhone").value,
+    note: document.getElementById("mrNote").value
+  };
+}
+
+async function runMarketResearch(){
+  const r = await fetch("/api/market-research/run", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(getMarketResearchForm())
+  });
+  document.getElementById("marketResearchBox").innerText =
+    JSON.stringify(await r.json(), null, 2);
+}
+
+async function loadMarketResearchJobs(){
+  const r = await fetch("/api/market-research/jobs");
+  document.getElementById("marketResearchBox").innerText =
+    JSON.stringify(await r.json(), null, 2);
+}
 
 function devPanel(){
   panel(`<div class="card"><h2>DEV 작업</h2>

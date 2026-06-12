@@ -1,0 +1,22 @@
+{
+  "name": "KRXA Market Research Nightly Engine",
+  "version": "v1",
+  "schedule": {
+    "timezone": "Asia/Seoul",
+    "time": "00:00",
+    "mode": "manual_first_cron_later"
+  },
+  "rule": {
+    "no_fake_candidates": true,
+    "principle": "실제 출처 확인 장소만 후보로 등록한다.",
+    "required": [
+      "title",
+      "source_type",
+      "source_title",
+      "source_url",
+      "map_keyword"
+    ]
+  },
+  "jobs": [],
+  "last_run": ""
+}

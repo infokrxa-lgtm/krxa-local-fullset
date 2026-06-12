@@ -1370,3 +1370,96 @@ async def krxa_map_place_delete(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "place not found"}
+
+
+@app.get("/api/market-research/jobs")
+def market_research_jobs_get():
+    path = Path("storage/krxa_market_research_jobs.json")
+    if not path.exists():
+        return {"ok": True, "jobs": []}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {"ok": True, "data": data}
+
+
+@app.post("/api/market-research/run")
+async def market_research_run(request: Request):
+    body = await request.json()
+
+    keyword = body.get("keyword", "방송 유튜브 맛집")
+    source_type = body.get("source_type", "Control")
+    source_title = body.get("source_title", "수동 시장조사")
+    source_url = body.get("source_url", "")
+    region = body.get("region", "현재 위치 주변")
+    note = body.get("note", "")
+
+    # 가상 후보 금지: source_url 없으면 승인 후보가 아니라 조사대기 후보로만 저장
+    verified = bool(source_url)
+
+    now = datetime.now().isoformat()
+
+    job_path = Path("storage/krxa_market_research_jobs.json")
+    cand_path = Path("storage/travel_discovery_candidates.json")
+
+    jobs = json.loads(job_path.read_text(encoding="utf-8")) if job_path.exists() else {
+        "name": "KRXA Market Research Nightly Engine",
+        "version": "v1",
+        "jobs": [],
+        "last_run": ""
+    }
+
+    candidates = json.loads(cand_path.read_text(encoding="utf-8")) if cand_path.exists() else {
+        "name": "Travel V1 Discovery Candidates",
+        "status": "active",
+        "items": []
+    }
+
+    candidate_id = "candidate-" + now.replace("-", "").replace(":", "").replace(".", "")
+
+    item = {
+        "id": candidate_id,
+        "type": body.get("type", "food"),
+        "title": body.get("title", keyword),
+        "subtitle": body.get("subtitle", "시장조사 기반 후보"),
+        "reason": body.get("reason", "실제 출처 확인 후 승인 대상입니다."),
+        "source": source_type,
+        "broadcast": source_title,
+        "keyword": keyword,
+        "map_keyword": body.get("map_keyword", keyword),
+        "address": body.get("address", ""),
+        "phone": body.get("phone", ""),
+        "source_type": source_type,
+        "source_title": source_title,
+        "source_url": source_url,
+        "region": region,
+        "verified": verified,
+        "real_place": verified,
+        "evidence_note": note,
+        "route_hint": "사용자 GPS 기준으로 목적지까지 가는 방법을 확인합니다.",
+        "status": "pending" if verified else "research_needed",
+        "created_at": now
+    }
+
+    candidates.setdefault("items", []).append(item)
+
+    jobs.setdefault("jobs", []).append({
+        "time": now,
+        "keyword": keyword,
+        "source_type": source_type,
+        "source_title": source_title,
+        "source_url": source_url,
+        "region": region,
+        "verified": verified,
+        "result": "candidate_created",
+        "candidate_id": candidate_id
+    })
+    jobs["last_run"] = now
+
+    cand_path.write_text(json.dumps(candidates, ensure_ascii=False, indent=2), encoding="utf-8")
+    job_path.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "ok": True,
+        "message": "market research candidate created",
+        "verified": verified,
+        "item": item
+    }
