@@ -1277,3 +1277,9 @@ def travel_place_groups_get(group: str = ""):
         }
 
     return {"ok": True, "groups": groups}
+
+@app.get("/travel-map")
+def travel_map_window():
+    from fastapi.responses import HTMLResponse
+    path = Path("ui/travel_map.html")
+    return HTMLResponse(path.read_text(encoding="utf-8"))
