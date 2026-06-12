@@ -71,7 +71,7 @@ function renderItems(){
       <button class="on" onclick="actionItem('${item.id}','approve')">승인</button>
       <button class="warn" onclick="actionItem('${item.id}','hold')">보류</button>
       <button class="off" onclick="actionItem('${item.id}','delete')">삭제</button>
-      <button class="mode" onclick="devRequest('${item.id}')">DEV 지시</button>
+      <button class="mode" onclick="window.open('/control/item?id=${item.id}','_blank')">상세 작업</button>\n      <button class="mode" onclick="devRequest('${item.id}')">DEV 지시</button>
       <button class="mode" onclick="openMap('${item.map_keyword || item.title}')">지도 확인</button>
     </div>`;
   });

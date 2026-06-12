@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>KRXA Item Detail</title>
+<style>
+body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:18px}
+.card{background:#1e293b;border-radius:14px;padding:16px;margin:12px 0}
+input,textarea{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:0}
+button{padding:10px 14px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.mode{background:#2563eb;color:white}.warn{background:#92400e;color:white}
+pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>KRXA 장소 상세 작업창</h1>
+<div class="card">
+<input id="id" placeholder="id" readonly>
+<input id="title" placeholder="장소명">
+<input id="region" placeholder="지역">
+<input id="address" placeholder="주소">
+<input id="phone" placeholder="전화">
+<input id="source_title" placeholder="출처명">
+<input id="source_url" placeholder="출처 URL">
+<input id="map_keyword" placeholder="지도검색어">
+<textarea id="reason" placeholder="추천/검증 메모"></textarea>
+
+<button class="mode" onclick="saveItem()">수정 저장</button>
+<button class="on" onclick="actionItem('approve')">승인</button>
+<button class="warn" onclick="actionItem('hold')">보류</button>
+<button class="off" onclick="actionItem('delete')">삭제</button>
+<button class="mode" onclick="openMap()">지도 확인</button>
+<button class="mode" onclick="window.open('/dev?request='+encodeURIComponent(itemId),'_blank')">DEV 지시</button>
+
+<h3>파일</h3>
+<input type="file" id="file">
+<button class="mode" onclick="alert('파일 업로드 저장소 연결은 다음 단계')">파일 업로드</button>
+<button class="mode" onclick="downloadDoc()">DOC 다운로드</button>
+</div>
+<pre id="raw">로드 전</pre>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const itemId = params.get("id");
+let current = null;
+
+async function loadItem(){
+  const r = await fetch("/api/market-research-feed/item?id="+encodeURIComponent(itemId));
+  const d = await r.json();
+  current = d.item || {};
+  ["id","title","region","address","phone","source_title","source_url","map_keyword","reason"].forEach(k=>{
+    const el=document.getElementById(k);
+    if(el) el.value=current[k]||"";
+  });
+  document.getElementById("raw").innerText=JSON.stringify(d,null,2);
+}
+
+function getForm(){
+  return {
+    id:document.getElementById("id").value,
+    title:document.getElementById("title").value,
+    region:document.getElementById("region").value,
+    address:document.getElementById("address").value,
+    phone:document.getElementById("phone").value,
+    source_title:document.getElementById("source_title").value,
+    source_url:document.getElementById("source_url").value,
+    map_keyword:document.getElementById("map_keyword").value,
+    reason:document.getElementById("reason").value
+  };
+}
+
+async function saveItem(){
+  const r = await fetch("/api/market-research-feed/update",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(getForm())
+  });
+  document.getElementById("raw").innerText=JSON.stringify(await r.json(),null,2);
+}
+
+async function actionItem(action){
+  const r = await fetch("/api/market-research-feed/action",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({id:itemId, action})
+  });
+  document.getElementById("raw").innerText=JSON.stringify(await r.json(),null,2);
+  loadItem();
+}
+
+function openMap(){
+  const q=document.getElementById("map_keyword").value || document.getElementById("title").value;
+  window.open("https://www.google.com/maps/search/"+encodeURIComponent(q),"_blank");
+}
+
+function downloadDoc(){
+  const x=getForm();
+  const html="<h1>"+x.title+"</h1><p>"+x.address+"</p><p>"+x.phone+"</p><p>"+x.source_title+"</p><p>"+x.source_url+"</p>";
+  const blob=new Blob([html],{type:"application/msword;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=x.id+"_detail.doc";
+  a.click();
+}
+
+loadItem();
+</script>
+</body>
+</html>

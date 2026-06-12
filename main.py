@@ -1518,3 +1518,47 @@ async def market_research_feed_action(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "item not found"}
+
+
+@app.get("/control/item")
+def control_item():
+    from fastapi.responses import HTMLResponse
+    path = Path("ui/control_item.html")
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/market-research-feed/item")
+def market_research_feed_item_get(id: str):
+    path = Path("storage/market_research_feed.json")
+    if not path.exists():
+        return {"ok": False, "message": "feed not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for item in data.get("items", []):
+        if item.get("id") == id:
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "item not found"}
+
+
+@app.post("/api/market-research-feed/update")
+async def market_research_feed_update(request: Request):
+    body = await request.json()
+    item_id = body.get("id")
+
+    path = Path("storage/market_research_feed.json")
+    if not path.exists():
+        return {"ok": False, "message": "feed not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    for item in data.get("items", []):
+        if item.get("id") == item_id:
+            for key in ["title","region","address","phone","source_title","source_url","map_keyword","reason"]:
+                if key in body:
+                    item[key] = body.get(key)
+
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "item not found"}
