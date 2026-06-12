@@ -119,8 +119,39 @@
       "map_keyword": "주변 방송 맛집 유튜브 먹방",
       "lat": "",
       "lng": "",
-      "status": "candidate"
+      "status": "candidate",
+      "real_place": false,
+      "verified": false,
+      "verified_at": "",
+      "source_type": "",
+      "source_title": "",
+      "source_url": "",
+      "evidence_note": "",
+      "address": "",
+      "phone": ""
     }
   ],
-  "daily_update_log": []
+  "daily_update_log": [],
+  "market_research_rule": {
+    "principle": "LLM 가상 후보 금지. 실제 출처에서 확인된 현실 장소만 추천 후보로 사용한다.",
+    "required_fields": [
+      "title",
+      "address",
+      "source_type",
+      "source_title",
+      "source_url",
+      "verified",
+      "verified_at",
+      "map_keyword"
+    ],
+    "allowed_sources": [
+      "TV 공식/방송 정보",
+      "YouTube",
+      "뉴스",
+      "지도 검색",
+      "블로그/리뷰",
+      "관제 직접 등록"
+    ],
+    "updated_at": "2026-06-12T18:34:20.113951"
+  }
 }
