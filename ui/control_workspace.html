@@ -31,6 +31,7 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
     <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
     <button class="mode" onclick="showPanel('mapDb')">KRXA Map DB</button>
     <button class="mode" onclick="showPanel('marketResearch')">시장조사 엔진</button>
+    <button class="mode" onclick="showPanel('researchFeed')">시장조사 리스트</button>
     <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
     <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 열기</button>
     <button class="mode" onclick="window.open('/api/state','_blank')">STATE JSON</button>
@@ -52,6 +53,7 @@ function showPanel(name){
   if(name==="serviceLinks") return serviceLinks();
   if(name==="mapDb") return mapDbPanel();
   if(name==="marketResearch") return marketResearchPanel();
+  if(name==="researchFeed") return researchFeedPanel();
   if(name==="dev") return devPanel();
 }
 
@@ -412,6 +414,22 @@ async function loadMarketResearchJobs(){
   document.getElementById("marketResearchBox").innerText =
     JSON.stringify(await r.json(), null, 2);
 }
+
+
+function researchFeedPanel(){
+  panel(`
+    <div class="card"><h2>시장조사 리스트</h2>
+    <p class="small">각 항목 클릭 시 새 작업창에서 관리합니다.</p>
+    <div class="grid">
+      <div class="card"><h3>허영만 백반기행</h3><button class="mode" onclick="window.open('/control/branch?type=baekban','_blank')">작업창 열기</button></div>
+      <div class="card"><h3>백종원 추천 맛집</h3><button class="mode" onclick="window.open('/control/branch?type=baekjongwon','_blank')">작업창 열기</button></div>
+      <div class="card"><h3>유튜브 맛집</h3><button class="mode" onclick="window.open('/control/branch?type=youtube_food','_blank')">작업창 열기</button></div>
+      <div class="card"><h3>지역 축제</h3><button class="mode" onclick="window.open('/control/branch?type=festival','_blank')">작업창 열기</button></div>
+      <div class="card"><h3>뉴스 관광지</h3><button class="mode" onclick="window.open('/control/branch?type=news_tour','_blank')">작업창 열기</button></div>
+    </div></div>
+  `);
+}
+
 
 function devPanel(){
   panel(`<div class="card"><h2>DEV 작업</h2>

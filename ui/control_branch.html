@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>KRXA Branch Workspace</title>
+<style>
+body{margin:0;background:#0f172a;color:white;font-family:Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:18px}
+.card{background:#1e293b;border-radius:14px;padding:16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+button{padding:10px 14px;border:0;border-radius:10px;font-weight:bold;margin:4px;cursor:pointer}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.mode{background:#2563eb;color:white}.warn{background:#92400e;color:white}
+input,textarea{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:0}
+pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space:pre-wrap}
+.small{color:#cbd5e1;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1 id="title">KRXA Branch Workspace</h1>
+<p class="small">시장조사 결과 리스트 검토 / 승인 / 보류 / DEV 지시</p>
+
+<div class="card">
+<button class="mode" onclick="loadItems()">리스트 불러오기</button>
+<button class="mode" onclick="downloadCsv()">엑셀 CSV 다운로드</button>
+<button class="mode" onclick="downloadDoc()">DOCX용 문서 다운로드</button>
+<input type="file" id="uploadFile">
+<button class="warn" onclick="alert('업로드 파일 처리 기능은 다음 단계에서 연결')">파일 업로드</button>
+</div>
+
+<div id="list" class="grid"></div>
+<pre id="raw">로드 전</pre>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const type = params.get("type") || "baekban";
+let currentItems = [];
+
+const titles = {
+  baekban:"허영만 백반기행",
+  baekjongwon:"백종원 추천 맛집",
+  youtube_food:"유튜브 맛집",
+  festival:"지역 축제",
+  news_tour:"뉴스 관광지"
+};
+
+document.getElementById("title").innerText = "KRXA Branch - " + (titles[type] || type);
+
+async function loadItems(){
+  const r = await fetch("/api/market-research-feed?category=" + encodeURIComponent(type));
+  const d = await r.json();
+  currentItems = d.items || [];
+  renderItems();
+  document.getElementById("raw").innerText = JSON.stringify(d, null, 2);
+}
+
+function renderItems(){
+  const box = document.getElementById("list");
+  let html = "";
+  currentItems.forEach(item=>{
+    html += `
+    <div class="card">
+      <h3>${item.title}</h3>
+      <p>${item.region || ""}</p>
+      <p>${item.address || ""}</p>
+      <p>${item.phone || ""}</p>
+      <p><b>출처</b><br>${item.source_title || ""}</p>
+      <p class="small">${item.source_url || ""}</p>
+      <p>상태: <b>${item.status}</b> / 검증: ${item.verified}</p>
+      <button class="on" onclick="actionItem('${item.id}','approve')">승인</button>
+      <button class="warn" onclick="actionItem('${item.id}','hold')">보류</button>
+      <button class="off" onclick="actionItem('${item.id}','delete')">삭제</button>
+      <button class="mode" onclick="devRequest('${item.id}')">DEV 지시</button>
+      <button class="mode" onclick="openMap('${item.map_keyword || item.title}')">지도 확인</button>
+    </div>`;
+  });
+  box.innerHTML = html || "<div class='card'>항목 없음</div>";
+}
+
+async function actionItem(id, action){
+  const r = await fetch("/api/market-research-feed/action", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({id, action})
+  });
+  document.getElementById("raw").innerText = JSON.stringify(await r.json(), null, 2);
+  loadItems();
+}
+
+function devRequest(id){
+  window.open("/dev?request=" + encodeURIComponent(id), "_blank");
+}
+
+function openMap(q){
+  window.open("https://www.google.com/maps/search/" + encodeURIComponent(q), "_blank");
+}
+
+function downloadCsv(){
+  let csv = "id,category,title,region,address,phone,source_title,source_url,map_keyword,status\\n";
+  currentItems.forEach(x=>{
+    csv += [x.id,x.category,x.title,x.region,x.address,x.phone,x.source_title,x.source_url,x.map_keyword,x.status]
+      .map(v=>'"'+String(v||"").replaceAll('"','""')+'"').join(",") + "\\n";
+  });
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = type + "_market_research.csv";
+  a.click();
+}
+
+function downloadDoc(){
+  let html = "<h1>" + (titles[type] || type) + "</h1>";
+  currentItems.forEach(x=>{
+    html += "<h2>"+x.title+"</h2><p>"+(x.address||"")+"</p><p>"+(x.source_title||"")+"</p><p>"+(x.source_url||"")+"</p>";
+  });
+  const blob = new Blob([html], {type:"application/msword;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = type + "_market_research.doc";
+  a.click();
+}
+
+loadItems();
+</script>
+</body>
+</html>

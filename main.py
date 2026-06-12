@@ -1463,3 +1463,58 @@ async def market_research_run(request: Request):
         "verified": verified,
         "item": item
     }
+
+
+@app.get("/control/branch")
+def control_branch():
+    from fastapi.responses import HTMLResponse
+    path = Path("ui/control_branch.html")
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/market-research-feed")
+def market_research_feed_get(category: str = ""):
+    path = Path("storage/market_research_feed.json")
+    if not path.exists():
+        return {"ok": True, "categories": [], "items": []}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    items = data.get("items", [])
+
+    if category:
+        items = [x for x in items if x.get("category") == category]
+
+    return {
+        "ok": True,
+        "categories": data.get("categories", []),
+        "items": items
+    }
+
+
+@app.post("/api/market-research-feed/action")
+async def market_research_feed_action(request: Request):
+    body = await request.json()
+    item_id = body.get("id")
+    action = body.get("action")
+
+    path = Path("storage/market_research_feed.json")
+    if not path.exists():
+        return {"ok": False, "message": "feed not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    for item in data.get("items", []):
+        if item.get("id") == item_id:
+            if action == "approve":
+                item["status"] = "approved"
+            elif action == "hold":
+                item["status"] = "hold"
+            elif action == "delete":
+                item["status"] = "deleted"
+            else:
+                return {"ok": False, "message": "unknown action"}
+
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "item not found"}
