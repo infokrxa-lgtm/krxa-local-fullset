@@ -98,6 +98,11 @@
       return;
     }
 
+    if (card.linked_group) {
+      window.KRXA_Recommend.openPlaceGroup(card.linked_group, place);
+      return;
+    }
+
     window.KRXA_Recommend.openPlaceRoute(place);
   };
 
@@ -455,6 +460,61 @@ window.KRXA_Recommend.openCurrentDiscoveryCard = function () {
   }
 
   window.KRXA_Recommend.openMarketResearchV1();
+};
+
+
+
+// ===== Travel Place Group List v1 =====
+window.KRXA_Recommend.openPlaceGroup = async function (groupId, fallbackCard) {
+  try {
+    const res = await fetch("/api/travel-place-groups?group=" + encodeURIComponent(groupId));
+    const data = await res.json();
+
+    if (!data.ok || !data.items || !data.items.length) {
+      if (fallbackCard) {
+        window.KRXA_Recommend.openPlaceRoute(fallbackCard);
+        return;
+      }
+      alert("연결된 장소 리스트가 없습니다.");
+      return;
+    }
+
+    let html =
+      "<p><b>" + (data.title || "장소 리스트") + "</b></p>" +
+      "<p>" + (data.source || "") + "</p>";
+
+    data.items.forEach(function (item) {
+      const place = {
+        title: item.title,
+        subtitle: (item.region || "") + " · " + (item.menu || ""),
+        reason: item.reason || "리스트 기반 추천 장소입니다.",
+        source: data.source || item.broadcast || "",
+        broadcast: item.broadcast || data.source || "",
+        keyword: item.map_keyword || item.title,
+        map_keyword: item.map_keyword || item.title,
+        address: item.address || "",
+        phone: item.phone || "",
+        route_hint: "현재 내 위치에서 이 장소까지 가는 방법을 확인합니다."
+      };
+
+      html +=
+        "<div class='msg' style='margin-top:10px;cursor:pointer' onclick=\"KRXA_Recommend.openPlaceRoute(" +
+        JSON.stringify(place).replace(/"/g, "&quot;") +
+        ")\">" +
+        "<b>" + (item.title || "장소") + "</b>" +
+        "<span>" +
+        (item.region || "") + " " + (item.menu || "") +
+        "<br><small>" + (item.reason || "") + "</small>" +
+        "</span></div>";
+    });
+
+    if (window.KRXA_App && window.KRXA_App.openModal) {
+      window.KRXA_App.openModal(data.title || "장소 리스트", html);
+    }
+  } catch (e) {
+    console.log("openPlaceGroup failed", e);
+    if (fallbackCard) window.KRXA_Recommend.openPlaceRoute(fallbackCard);
+  }
 };
 
 

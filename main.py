@@ -1251,3 +1251,29 @@ async def travel_hero_cards_delete(request: Request):
             return {"ok": True, "item": item}
 
     return {"ok": False, "message": "hero card not found"}
+
+
+@app.get("/api/travel-place-groups")
+def travel_place_groups_get(group: str = ""):
+    path = Path("storage/travel_place_groups.json")
+    if not path.exists():
+        return {"ok": True, "groups": {}, "items": []}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    groups = data.get("groups", {})
+
+    if group:
+        g = groups.get(group)
+        if not g:
+            return {"ok": False, "message": "group not found", "group": group, "items": []}
+
+        items = [x for x in g.get("items", []) if x.get("status") == "active"]
+        return {
+            "ok": True,
+            "group": group,
+            "title": g.get("title", group),
+            "source": g.get("source", ""),
+            "items": items
+        }
+
+    return {"ok": True, "groups": groups}
