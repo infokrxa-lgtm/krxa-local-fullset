@@ -1,6 +1,6 @@
 {
   "name": "KRXA Map DB",
-  "version": "v1",
+  "version": "v2",
   "status": "active",
   "daily_update_time": "00:00",
   "map_sources": [
@@ -134,24 +134,15 @@
   "daily_update_log": [],
   "market_research_rule": {
     "principle": "LLM 가상 후보 금지. 실제 출처에서 확인된 현실 장소만 추천 후보로 사용한다.",
-    "required_fields": [
-      "title",
-      "address",
-      "source_type",
-      "source_title",
-      "source_url",
-      "verified",
-      "verified_at",
-      "map_keyword"
-    ],
     "allowed_sources": [
-      "TV 공식/방송 정보",
+      "TV",
       "YouTube",
-      "뉴스",
-      "지도 검색",
-      "블로그/리뷰",
-      "관제 직접 등록"
+      "News",
+      "Blog",
+      "Review",
+      "Map",
+      "Control"
     ],
-    "updated_at": "2026-06-12T18:34:20.113951"
+    "updated_at": "2026-06-12T18:41:41.914266"
   }
 }

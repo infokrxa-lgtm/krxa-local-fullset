@@ -29,6 +29,7 @@ pre{background:#020617;color:#d1fae5;padding:12px;border-radius:10px;white-space
     <button class="mode" onclick="showPanel('heroCards')">Hero 카드</button>
     <button class="mode" onclick="showPanel('candidateFeed')">추천 후보 승인</button>
     <button class="mode" onclick="showPanel('serviceLinks')">서비스 링크</button>
+    <button class="mode" onclick="showPanel('mapDb')">KRXA Map DB</button>
     <button class="mode" onclick="showPanel('dev')">DEV 작업</button>
     <button class="mode" onclick="window.open('/travel-v1','_blank')">Travel V1 열기</button>
     <button class="mode" onclick="window.open('/api/state','_blank')">STATE JSON</button>
@@ -48,6 +49,7 @@ function showPanel(name){
   if(name==="heroCards") return heroCards();
   if(name==="candidateFeed") return candidateFeed();
   if(name==="serviceLinks") return serviceLinks();
+  if(name==="mapDb") return mapDbPanel();
   if(name==="dev") return devPanel();
 }
 
@@ -239,6 +241,110 @@ async function loadServiceLinks(){
   const r=await fetch("/api/travel-service-links?group="+encodeURIComponent(g));
   document.getElementById("svcBox").innerText=JSON.stringify(await r.json(),null,2);
 }
+
+
+function mapDbPanel(){
+  panel(`
+    <div class="card"><h2>KRXA Map DB / 실제 시장조사 장소 관리</h2>
+    <p class="small">가상 후보 금지. 실제 출처 URL이 있는 현실 장소만 등록합니다.</p>
+
+    <button class="mode" onclick="loadKrxaMapDb()">Map DB 불러오기</button>
+
+    <div class="grid">
+      <div>
+        <h3>실존 장소 등록/수정</h3>
+        <input id="mapId" placeholder="id / 수정 시 기존 id">
+        <input id="mapCategory" placeholder="category 예: food/tour/experience">
+        <input id="mapTitle" placeholder="실제 상호명">
+        <input id="mapRegion" placeholder="지역">
+        <input id="mapAddress" placeholder="주소">
+        <input id="mapPhone" placeholder="전화번호">
+        <input id="mapSourceType" placeholder="출처유형 TV/YouTube/News/Blog/Map">
+        <input id="mapSourceTitle" placeholder="방송명/영상명/기사명">
+        <input id="mapSourceUrl" placeholder="출처 URL">
+        <textarea id="mapEvidence" placeholder="확인 근거 메모"></textarea>
+        <textarea id="mapReason" placeholder="추천 사유"></textarea>
+        <input id="mapKeyword" placeholder="지도 검색어">
+        <input id="mapLat" placeholder="위도 선택">
+        <input id="mapLng" placeholder="경도 선택">
+        <button class="on" onclick="createKrxaMapPlace()">실제 장소 등록</button>
+        <button class="mode" onclick="updateKrxaMapPlace()">수정 저장</button>
+
+        <h3>삭제</h3>
+        <input id="mapDeleteId" placeholder="삭제할 id">
+        <button class="off" onclick="deleteKrxaMapPlace()">삭제</button>
+      </div>
+
+      <div>
+        <h3>리스트 / 검증 결과</h3>
+        <pre id="mapDbBox">로드 전</pre>
+      </div>
+    </div>
+    </div>
+  `);
+}
+
+function getMapPlaceForm(){
+  return {
+    id: document.getElementById("mapId").value,
+    category: document.getElementById("mapCategory").value || "food",
+    title: document.getElementById("mapTitle").value,
+    region: document.getElementById("mapRegion").value,
+    address: document.getElementById("mapAddress").value,
+    phone: document.getElementById("mapPhone").value,
+    source_type: document.getElementById("mapSourceType").value,
+    source_title: document.getElementById("mapSourceTitle").value,
+    source_url: document.getElementById("mapSourceUrl").value,
+    evidence_note: document.getElementById("mapEvidence").value,
+    reason: document.getElementById("mapReason").value,
+    map_keyword: document.getElementById("mapKeyword").value,
+    lat: document.getElementById("mapLat").value,
+    lng: document.getElementById("mapLng").value,
+    real_place: true,
+    verified: true,
+    verified_at: new Date().toISOString(),
+    status: "active"
+  };
+}
+
+async function loadKrxaMapDb(){
+  const r = await fetch("/api/krxa-map-db");
+  document.getElementById("mapDbBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function createKrxaMapPlace(){
+  const r = await fetch("/api/krxa-map-place/create", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(getMapPlaceForm())
+  });
+  document.getElementById("mapDbBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function updateKrxaMapPlace(){
+  const body = getMapPlaceForm();
+  if(!body.id){ alert("수정할 id를 입력하세요."); return; }
+
+  const r = await fetch("/api/krxa-map-place/update", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  document.getElementById("mapDbBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function deleteKrxaMapPlace(){
+  const id = document.getElementById("mapDeleteId").value;
+  if(!id){ alert("삭제할 id를 입력하세요."); return; }
+
+  const r = await fetch("/api/krxa-map-place/delete", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({id:id})
+  });
+  document.getElementById("mapDbBox").innerText = JSON.stringify(await r.json(), null, 2);
+}
+
 
 function devPanel(){
   panel(`<div class="card"><h2>DEV 작업</h2>

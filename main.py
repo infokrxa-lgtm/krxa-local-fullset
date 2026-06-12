@@ -1283,3 +1283,90 @@ def travel_map_window():
     from fastapi.responses import HTMLResponse
     path = Path("ui/travel_map.html")
     return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.post("/api/krxa-map-place/create")
+async def krxa_map_place_create(request: Request):
+    body = await request.json()
+    path = Path("storage/krxa_map_db.json")
+    data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {
+        "name": "KRXA Map DB",
+        "version": "v2",
+        "status": "active",
+        "places": [],
+        "daily_update_log": []
+    }
+
+    places = data.setdefault("places", [])
+    item = {
+        "id": body.get("id") or f"map-place-{len(places)+1:03d}",
+        "category": body.get("category", "food"),
+        "title": body.get("title", ""),
+        "region": body.get("region", ""),
+        "address": body.get("address", ""),
+        "phone": body.get("phone", ""),
+        "source_type": body.get("source_type", ""),
+        "source_title": body.get("source_title", ""),
+        "source_url": body.get("source_url", ""),
+        "evidence_note": body.get("evidence_note", ""),
+        "reason": body.get("reason", ""),
+        "map_keyword": body.get("map_keyword", body.get("title", "")),
+        "lat": body.get("lat", ""),
+        "lng": body.get("lng", ""),
+        "real_place": bool(body.get("real_place", True)),
+        "verified": bool(body.get("verified", True)),
+        "verified_at": body.get("verified_at", ""),
+        "status": body.get("status", "active")
+    }
+
+    places.append(item)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "item": item}
+
+
+@app.post("/api/krxa-map-place/update")
+async def krxa_map_place_update(request: Request):
+    body = await request.json()
+    place_id = body.get("id")
+    path = Path("storage/krxa_map_db.json")
+
+    if not path.exists():
+        return {"ok": False, "message": "krxa_map_db.json not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    for item in data.get("places", []):
+        if item.get("id") == place_id:
+            for key in [
+                "category","title","region","address","phone",
+                "source_type","source_title","source_url","evidence_note",
+                "reason","map_keyword","lat","lng",
+                "real_place","verified","verified_at","status"
+            ]:
+                if key in body:
+                    item[key] = body.get(key)
+
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "place not found"}
+
+
+@app.post("/api/krxa-map-place/delete")
+async def krxa_map_place_delete(request: Request):
+    body = await request.json()
+    place_id = body.get("id")
+    path = Path("storage/krxa_map_db.json")
+
+    if not path.exists():
+        return {"ok": False, "message": "krxa_map_db.json not found"}
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    for item in data.get("places", []):
+        if item.get("id") == place_id:
+            item["status"] = "deleted"
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            return {"ok": True, "item": item}
+
+    return {"ok": False, "message": "place not found"}
