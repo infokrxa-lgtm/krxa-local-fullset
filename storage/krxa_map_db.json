@@ -1,0 +1,126 @@
+{
+  "name": "KRXA Map DB",
+  "version": "v1",
+  "status": "active",
+  "daily_update_time": "00:00",
+  "map_sources": [
+    {
+      "id": "google",
+      "name": "Google Maps",
+      "type": "global_map",
+      "status": "active"
+    },
+    {
+      "id": "naver",
+      "name": "Naver Map",
+      "type": "korea_map",
+      "status": "active"
+    },
+    {
+      "id": "kakao",
+      "name": "Kakao Map",
+      "type": "korea_map",
+      "status": "active"
+    },
+    {
+      "id": "tmap",
+      "name": "Tmap",
+      "type": "korea_navigation",
+      "status": "planned"
+    }
+  ],
+  "media_sources": [
+    {
+      "id": "tv",
+      "name": "TV 방송",
+      "status": "active"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "status": "active"
+    },
+    {
+      "id": "news",
+      "name": "뉴스",
+      "status": "active"
+    },
+    {
+      "id": "blog",
+      "name": "블로그",
+      "status": "active"
+    },
+    {
+      "id": "review",
+      "name": "리뷰/별점",
+      "status": "active"
+    },
+    {
+      "id": "sns",
+      "name": "SNS",
+      "status": "planned"
+    }
+  ],
+  "route_rules": [
+    {
+      "id": "walk",
+      "label": "도보",
+      "distance_hint": "근거리"
+    },
+    {
+      "id": "car",
+      "label": "자가용",
+      "distance_hint": "근거리/장거리"
+    },
+    {
+      "id": "taxi",
+      "label": "택시",
+      "distance_hint": "근거리"
+    },
+    {
+      "id": "bus",
+      "label": "버스",
+      "distance_hint": "근거리/중거리"
+    },
+    {
+      "id": "subway",
+      "label": "지하철",
+      "distance_hint": "도시권"
+    },
+    {
+      "id": "train",
+      "label": "기차",
+      "distance_hint": "장거리"
+    },
+    {
+      "id": "flight",
+      "label": "항공",
+      "distance_hint": "장거리"
+    },
+    {
+      "id": "bike",
+      "label": "자전거",
+      "distance_hint": "근거리"
+    },
+    {
+      "id": "kickboard",
+      "label": "킥보드",
+      "distance_hint": "근거리"
+    }
+  ],
+  "places": [
+    {
+      "id": "map-place-001",
+      "category": "food",
+      "title": "방송·유튜브 맛집 후보",
+      "region": "현재 위치 주변",
+      "source": "TV / YouTube / 리뷰",
+      "reason": "사용자 GPS 기준으로 방송·유튜브·리뷰 흐름을 재조사할 대상입니다.",
+      "map_keyword": "주변 방송 맛집 유튜브 먹방",
+      "lat": "",
+      "lng": "",
+      "status": "candidate"
+    }
+  ],
+  "daily_update_log": []
+}
