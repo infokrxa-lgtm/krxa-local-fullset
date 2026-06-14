@@ -141,6 +141,33 @@ function openMyLocationMap() {
   requestLocationPermission();
 }
 
+  function openRouteTo(destination) {
+    const ctx = window.KRXA_CONTEXT;
+
+    if (!destination) {
+      alert("목적지 정보가 없습니다.");
+      return;
+    }
+
+    if (ctx.gpsReady && ctx.lat && ctx.lng) {
+      window.open(
+        "https://www.google.com/maps/dir/?api=1" +
+          "&origin=" +
+          encodeURIComponent(ctx.lat + "," + ctx.lng) +
+          "&destination=" +
+          encodeURIComponent(destination),
+        "_blank"
+      );
+      return;
+    }
+
+    requestLocationPermission();
+
+    window.open(
+      "https://www.google.com/maps/search/" + encodeURIComponent(destination),
+      "_blank"
+    );
+  }
   function openLocationSearch(keyword) {
     window.open(buildGoogleMapsSearchUrl(keyword), "_blank");
   }
@@ -189,17 +216,25 @@ function openMyLocationMap() {
     });
   }
 
-  window.KRXA_DeviceContext = {
-    init: initDeviceContext,
-    get: getContextForApi,
-    render: renderContextBar,
-    requestLocationPermission: requestLocationPermission,
-    openLocationSearch: openLocationSearch,
-    openMyLocationMap: openMyLocationMap,
-    openMapRouter: openMapRouter,
-    buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
-    buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
-  };
+window.KRXA_DeviceContext = {
+  init: initDeviceContext,
+  get: getContextForApi,
+  render: renderContextBar,
+
+  requestLocationPermission: requestLocationPermission,
+
+  openLocationSearch: openLocationSearch,
+
+  openMyLocationMap: openMyLocationMap,
+
+  openMapRouter: openMapRouter,
+
+  openRouteTo: openRouteTo,
+
+  buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
+
+  buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
+};
 window.KRXA_Recommend.openMarketResearchV1 = function () {
   const html =
     "<p><b>GPS 기반 현실 시장조사 추천 v1</b></p>" +

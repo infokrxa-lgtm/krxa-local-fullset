@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Travel List</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f8fafc;color:#0f172a}
+.wrap{padding:16px}
+.item{background:white;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 6px 18px #0001}
+button{border:0;border-radius:12px;padding:10px 14px;background:#2563eb;color:white;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2 id="title">전체 리스트</h2>
+  <div id="list"></div>
+</div>
+
+<script src="/ui/js/travel_context.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const branchId = params.get("branch") || "branch-heo-baekban";
+
+async function load(){
+  const res = await fetch("/api/travel-branches");
+  const data = await res.json();
+  const branch = (data.branches || []).find(b => b.id === branchId);
+  if(!branch){ document.getElementById("list").innerText="데이터 없음"; return; }
+
+  document.getElementById("title").innerText = branch.title + " 전체";
+  const active = (branch.items || []).filter(x => x.active).sort((a,b)=>(a.priority||99)-(b.priority||99));
+
+  document.getElementById("list").innerHTML = active.map(item => `
+    <div class="item">
+      <b>${item.name}</b>
+      <p>${item.region || ""}</p>
+      <p>${item.address || item.map_keyword || ""}</p>
+      <button onclick="KRXA_DeviceContext.openRouteTo('${item.address || item.map_keyword || item.name}')">지도에서 길찾기</button>
+    </div>
+  `).join("");
+}
+
+if(window.KRXA_DeviceContext) window.KRXA_DeviceContext.init();
+load();
+</script>
+</body>
+</html>

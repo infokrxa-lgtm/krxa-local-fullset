@@ -1540,6 +1540,31 @@ def market_research_feed_item_get(id: str):
 
     return {"ok": False, "message": "item not found"}
 
+@app.get("/api/travel-branches")
+def travel_branches_get():
+    path = Path("storage/travel_branches.json")
+    if not path.exists():
+        return {"ok": False, "branches": []}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.post("/api/travel-branches/save")
+async def travel_branches_save(request: Request):
+    body = await request.json()
+    path = Path("storage/travel_branches.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "saved": True}
+
+
+@app.get("/travel-branch")
+def travel_branch_page():
+    return HTMLResponse(Path("ui/travel_branch.html").read_text(encoding="utf-8"))
+
+
+@app.get("/travel-list")
+def travel_list_page():
+    return HTMLResponse(Path("ui/travel_list.html").read_text(encoding="utf-8"))
 
 @app.post("/api/market-research-feed/update")
 async def market_research_feed_update(request: Request):
