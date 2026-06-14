@@ -1,0 +1,40 @@
+{
+  "name": "KRXA Travel Branch Fractal DB",
+  "version": "v1",
+  "branches": [
+    {
+      "id": "branch-heo-baekban",
+      "title": "허영만 백반기행",
+      "type": "food_branch",
+      "active": true,
+      "hero_enabled": true,
+      "priority": 1,
+      "items": [
+        {
+          "id": "food-001",
+          "name": "맛집1",
+          "region": "서울",
+          "address": "서울 맛집 주소",
+          "phone": "",
+          "map_keyword": "서울 맛집1",
+          "source": "허영만 백반기행",
+          "source_url": "",
+          "active": true,
+          "priority": 1
+        },
+        {
+          "id": "food-002",
+          "name": "맛집2",
+          "region": "서울",
+          "address": "서울 맛집 주소",
+          "phone": "",
+          "map_keyword": "서울 맛집2",
+          "source": "허영만 백반기행",
+          "source_url": "",
+          "active": true,
+          "priority": 2
+        }
+      ]
+    }
+  ]
+}
