@@ -1547,8 +1547,6 @@ def travel_branches_get():
         return {"ok": False, "branches": []}
     return json.loads(path.read_text(encoding="utf-8"))
 
-notepad "C:\Users\aaa\Downloads\travel_autoexec_v2_program_package (1)\main_travel_api_patch.py"
-notepad main.py
 @app.post("/api/travel-branches/save")
 async def travel_branches_save(request: Request):
     body = await request.json()
