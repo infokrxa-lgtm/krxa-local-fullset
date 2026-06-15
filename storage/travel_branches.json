@@ -13,6 +13,7 @@
         {
           "id": "food-001",
           "name": "맛집1",
+          "category": "food",
           "region": "서울",
           "address": "서울 맛집 주소",
           "phone": "",
@@ -20,11 +21,13 @@
           "source": "허영만 백반기행",
           "source_url": "",
           "active": true,
-          "priority": 1
+          "priority": 1,
+          "score": 50
         },
         {
           "id": "food-002",
           "name": "맛집2",
+          "category": "food",
           "region": "서울",
           "address": "서울 맛집 주소",
           "phone": "",
@@ -32,7 +35,50 @@
           "source": "허영만 백반기행",
           "source_url": "",
           "active": true,
-          "priority": 2
+          "priority": 2,
+          "score": 40
+        },
+        {
+          "id": "food-003",
+          "name": "맛집3",
+          "category": "food",
+          "region": "서울",
+          "address": "서울 맛집 주소",
+          "phone": "",
+          "map_keyword": "서울 맛집3",
+          "source": "허영만 백반기행",
+          "source_url": "",
+          "active": true,
+          "priority": 3,
+          "score": 30
+        },
+        {
+          "id": "food-004",
+          "name": "맛집4",
+          "category": "food",
+          "region": "서울",
+          "address": "서울 맛집 주소",
+          "phone": "",
+          "map_keyword": "서울 맛집4",
+          "source": "허영만 백반기행",
+          "source_url": "",
+          "active": true,
+          "priority": 4,
+          "score": 20
+        },
+        {
+          "id": "food-005",
+          "name": "맛집5",
+          "category": "food",
+          "region": "서울",
+          "address": "서울 맛집 주소",
+          "phone": "",
+          "map_keyword": "서울 맛집5",
+          "source": "허영만 백반기행",
+          "source_url": "",
+          "active": true,
+          "priority": 5,
+          "score": 10
         }
       ]
     }

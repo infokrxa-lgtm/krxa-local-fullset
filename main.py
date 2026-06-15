@@ -1547,7 +1547,8 @@ def travel_branches_get():
         return {"ok": False, "branches": []}
     return json.loads(path.read_text(encoding="utf-8"))
 
-
+notepad "C:\Users\aaa\Downloads\travel_autoexec_v2_program_package (1)\main_travel_api_patch.py"
+notepad main.py
 @app.post("/api/travel-branches/save")
 async def travel_branches_save(request: Request):
     body = await request.json()
@@ -1630,3 +1631,86 @@ async def market_research_feed_create(request: Request):
     items.append(item)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "item": item}
+
+@app.get("/api/travel-recommend")
+def travel_recommend_get():
+    path = Path("storage/travel_branches.json")
+    if not path.exists():
+        return {"ok": False, "message": "travel_branches.json not found", "cards": []}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    cards = []
+    for branch in data.get("branches", []):
+        if not branch.get("active", False) or not branch.get("hero_enabled", False):
+            continue
+        for item in branch.get("items", []):
+            if not item.get("active", False):
+                continue
+            score = int(item.get("score", 0) or 0)
+            priority = int(item.get("priority", 99) or 99)
+            cards.append({
+                "branch_id": branch.get("id", ""), "branch_title": branch.get("title", ""),
+                "place_id": item.get("id", ""), "title": branch.get("title", ""),
+                "name": item.get("name", ""), "region": item.get("region", ""),
+                "address": item.get("address", ""), "map_keyword": item.get("map_keyword", ""),
+                "source": item.get("source", branch.get("title", "")),
+                "reason": "활성화된 추천 장소입니다.", "priority": priority, "score": score,
+                "destination": item.get("address") or item.get("map_keyword") or item.get("name", "")
+            })
+    cards = sorted(cards, key=lambda x: (-x.get("score", 0), x.get("priority", 99)))[:5]
+    return {"ok": True, "mode": "Travel Recommend API v2", "cards": cards}
+
+@app.get("/api/travel-memory")
+def travel_memory_get():
+    path = Path("storage/travel_memory.json")
+    if not path.exists():
+        return {"ok": True, "version": "v1", "events": []}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"ok": False, "error": str(e), "events": []}
+
+@app.post("/api/travel-memory/add")
+async def travel_memory_add(request: Request):
+    body = await request.json()
+    path = Path("storage/travel_memory.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {"version": "v1", "events": []}
+    else:
+        data = {"version": "v1", "events": []}
+    event = {
+        "time": datetime.now().isoformat(timespec="seconds"),
+        "action": body.get("action", "unknown"),
+        "branch_id": body.get("branch_id", ""), "branch_title": body.get("branch_title", ""),
+        "place_id": body.get("place_id", ""), "place_name": body.get("place_name", ""),
+        "destination": body.get("destination", ""), "lat": body.get("lat", ""),
+        "lng": body.get("lng", ""), "source": body.get("source", "user_ui")
+    }
+    events = data.get("events", [])
+    events.insert(0, event)
+    data["events"] = events[:500]
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "event": event, "total": len(data["events"])}
+
+@app.post("/api/travel-memory/reset")
+def travel_memory_reset():
+    path = Path("storage/travel_memory.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {"version": "v1", "events": []}
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "reset": True}
+
+@app.get("/control/travel-dashboard")
+def control_travel_dashboard_page():
+    return HTMLResponse(Path("ui/control_travel_dashboard.html").read_text(encoding="utf-8"))
+
+@app.get("/dev/travel-branch")
+def dev_travel_branch_page():
+    return HTMLResponse(Path("ui/dev_travel_branch.html").read_text(encoding="utf-8"))
+
+@app.get("/dev/travel-analytics")
+def dev_travel_analytics_page():
+    return HTMLResponse(Path("ui/travel_analytics.html").read_text(encoding="utf-8"))

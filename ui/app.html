@@ -254,10 +254,10 @@
   <div class="screen home">
     <div class="deviceBar" id="deviceContextBar">📍 위치 확인 중 · 시간 확인 중</div>
 
-<div class="travelHero" onclick="window.open('/travel-branch?branch=branch-heo-baekban','_blank')">
-      <div class="travelHeroBadge">TRAVEL · PLAY · EXPERIENCE</div>
-<div class="travelHeroPlace" id="travelHeroPlace">🌍 주변 여행지</div>
-<div class="travelHeroText" id="travelHeroText">현재 위치 기준 관광지·체험 찾기</div>
+<div class="travelHero" onclick="KRXA_HeroRecommend.openCurrent()">
+      <div class="travelHeroBadge">GPS · MARKET · RECOMMEND</div>
+<div class="travelHeroPlace" id="travelHeroPlace">추천 불러오는 중</div>
+<div class="travelHeroText" id="travelHeroText">현재 위치 기준 추천을 준비합니다</div>
 <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); window.KRXA_Recommend.openMarketResearchV1();">둘러보기</button>
     </div>
 
@@ -416,10 +416,12 @@
 
 <script src="/ui/js/travel_context.js"></script>
 <script src="/ui/js/travel_engine.js"></script>
+<script src="/ui/js/hero_recommend.js"></script>
 <script src="/ui/js/user_links.js"></script>
 <script src="/ui/js/travel_context.js"></script>
 <script src="/ui/js/travel_engine.js"></script>
 <script src="/ui/js/travel_recommend.js"></script>
+<script src="/ui/js/hero_recommend.js"></script>
 <script src="/ui/js/user_links.js"></script>
 <script src="/ui/js/m2m_translate.js"></script>
 
