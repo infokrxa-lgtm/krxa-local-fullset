@@ -1712,3 +1712,41 @@ def dev_travel_branch_page():
 @app.get("/dev/travel-analytics")
 def dev_travel_analytics_page():
     return HTMLResponse(Path("ui/travel_analytics.html").read_text(encoding="utf-8"))
+
+# ===== KRXA Travel Control DEV Flow v1 Patch =====
+
+@app.get("/api/dev-requests")
+def dev_requests_get():
+    path = Path("storage/dev_requests.json")
+    if not path.exists():
+        return {"ok": True, "requests": []}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"ok": False, "error": str(e), "requests": []}
+
+@app.post("/api/dev-requests/add")
+async def dev_requests_add(request: Request):
+    body = await request.json()
+    path = Path("storage/dev_requests.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {"ok": True, "requests": []}
+    else:
+        data = {"ok": True, "requests": []}
+    req = {
+        "id": "req-" + datetime.now().strftime("%Y%m%d%H%M%S"),
+        "time": datetime.now().isoformat(timespec="seconds"),
+        "title": body.get("title",""),
+        "body": body.get("body",""),
+        "source": body.get("source",""),
+        "status": body.get("status","requested")
+    }
+    items = data.get("requests", [])
+    items.insert(0, req)
+    data["requests"] = items[:300]
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "request": req}

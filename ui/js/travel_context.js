@@ -277,4 +277,31 @@ window.KRXA_Recommend.searchMarket = function (type) {
     "_blank"
   );
 };
+})();\n\n
+// ===== KRXA Route Patch: Google/Naver current location directions =====
+(function(){
+  function getCtx(){ return window.KRXA_CONTEXT || {}; }
+  window.KRXA_openGoogleRoute = function(destination){
+    const ctx = getCtx();
+    let url = "https://www.google.com/maps/dir/?api=1";
+    if(ctx.gpsReady && ctx.lat && ctx.lng){
+      url += "&origin=" + encodeURIComponent(ctx.lat + "," + ctx.lng);
+    }
+    url += "&destination=" + encodeURIComponent(destination || "");
+    window.open(url, "_blank");
+  };
+  window.KRXA_openNaverRoute = function(destination){
+    const ctx = getCtx();
+    const q = encodeURIComponent(destination || "");
+    if(ctx.gpsReady && ctx.lat && ctx.lng){
+      window.open("https://map.naver.com/p/directions/" + ctx.lng + "," + ctx.lat + ",내위치/" + q, "_blank");
+    }else{
+      window.open("https://map.naver.com/p/search/" + q, "_blank");
+    }
+  };
+  if(window.KRXA_DeviceContext){
+    window.KRXA_DeviceContext.openRouteTo = window.KRXA_openGoogleRoute;
+    window.KRXA_DeviceContext.openNaverRouteTo = window.KRXA_openNaverRoute;
+  }
 })();
+// ===== End KRXA Route Patch =====
