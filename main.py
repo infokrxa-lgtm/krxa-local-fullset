@@ -1750,3 +1750,29 @@ async def dev_requests_add(request: Request):
     data["requests"] = items[:300]
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "request": req}
+
+# ===== KRXA Travel GPS Time Place Sync v1 =====
+
+@app.get("/api/travel-context-state")
+def travel_context_state_get():
+    path = Path("storage/travel_context_state.json")
+    if not path.exists():
+        return {"version":"v1","mode":"auto","display":{"gps":"auto","date":"auto","time":"auto","place":"","language":"ko"},"internal":{"lat":"","lng":"","country":"","city":"","updatedAt":""},"control":{"allowOverride":False,"note":"default"}}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+@app.post("/api/travel-context-state/save")
+async def travel_context_state_save(request: Request):
+    body = await request.json()
+    path = Path("storage/travel_context_state.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "saved": True, "state": body}
+
+@app.get("/control/travel-context")
+def control_travel_context_page():
+    return HTMLResponse(Path("ui/control_travel_context.html").read_text(encoding="utf-8"))
+
+@app.get("/dev/travel-context")
+def dev_travel_context_page():
+    return HTMLResponse(Path("ui/dev_travel_context.html").read_text(encoding="utf-8"))
+# ===== End KRXA Travel GPS Time Place Sync v1 =====

@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "mode": "auto",
+  "display": {
+    "gps": "auto",
+    "date": "auto",
+    "time": "auto",
+    "place": "",
+    "language": "ko"
+  },
+  "internal": {
+    "lat": "",
+    "lng": "",
+    "country": "",
+    "city": "",
+    "updatedAt": ""
+  },
+  "control": {
+    "allowOverride": false,
+    "note": "USER 상단은 GPS/날짜/시간/ko 중심. place/country/city는 내부 참고값."
+  }
+}
