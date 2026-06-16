@@ -277,7 +277,7 @@ window.KRXA_Recommend.searchMarket = function (type) {
     "_blank"
   );
 };
-})();\n\n
+})();
 // ===== KRXA Route Patch: Google/Naver current location directions =====
 (function(){
   function getCtx(){ return window.KRXA_CONTEXT || {}; }

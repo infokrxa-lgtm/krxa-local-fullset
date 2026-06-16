@@ -17,6 +17,6 @@
   },
   "control": {
     "allowOverride": false,
-    "note": "USER 상단은 GPS/날짜/시간/ko 중심. place/country/city는 내부 참고값."
+    "note": "USER top status uses device GPS/date/time/ko automatically. place/country/city are internal reference values."
   }
 }
