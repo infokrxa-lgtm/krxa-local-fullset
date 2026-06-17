@@ -33,9 +33,9 @@
 
   function renderContextBar() {
     const ctx = window.KRXA_CONTEXT;
-    const el = document.getElementById("deviceContextBar");
+const els = document.querySelectorAll(".deviceContextBar, .krxaDeviceContextBar, #deviceContextBar");
 
-    if (!el) return;
+if (!els || !els.length) return;
 
     const locationText = ctx.gpsReady
       ? "위치 확인됨"
@@ -45,11 +45,15 @@
     const timeText = ctx.timeText || "";
     const langText = ctx.language || "ko";
 
-    el.innerText =
-      "📍 " + locationText +
-      " · " + dateText +
-      " · " + timeText +
-      " · " + langText;
+const text =
+  "📍 " + locationText +
+  " · " + dateText +
+  " · " + timeText +
+  " · " + langText;
+
+els.forEach(function (el) {
+  el.innerText = text;
+});
   }
 
   function requestLocationPermission() {
