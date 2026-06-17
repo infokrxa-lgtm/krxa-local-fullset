@@ -1,4 +1,4 @@
-/* KRXA Travel V1 - Device Context Engine */
+﻿/* KRXA Travel V1 - Device Context Engine */
 
  (function () { window.KRXA_CONTEXT = {
     dateText: "",
@@ -306,3 +306,4 @@ initDeviceContext();
   }
 })();
 // ===== End KRXA Route Patch =====
+
