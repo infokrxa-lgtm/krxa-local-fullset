@@ -644,7 +644,6 @@ window.KRXA_Recommend.loadMapDbHeroItems = async function loadMapDbHeroItems() {
     return false;
   }
 }
-catch (e) {
     console.log("KRXA Map DB hero load failed", e);
   }
   return false;
