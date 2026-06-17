@@ -638,16 +638,12 @@ window.KRXA_Recommend.loadMapDbHeroItems = async function loadMapDbHeroItems() {
       return true;
     }
 
-    return false;
+ return false;
   } catch (e) {
     console.log("KRXA Map DB not ready yet", e);
     return false;
   }
 }
-    console.log("KRXA Map DB hero load failed", e);
-  }
-  return false;
-};
 
 window.KRXA_Recommend.renderMapDbHero = function () {
   const items = window.KRXA_Recommend.mapDbHeroItems || [];
