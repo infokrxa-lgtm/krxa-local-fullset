@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KRXA Travel Map Apps DEV</title>
+<style>
+body{font-family:Arial,sans-serif;background:#020617;margin:0;padding:20px;color:#e2e8f0}
+.card{background:#0f172a;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:12px}
+button{border:0;border-radius:10px;padding:9px 12px;margin:4px;background:#2563eb;color:white;font-weight:bold}
+.green{background:#16a34a}.red{background:#dc2626}
+input,textarea{width:100%;padding:10px;margin:4px 0;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0}
+pre{background:#000;color:#22c55e;padding:12px;border-radius:12px;overflow:auto}
+</style>
+</head>
+<body>
+<h2>DEV · 지도앱 코드/템플릿 검증</h2>
+<p>기존 DEV 구조는 유지하고 지도앱 search/dir URL 템플릿 검증만 추가합니다.</p>
+
+<div class="card">
+  <button onclick="load()">API 로드</button>
+  <button class="green" onclick="testUrls()">URL 테스트</button>
+</div>
+
+<div class="card">
+  <h3>테스트 입력</h3>
+  <input id="origin" value="37.5665,126.9780" placeholder="origin 예: lat,lng">
+  <input id="destination" value="서울역" placeholder="destination">
+  <input id="query" value="주변 맛집" placeholder="query">
+</div>
+
+<div class="card">
+  <h3>결과</h3>
+  <pre id="out"></pre>
+</div>
+
+<script>
+let state=null;
+async function load(){
+  const res=await fetch('/api/travel-map-apps');
+  const data=await res.json();
+  state=data.state || data;
+  document.getElementById('out').textContent=JSON.stringify(state,null,2);
+}
+function enc(v){return encodeURIComponent(v||'')}
+function build(tpl,vals){
+  let u=tpl||'';
+  Object.keys(vals).forEach(k=>{u=u.replaceAll('{'+k+'}',enc(vals[k]))});
+  return u;
+}
+function all(){
+  return ((state&&state.providers)||[]).concat((state&&state.user_providers)||[]);
+}
+function testUrls(){
+  if(!state){alert('먼저 로드');return;}
+  const origin=document.getElementById('origin').value;
+  const destination=document.getElementById('destination').value;
+  const query=document.getElementById('query').value;
+  let txt='';
+  all().forEach(p=>{
+    txt+='['+p.name+'] enabled='+p.enabled+'\n';
+    txt+='SEARCH: '+build(p.search_url,{query,origin,destination})+'\n';
+    txt+='DIR: '+build(p.dir_url,{query,origin,destination})+'\n\n';
+  });
+  document.getElementById('out').textContent=txt;
+}
+load();
+</script>
+</body>
+</html>

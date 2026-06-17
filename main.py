@@ -1776,3 +1776,65 @@ def control_travel_context_page():
 def dev_travel_context_page():
     return HTMLResponse(Path("ui/dev_travel_context.html").read_text(encoding="utf-8"))
 # ===== End KRXA Travel GPS Time Place Sync v1 =====
+
+
+# ===== KRXA Travel Map Apps API v1 =====
+from fastapi import Body
+import json as _krxa_json
+from pathlib import Path as _KRXAPath
+
+_KRXA_MAP_APPS_PATH = _KRXAPath("storage") / "travel_map_apps.json"
+
+def _krxa_default_map_apps():
+    return {
+        "version": "v1",
+        "default_provider": "google",
+        "providers": [
+            {
+                "id": "google",
+                "name": "Google Maps",
+                "enabled": True,
+                "locked": True,
+                "search_url": "https://www.google.com/maps/search/{query}",
+                "dir_url": "https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}"
+            }
+        ],
+        "user_providers": []
+    }
+
+def _krxa_load_map_apps():
+    _KRXA_MAP_APPS_PATH.parent.mkdir(exist_ok=True)
+    if not _KRXA_MAP_APPS_PATH.exists():
+        _KRXA_MAP_APPS_PATH.write_text(_krxa_json.dumps(_krxa_default_map_apps(), ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _krxa_json.loads(_KRXA_MAP_APPS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return _krxa_default_map_apps()
+
+def _krxa_save_map_apps(data):
+    _KRXA_MAP_APPS_PATH.parent.mkdir(exist_ok=True)
+    _KRXA_MAP_APPS_PATH.write_text(_krxa_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+@app.get("/api/travel-map-apps")
+async def api_travel_map_apps():
+    return {"ok": True, "state": _krxa_load_map_apps()}
+
+@app.post("/api/travel-map-apps/save")
+async def api_travel_map_apps_save(payload: dict = Body(...)):
+    if "providers" not in payload:
+        payload["providers"] = _krxa_default_map_apps()["providers"]
+    if "user_providers" not in payload:
+        payload["user_providers"] = []
+    if "default_provider" not in payload:
+        payload["default_provider"] = "google"
+    _krxa_save_map_apps(payload)
+    return {"ok": True, "state": payload}
+
+@app.get("/control/travel-map-apps")
+async def control_travel_map_apps():
+    return FileResponse("ui/control_travel_map_apps.html")
+
+@app.get("/dev/travel-map-apps")
+async def dev_travel_map_apps():
+    return FileResponse("ui/dev_travel_map_apps.html")
+# ===== End KRXA Travel Map Apps API v1 =====

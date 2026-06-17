@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "default_provider": "google",
+  "providers": [
+    {
+      "id": "google",
+      "name": "Google Maps",
+      "enabled": true,
+      "locked": true,
+      "search_url": "https://www.google.com/maps/search/{query}",
+      "dir_url": "https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}"
+    }
+  ],
+  "user_providers": []
+}

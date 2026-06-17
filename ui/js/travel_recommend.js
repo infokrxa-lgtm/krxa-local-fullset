@@ -26,13 +26,13 @@
   function openPlaceDir(place) {
     const q = placeKeyword(place);
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapDirections) {
-      window.KRXA_DeviceContext.openMapDirections(q);
+      (window.KRXA_MapApps && window.KRXA_MapApps.openDir ? window.KRXA_MapApps.openDir(q) : window.KRXA_DeviceContext.openMapDirections(q));
     }
   }
 
   function openPlaceSearch(keyword) {
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapSearch) {
-      window.KRXA_DeviceContext.openMapSearch(keyword || "nearby places");
+      (window.KRXA_MapApps && window.KRXA_MapApps.openSearch ? window.KRXA_MapApps.openSearch(keyword || "nearby places") : window.KRXA_DeviceContext.openMapSearch(keyword || "nearby places"));
     }
   }
 
@@ -181,7 +181,7 @@
       return;
     }
     if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.openMapDirections) {
-      window.KRXA_DeviceContext.openMapDirections(dest);
+      (window.KRXA_MapApps && window.KRXA_MapApps.openDir ? window.KRXA_MapApps.openDir(dest) : window.KRXA_DeviceContext.openMapDirections(dest));
     }
   };
 
@@ -290,5 +290,14 @@
       window.KRXA_Recommend.openPage2Card("shopping");
     }
   }, true);
+
+// KRXA Map Apps user manager entry
+window.KRXA_Recommend.openUserMapAppsManager = function () {
+  if (window.KRXA_MapApps && window.KRXA_MapApps.openUserMapManager) {
+    window.KRXA_MapApps.openUserMapManager();
+  } else {
+    alert("지도앱 관리 기능을 불러오지 못했습니다.");
+  }
+};
 
 })();

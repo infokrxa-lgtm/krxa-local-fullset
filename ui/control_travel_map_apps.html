@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KRXA Travel Map Apps Control</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px;color:#0f172a}
+.card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+button{border:0;border-radius:10px;padding:9px 12px;margin:4px;background:#2563eb;color:white;font-weight:bold}
+.red{background:#dc2626}.green{background:#16a34a}.gray{background:#64748b}
+input{width:100%;padding:10px;margin:4px 0;border:1px solid #cbd5e1;border-radius:10px}
+pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:12px;overflow:auto}
+</style>
+</head>
+<body>
+<h2>CONTROL · 지도앱 관리</h2>
+<p>기존 관제 구조는 유지하고 지도앱 승인/보류/ON-OFF/삭제만 관리합니다.</p>
+
+<div class="card">
+  <button onclick="load()">새로고침</button>
+  <button class="green" onclick="save()">저장</button>
+</div>
+
+<div id="list"></div>
+
+<div class="card">
+  <h3>신규 지도앱 추가</h3>
+  <input id="name" placeholder="지도앱 이름">
+  <input id="search" placeholder="Search URL {query}">
+  <input id="dir" placeholder="Dir URL {origin} {destination}">
+  <button class="green" onclick="addProvider()">추가</button>
+</div>
+
+<div class="card">
+  <h3>원본 JSON</h3>
+  <pre id="raw"></pre>
+</div>
+
+<script>
+let state=null;
+
+async function load(){
+  const res=await fetch('/api/travel-map-apps');
+  const data=await res.json();
+  state=data.state || data;
+  render();
+}
+function all(){
+  return (state.providers||[]).concat(state.user_providers||[]);
+}
+function render(){
+  const box=document.getElementById('list');
+  box.innerHTML='';
+  all().forEach(p=>{
+    const div=document.createElement('div');
+    div.className='card';
+    div.innerHTML=
+      '<h3>'+p.name+' ('+p.id+')</h3>'+
+      '<p>enabled: '+(p.enabled!==false)+' / locked: '+!!p.locked+'</p>'+
+      '<p>search: '+(p.search_url||'')+'</p>'+
+      '<p>dir: '+(p.dir_url||'')+'</p>'+
+      '<button onclick="toggle(\''+p.id+'\')">ON/OFF</button>'+
+      (p.locked?'':'<button class="red" onclick="del(\''+p.id+'\')">삭제</button>');
+    box.appendChild(div);
+  });
+  document.getElementById('raw').textContent=JSON.stringify(state,null,2);
+}
+function findProvider(id){
+  let p=(state.providers||[]).find(x=>x.id===id);
+  if(p) return p;
+  return (state.user_providers||[]).find(x=>x.id===id);
+}
+function toggle(id){
+  const p=findProvider(id);
+  if(!p) return;
+  if(p.locked && p.id==='google'){ alert('Google 기본맵은 OFF 권장하지 않습니다.'); return; }
+  p.enabled=p.enabled===false?true:false;
+  render();
+}
+function del(id){
+  state.user_providers=(state.user_providers||[]).filter(p=>p.id!==id);
+  render();
+}
+function addProvider(){
+  const name=document.getElementById('name').value.trim();
+  const search=document.getElementById('search').value.trim();
+  const dir=document.getElementById('dir').value.trim();
+  if(!name||!search||!dir){alert('모두 입력하세요');return;}
+  state.user_providers=state.user_providers||[];
+  state.user_providers.push({id:'control_'+Date.now(),name,enabled:true,locked:false,status:'control',search_url:search,dir_url:dir});
+  render();
+}
+async function save(){
+  const res=await fetch('/api/travel-map-apps/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
+  const data=await res.json();
+  alert(data.ok?'저장 완료':'저장 실패');
+}
+load();
+</script>
+</body>
+</html>
