@@ -1,0 +1,77 @@
+Windows 볼륨에 대한 폴더 경로의 목록입니다.
+볼륨 일련 번호가 0000001D E4DD:01E8입니다.
+C:.
+│  .env
+│  .gitignore
+│  add_travel_ui_patch.py
+│  config.json
+│  KRXA_TRAVEL_V1_GO.bat
+│  krxa_tree.txt
+│  krxa_voice.py
+│  main.py
+│  render.yaml
+│  requirements.txt
+│  run_local.bat
+│  setup_local_fullset.bat
+│  test_check.py
+│  
+├─core
+│  │  krxa_autoloop.py
+│  │  krxa_engine.py
+│  │  krxa_language.py
+│  │  krxa_learning.py
+│  │  krxa_links.py
+│  │  krxa_router.py
+│  │  krxa_store.py
+│  │  krxa_translate.py
+│  │  krxa_travel.py
+│  │  krxa_turn.py
+│  │  krxa_utterance.py
+│  │  krxa_vad.py
+│  │  krxa_voice.py
+│  │  
+│  └─__pycache__
+│          krxa_autoloop.cpython-314.pyc
+│          krxa_engine.cpython-314.pyc
+│          krxa_language.cpython-314.pyc
+│          krxa_learning.cpython-314.pyc
+│          krxa_links.cpython-314.pyc
+│          krxa_router.cpython-314.pyc
+│          krxa_store.cpython-314.pyc
+│          krxa_translate.cpython-314.pyc
+│          krxa_travel.cpython-314.pyc
+│          krxa_turn.cpython-314.pyc
+│          krxa_vad.cpython-314.pyc
+│          krxa_voice.cpython-314.pyc
+│          
+├─logs
+├─storage
+│  │  auto_programming_events.json
+│  │  flow_signal_config.json
+│  │  krxa_logs.json
+│  │  travel_links_config.json
+│  │  turn_config.json
+│  │  voice_filter_config.json
+│  │  
+│  └─history
+│          history.json
+│          
+├─ui
+│  │  app.html
+│  │  control.html
+│  │  dev.html
+│  │  manifest.json
+│  │  service-worker.js
+│  │  test_voice.html
+│  │  user.html
+│  │  
+│  ├─assets
+│  └─js
+│          m2m_translate.js
+│          travel_context.js
+│          travel_engine.js
+│          user_links.js
+│          
+└─__pycache__
+        main.cpython-314.pyc
+        

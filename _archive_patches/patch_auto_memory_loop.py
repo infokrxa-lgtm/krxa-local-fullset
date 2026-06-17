@@ -1,0 +1,31 @@
+from pathlib import Path
+import json
+
+p = Path("storage/krxai_memory_loop.json")
+p.parent.mkdir(exist_ok=True)
+
+data = {
+  "name": "KRXAI Auto Memory Loop v01",
+  "mode": "auto_execution_loop",
+  "project": "Travel V1",
+  "principle": "사용/오류/수정/결과를 관제 보고 없이 자동 저장하고 다음 개선에 반영한다.",
+  "events": [
+    {
+      "type": "system_start",
+      "title": "KRXAI 자동실행 기억 루프 시작",
+      "status": "active",
+      "next_action": "통역 사용/오류/개선 이벤트 자동 저장 연결"
+    }
+  ],
+  "auto_rules": {
+    "save_translate_result": True,
+    "save_stt_fail": True,
+    "save_ui_error": True,
+    "save_fix_result": True,
+    "generate_next_candidate": True
+  },
+  "next_action": "m2m_translate.js에서 STT/번역/오류 이벤트를 자동 저장"
+}
+
+p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+print("KRXAI auto memory loop created")

@@ -1,0 +1,101 @@
+Windows 볼륨에 대한 폴더 경로의 목록입니다.
+볼륨 일련 번호가 000000D2 E4DD:01E8입니다.
+C:.
+|   .env
+|   .gitignore
+|   add_travel_ui_patch.py
+|   config.json
+|   KRXA_TRAVEL_V1_GO.bat
+|   krxa_tree.txt
+|   krxa_voice.py
+|   main.py
+|   make_m2m_fixed.py
+|   render.yaml
+|   requirements.txt
+|   run_local.bat
+|   setup_local_fullset.bat
+|   structure_after_archive.txt
+|   test_check.py
+|   
++---core
+|   |   krxa_autoloop.py
+|   |   krxa_engine.py
+|   |   krxa_language.py
+|   |   krxa_learning.py
+|   |   krxa_links.py
+|   |   krxa_router.py
+|   |   krxa_store.py
+|   |   krxa_translate.py
+|   |   krxa_travel.py
+|   |   krxa_turn.py
+|   |   krxa_utterance.py
+|   |   krxa_vad.py
+|   |   krxa_voice.py
+|   |   
+|   \---__pycache__
+|           krxa_autoloop.cpython-314.pyc
+|           krxa_engine.cpython-314.pyc
+|           krxa_language.cpython-314.pyc
+|           krxa_learning.cpython-314.pyc
+|           krxa_links.cpython-314.pyc
+|           krxa_router.cpython-314.pyc
+|           krxa_store.cpython-314.pyc
+|           krxa_translate.cpython-314.pyc
+|           krxa_travel.cpython-314.pyc
+|           krxa_turn.cpython-314.pyc
+|           krxa_vad.cpython-314.pyc
+|           krxa_voice.cpython-314.pyc
+|           
++---logs
++---storage
+|   |   auto_programming_events.json
+|   |   flow_signal_config.json
+|   |   krxai_memory_loop.json
+|   |   krxa_logs.json
+|   |   travel_links_config.json
+|   |   turn_config.json
+|   |   voice_filter_config.json
+|   |   
+|   \---history
+|           history.json
+|           
++---ui
+|   |   app.html
+|   |   control.html
+|   |   dev.html
+|   |   manifest.json
+|   |   service-worker.js
+|   |   test_voice.html
+|   |   tv.html
+|   |   user.html
+|   |   
+|   +---assets
+|   \---js
+|           m2m_translate.js
+|           m2m_translate_before_fix_encoding.js
+|           travel_context.js
+|           travel_engine.js
+|           user_links.js
+|           
++---_archive_patches
+|   |   patch_app_7pages.py
+|   |   patch_auto_memory_loop.py
+|   |   patch_control_dev_memory_loop.py
+|   |   patch_m2m_auto_memory.py
+|   |   patch_m2m_listen_modes.py
+|   |   patch_memory_loop_report.py
+|   |   patch_mic_global.py
+|   |   patch_tv_card.py
+|   |   patch_tv_card_v2.py
+|   |   patch_tv_card_v3.py
+|   |   structure.txt
+|   |   
+|   \---ui_backups
+|           app_backup_before_7pages.html
+|           m2m_translate_backup_before_auto_fix.js
+|           m2m_translate_backup_keep_auto_text.js
+|           m2m_translate_backup_mic_session.js
+|           
+\---__pycache__
+        main.cpython-314.pyc
+        
