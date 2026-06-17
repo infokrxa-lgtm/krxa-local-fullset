@@ -1,7 +1,6 @@
 /* KRXA Travel V1 - Device Context Engine */
 
-(function () {
-  window.KRXA_CONTEXT = {
+ (function () { window.KRXA_CONTEXT = {
     dateText: "",
     timeText: "",
     locale: navigator.language || "unknown",
@@ -9,6 +8,7 @@
     lat: "",
     lng: "",
     gpsReady: false,
+
     gpsStatus: "위치 확인 중",
     online: navigator.onLine,
     updatedAt: ""
@@ -63,7 +63,7 @@
         window.KRXA_CONTEXT.lat = pos.coords.latitude;
         window.KRXA_CONTEXT.lng = pos.coords.longitude;
         window.KRXA_CONTEXT.gpsReady = true;
-        window.KRXA_CONTEXT.gpsStatus = "위치 확인됨";
+       window.KRXA_CONTEXT.gpsStatus = "위치 확인됨";
         renderContextBar();
         alert("위치 확인이 완료되었습니다.");
       },
@@ -217,25 +217,21 @@ function openMyLocationMap() {
   }
 
 window.KRXA_DeviceContext = {
-  init: initDeviceContext,
-  get: getContextForApi,
-  render: renderContextBar,
+    init: initDeviceContext,
+    get: getContextForApi,
+    render: renderContextBar,
 
-  requestLocationPermission: requestLocationPermission,
-
-  openLocationSearch: openLocationSearch,
-
-  openMyLocationMap: openMyLocationMap,
-
-  openMapRouter: openMapRouter,
-
-  openRouteTo: openRouteTo,
-
-  buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
-
-  buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
+    requestLocationPermission: requestLocationPermission,
+    openLocationSearch: openLocationSearch,
+    openMyLocationMap: openMyLocationMap,
+    openMapRouter: openMapRouter,
+    openRouteTo: openRouteTo,
+    buildGoogleMapsSearchUrl: buildGoogleMapsSearchUrl,
+    buildGoogleMapsRouteUrl: buildGoogleMapsRouteUrl
 };
-window.KRXA_Recommend.openMarketResearchV1 = function () {
+
+window.KRXA_Recommend = window.KRXA_Recommend || {};
+window.KRXA_Recommend.openMarketResearchV1 = function() {
   const html =
     "<p><b>GPS 기반 현실 시장조사 추천 v1</b></p>" +
     "<p>TV·유튜브·먹방·뉴스·리뷰·별점·지도 검색을 기준으로 후보를 찾습니다.</p>" +
@@ -277,6 +273,7 @@ window.KRXA_Recommend.searchMarket = function (type) {
     "_blank"
   );
 };
+initDeviceContext();
 })();
 // ===== KRXA Route Patch: Google/Naver current location directions =====
 (function(){
