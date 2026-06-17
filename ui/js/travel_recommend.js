@@ -620,7 +620,7 @@ window.KRXA_Recommend.openMapHubForKeyword = function (keyword) {
 window.KRXA_Recommend.mapDbHeroItems = [];
 window.KRXA_Recommend.currentMapDbHeroIndex = 0;
 
-window.KRXA_Recommend.loadMapDbHeroItems = async function loadMapDbHeroItems() {
+// window.KRXA_Recommend.loadMapDbHeroItems = async function loadMapDbHeroItems() {
   try {
     const res = await fetch("/api/krxa-map-places");
 
