@@ -620,9 +620,15 @@ window.KRXA_Recommend.openMapHubForKeyword = function (keyword) {
 window.KRXA_Recommend.mapDbHeroItems = [];
 window.KRXA_Recommend.currentMapDbHeroIndex = 0;
 
-window.KRXA_Recommend.loadMapDbHeroItems = async function () {
+window.KRXA_Recommend.loadMapDbHeroItems = async function loadMapDbHeroItems() {
   try {
     const res = await fetch("/api/krxa-map-places");
+
+    if (!res.ok) {
+      console.log("KRXA Map DB API not ready:", res.status);
+      return false;
+    }
+
     const data = await res.json();
 
     if (data.ok && data.items && data.items.length) {
@@ -631,7 +637,14 @@ window.KRXA_Recommend.loadMapDbHeroItems = async function () {
       window.KRXA_Recommend.renderMapDbHero();
       return true;
     }
+
+    return false;
   } catch (e) {
+    console.log("KRXA Map DB not ready yet", e);
+    return false;
+  }
+}
+catch (e) {
     console.log("KRXA Map DB hero load failed", e);
   }
   return false;
