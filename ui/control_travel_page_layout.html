@@ -69,9 +69,10 @@ function renderPages(){
   document.getElementById('raw').textContent=JSON.stringify(cfg,null,2);
 }
 
-function togglePage(i){
+async function togglePage(i){
   cfg.pages[i].enabled = cfg.pages[i].enabled===false ? true : false;
   renderPages();
+  await save();
 }
 
 async function save(){
