@@ -1849,3 +1849,48 @@ async def control_travel_user_bridge():
 async def dev_travel_user_bridge():
     return FileResponse("ui/dev_travel_user_bridge.html")
 # ===== End KRXA Travel User Control Dev Bridge v1 =====
+
+
+# ===== KRXA Travel UI Config API v1 =====
+from fastapi import Body as _KRXA_Body
+import json as _krxa_ui_json
+from pathlib import Path as _KRXA_UI_Path
+
+_KRXA_TRAVEL_UI_CONFIG_PATH = _KRXA_UI_Path("storage") / "travel_ui_config.json"
+
+def _krxa_travel_ui_default_config():
+    return {
+        "version": "v1",
+        "pages": []
+    }
+
+def _krxa_load_travel_ui_config():
+    _KRXA_TRAVEL_UI_CONFIG_PATH.parent.mkdir(exist_ok=True)
+    if not _KRXA_TRAVEL_UI_CONFIG_PATH.exists():
+        _KRXA_TRAVEL_UI_CONFIG_PATH.write_text(
+            _krxa_ui_json.dumps(_krxa_travel_ui_default_config(), ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    try:
+        return _krxa_ui_json.loads(_KRXA_TRAVEL_UI_CONFIG_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return _krxa_travel_ui_default_config()
+
+def _krxa_save_travel_ui_config(config):
+    _KRXA_TRAVEL_UI_CONFIG_PATH.parent.mkdir(exist_ok=True)
+    _KRXA_TRAVEL_UI_CONFIG_PATH.write_text(
+        _krxa_ui_json.dumps(config, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+@app.get("/api/travel-ui-config")
+async def api_travel_ui_config():
+    return {"ok": True, "config": _krxa_load_travel_ui_config()}
+
+@app.post("/api/travel-ui-config/save")
+async def api_travel_ui_config_save(payload: dict = _KRXA_Body(...)):
+    if "pages" not in payload:
+        payload["pages"] = []
+    _krxa_save_travel_ui_config(payload)
+    return {"ok": True, "config": payload}
+# ===== End KRXA Travel UI Config API v1 =====
