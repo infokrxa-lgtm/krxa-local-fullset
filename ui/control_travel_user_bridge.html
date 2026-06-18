@@ -2,57 +2,70 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA Travel USER ↔ CONTROL Bridge</title>
+<title>KRXA Travel CONTROL · Page Actions</title>
 <style>
 body{font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:18px;color:#0f172a}
-h2{margin-top:0}.card{background:white;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.card{background:white;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .head{cursor:pointer;font-weight:800;padding:10px;border-radius:12px;background:#e2e8f0}
 .body{display:none;padding:10px 4px}
 button,a.btn{display:block;text-decoration:none;text-align:center;border:0;border-radius:10px;padding:10px;margin:8px 0;background:#2563eb;color:white;font-weight:700}
-.green{background:#16a34a!important}.gray{background:#64748b!important}
+.green{background:#16a34a!important}.red{background:#dc2626!important}.gray{background:#64748b!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 </style>
 </head>
 <body>
-<h2>CONTROL · USER 1~8페이지 연결 관리</h2>
-<p>기존 관제 구조는 유지하고, 사용자 1~8페이지 상태/연결 관리만 얹습니다. 한 번 클릭 열림, 다시 클릭 닫힘.</p>
+<h2>CONTROL · USER 1~8페이지 관리</h2>
+<p>USER는 이용, CONTROL은 신규/수정/삭제/ON-OFF 관리. 기존 사용자 UI는 변경하지 않습니다.</p>
 
 <div id="wrap"></div>
 
 <script>
 const pages=[
- ["1페이지 홈/Hero","/travel-v1","허영만/추천 Hero, GPS 상단, 기본 진입"],
- ["2페이지 실행허브","/travel-v1","회전 추천, 여행 실행 허브"],
- ["3페이지 서비스카드","/travel-v1","공항/호텔/식당/교통/길찾기/관광/쇼핑/음악/TV/통화/사진/동영상"],
- ["4페이지 말대말","/travel-v1","통역/대화 엔진 연결"],
- ["5페이지 기록/히스토리","/travel-v1","사용자 흐름 기록"],
- ["6페이지 즐겨찾기","/travel-v1","사용자 등록/삭제 흐름"],
- ["7페이지 SOS","/travel-v1","긴급/현지 도움"],
- ["8페이지 설정","/travel-v1","사용자 설정/사이트 관리"]
+ ["1페이지 Hero/추천","추천관리","Hero·추천 장소·지도보기·DIR/SEARCH"],
+ ["2페이지 실행허브","허브관리","회전 추천·GPS·시장추천·교통허브"],
+ ["3페이지 서비스카드","서비스관리","호텔·식당·길찾기·관광·쇼핑·TV·음악"],
+ ["4페이지 말대말","통역관리","음성·번역·대화흐름"],
+ ["5페이지 기록","기록관리","히스토리·저장·재입력"],
+ ["6페이지 즐겨찾기","즐겨찾기관리","사용자 등록·삭제·ON/OFF"],
+ ["7페이지 SOS","SOS관리","긴급·현지 도움·연락"],
+ ["8페이지 설정","설정관리","지도앱·사이트·사용자 설정"]
 ];
 
-function card(title,url,desc,i){
- const id="p"+i;
- return `<div class="card">
-   <div class="head" onclick="toggle('${id}')">${title}</div>
-   <div class="body" id="${id}">
-     <p>${desc}</p>
-     <a class="btn green" target="_blank" href="${url}">사용자 화면 열기</a>
-     <a class="btn" target="_blank" href="/control/travel-map-apps">지도앱 관리</a>
-     <button class="gray" onclick="alert('관제 체크: ${title}')">상태 체크</button>
-   </div>
- </div>`;
-}
 function toggle(id){
  const el=document.getElementById(id);
  el.style.display = el.style.display==="block" ? "none" : "block";
 }
+
+function action(page, kind){
+ alert(page + " / CONTROL " + kind + " 기능 연결 예정");
+}
+
+function card(p,i){
+ const id="p"+i;
+ return `<div class="card">
+  <div class="head" onclick="toggle('${id}')">${p[0]} · ${p[1]}</div>
+  <div class="body" id="${id}">
+    <p>${p[2]}</p>
+    <a class="btn green" target="_blank" href="/travel-v1">USER 화면 확인</a>
+    <div class="grid">
+      <button onclick="action('${p[0]}','신규')">신규</button>
+      <button onclick="action('${p[0]}','수정')">수정</button>
+      <button class="red" onclick="action('${p[0]}','삭제')">삭제</button>
+      <button class="gray" onclick="action('${p[0]}','ON/OFF')">ON/OFF</button>
+    </div>
+    <a class="btn" target="_blank" href="/control/travel-map-apps">지도앱 관리</a>
+    <a class="btn" target="_blank" href="/dev/travel-user-bridge">DEV 연결 보기</a>
+  </div>
+ </div>`;
+}
+
 document.getElementById("wrap").innerHTML =
- pages.map((p,i)=>card(p[0],p[1],p[2],i)).join("") +
+ pages.map((p,i)=>card(p,i)).join("") +
  `<div class="card">
-   <div class="head" onclick="toggle('map')">지도앱 관리 / 승인</div>
+   <div class="head" onclick="toggle('map')">공통 지도앱 관리</div>
    <div class="body" id="map">
-     <a class="btn green" target="_blank" href="/control/travel-map-apps">CONTROL 지도앱 관리 열기</a>
-     <a class="btn" target="_blank" href="/api/travel-map-apps">API 상태 확인</a>
+    <a class="btn green" target="_blank" href="/control/travel-map-apps">지도앱 신규/수정/삭제/ON-OFF</a>
+    <a class="btn" target="_blank" href="/api/travel-map-apps">API 상태 확인</a>
    </div>
  </div>`;
 </script>
