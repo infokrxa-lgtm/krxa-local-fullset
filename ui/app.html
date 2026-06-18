@@ -416,6 +416,7 @@
 <script src="/ui/js/hero_recommend.js"></script>
 <script src="/ui/js/user_links.js"></script>
 <script src="/ui/js/travel_engine.js"></script>
+<script src="/ui/js/travel_page_layout.js"></script>
 <script src="/ui/js/travel_ui_config.js"></script>
 <script src="/ui/js/travel_map_apps.js"></script>
 <script src="/ui/js/travel_recommend.js"></script>
@@ -425,7 +426,7 @@
 
 <script>
 (function(){
-  let currentPage=0,totalPages=7,startX=0,currentCategory="airport";
+  let currentPage=0,totalPages=8,startX=0,currentCategory="airport";
   const order=["airport","hotel","food","taxi","route","tour","shopping","music"];
 
   function render(){
@@ -440,6 +441,11 @@
   }
 
   function goPage(i){currentPage=(i+totalPages)%totalPages;render()}
+  window.KRXA_SET_TOTAL_PAGES=function(n){
+    totalPages=Number(n||8);
+    if(currentPage>=totalPages) currentPage=totalPages-1;
+    render();
+  }
   function nextPage(){goPage(currentPage+1)}
   function prevPage(){goPage(currentPage-1)}
 

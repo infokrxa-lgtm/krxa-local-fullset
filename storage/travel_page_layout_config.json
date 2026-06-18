@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "page_count": 8,
+  "page_width_percent": 800,
+  "current_default_page": 0,
+  "pages": [
+    {
+      "index": 0,
+      "title": "사용자 UI 1",
+      "enabled": true
+    },
+    {
+      "index": 1,
+      "title": "사용자 UI 2",
+      "enabled": true
+    },
+    {
+      "index": 2,
+      "title": "사용자 UI 3",
+      "enabled": true
+    },
+    {
+      "index": 3,
+      "title": "사용자 UI 4",
+      "enabled": true
+    },
+    {
+      "index": 4,
+      "title": "사용자 UI 5",
+      "enabled": true
+    },
+    {
+      "index": 5,
+      "title": "사용자 UI 6",
+      "enabled": true
+    },
+    {
+      "index": 6,
+      "title": "사용자 UI 7",
+      "enabled": true
+    },
+    {
+      "index": 7,
+      "title": "사용자 UI 8",
+      "enabled": true
+    }
+  ]
+}

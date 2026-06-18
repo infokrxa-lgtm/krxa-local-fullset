@@ -1894,3 +1894,72 @@ async def api_travel_ui_config_save(payload: dict = _KRXA_Body(...)):
     _krxa_save_travel_ui_config(payload)
     return {"ok": True, "config": payload}
 # ===== End KRXA Travel UI Config API v1 =====
+
+
+# ===== KRXA Travel Page Layout API v1 =====
+from fastapi import Body as _KRXA_LAYOUT_BODY
+import json as _krxa_layout_json
+from pathlib import Path as _KRXA_LAYOUT_Path
+
+_KRXA_PAGE_LAYOUT_PATH = _KRXA_LAYOUT_Path("storage") / "travel_page_layout_config.json"
+
+def _krxa_default_page_layout():
+    return {
+        "version": "v1",
+        "page_count": 8,
+        "page_width_percent": 800,
+        "current_default_page": 0,
+        "pages": [
+            {"index": 0, "title": "사용자 UI 1", "enabled": True},
+            {"index": 1, "title": "사용자 UI 2", "enabled": True},
+            {"index": 2, "title": "사용자 UI 3", "enabled": True},
+            {"index": 3, "title": "사용자 UI 4", "enabled": True},
+            {"index": 4, "title": "사용자 UI 5", "enabled": True},
+            {"index": 5, "title": "사용자 UI 6", "enabled": True},
+            {"index": 6, "title": "사용자 UI 7", "enabled": True},
+            {"index": 7, "title": "사용자 UI 8", "enabled": True}
+        ]
+    }
+
+def _krxa_load_page_layout():
+    _KRXA_PAGE_LAYOUT_PATH.parent.mkdir(exist_ok=True)
+    if not _KRXA_PAGE_LAYOUT_PATH.exists():
+        _KRXA_PAGE_LAYOUT_PATH.write_text(
+            _krxa_layout_json.dumps(_krxa_default_page_layout(), ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    try:
+        return _krxa_layout_json.loads(_KRXA_PAGE_LAYOUT_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return _krxa_default_page_layout()
+
+def _krxa_save_page_layout(config):
+    _KRXA_PAGE_LAYOUT_PATH.parent.mkdir(exist_ok=True)
+    _KRXA_PAGE_LAYOUT_PATH.write_text(
+        _krxa_layout_json.dumps(config, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+@app.get("/api/travel-page-layout-config")
+async def api_travel_page_layout_config():
+    return {"ok": True, "config": _krxa_load_page_layout()}
+
+@app.post("/api/travel-page-layout-config/save")
+async def api_travel_page_layout_config_save(payload: dict = _KRXA_LAYOUT_BODY(...)):
+    if "page_count" not in payload:
+        payload["page_count"] = 8
+    if "page_width_percent" not in payload:
+        payload["page_width_percent"] = int(payload["page_count"]) * 100
+    if "pages" not in payload:
+        payload["pages"] = _krxa_default_page_layout()["pages"]
+    _krxa_save_page_layout(payload)
+    return {"ok": True, "config": payload}
+
+@app.get("/control/travel-page-layout")
+async def control_travel_page_layout():
+    return FileResponse("ui/control_travel_page_layout.html")
+
+@app.get("/dev/travel-page-layout")
+async def dev_travel_page_layout():
+    return FileResponse("ui/dev_travel_page_layout.html")
+# ===== End KRXA Travel Page Layout API v1 =====

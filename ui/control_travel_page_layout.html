@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>CONTROL · 페이지 수/레이아웃 관리</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f8fafc;color:#0f172a;margin:0;padding:20px}
+.card{background:#fff;border:1px solid #cbd5e1;border-radius:16px;padding:16px;margin:12px 0}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;margin:6px 0;background:#f8fafc;color:#0f172a}
+button{border:0;border-radius:10px;padding:10px;margin:4px;background:#2563eb;color:white;font-weight:bold}
+.green{background:#16a34a}.red{background:#dc2626}.gray{background:#64748b}
+pre{white-space:pre-wrap;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:12px}
+.row{display:grid;grid-template-columns:60px 1fr 100px;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+<h2>CONTROL · 페이지 수/레이아웃 관리</h2>
+<p>DEV 수정 → CONFIG 저장 → CONTROL 확인/조정 → USER UI 반영 흐름 검증용입니다.</p>
+
+<div class="card">
+  <button onclick="load()">새로고침</button>
+  <button class="green" onclick="save()">저장</button>
+  <a href="/travel-v1" target="_blank"><button>USER 확인</button></a>
+</div>
+
+<div class="card">
+  <h3>전체 설정</h3>
+  <label>페이지 수</label>
+  <input id="page_count" type="number" min="1" max="12">
+  <label>전체 폭 %</label>
+  <input id="page_width_percent" type="number" min="100" max="1200">
+</div>
+
+<div class="card">
+  <h3>페이지 ON/OFF / 제목</h3>
+  <div id="pages"></div>
+</div>
+
+<div class="card">
+  <h3>JSON</h3>
+  <pre id="raw"></pre>
+</div>
+
+<script>
+let cfg=null;
+
+async function load(){
+  const res=await fetch('/api/travel-page-layout-config');
+  const data=await res.json();
+  cfg=data.config;
+  document.getElementById('page_count').value=cfg.page_count||8;
+  document.getElementById('page_width_percent').value=cfg.page_width_percent||800;
+  renderPages();
+}
+
+function renderPages(){
+  const box=document.getElementById('pages');
+  box.innerHTML='';
+  (cfg.pages||[]).forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.className='row';
+    div.innerHTML=`
+      <div>${p.index}</div>
+      <input value="${p.title||''}" onchange="cfg.pages[${i}].title=this.value">
+      <button class="${p.enabled===false?'red':'green'}" onclick="togglePage(${i})">${p.enabled===false?'OFF':'ON'}</button>
+    `;
+    box.appendChild(div);
+  });
+  document.getElementById('raw').textContent=JSON.stringify(cfg,null,2);
+}
+
+function togglePage(i){
+  cfg.pages[i].enabled = cfg.pages[i].enabled===false ? true : false;
+  renderPages();
+}
+
+async function save(){
+  cfg.page_count=Number(document.getElementById('page_count').value||8);
+  cfg.page_width_percent=Number(document.getElementById('page_width_percent').value||cfg.page_count*100);
+  const res=await fetch('/api/travel-page-layout-config/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(cfg)
+  });
+  const data=await res.json();
+  cfg=data.config;
+  renderPages();
+  alert('저장 완료. USER 화면 새로고침 후 반영됩니다.');
+}
+
+load();
+</script>
+</body>
+</html>
