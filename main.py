@@ -1963,3 +1963,52 @@ async def control_travel_page_layout():
 async def dev_travel_page_layout():
     return FileResponse("ui/dev_travel_page_layout.html")
 # ===== End KRXA Travel Page Layout API v1 =====
+
+
+# ===== KRXA Travel UI Components API v1 =====
+from fastapi import Body as _KRXA_COMP_BODY
+import json as _krxa_comp_json
+from pathlib import Path as _KRXA_COMP_Path
+
+_KRXA_UI_COMPONENTS_PATH = _KRXA_COMP_Path("storage") / "travel_ui_components.json"
+
+def _krxa_default_ui_components():
+    return {
+        "version": "v1",
+        "page1": {
+            "gps": True,
+            "hero": True,
+            "mic": True
+        }
+    }
+
+def _krxa_load_ui_components():
+    _KRXA_UI_COMPONENTS_PATH.parent.mkdir(exist_ok=True)
+    if not _KRXA_UI_COMPONENTS_PATH.exists():
+        _KRXA_UI_COMPONENTS_PATH.write_text(
+            _krxa_comp_json.dumps(_krxa_default_ui_components(), ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    try:
+        return _krxa_comp_json.loads(_KRXA_UI_COMPONENTS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return _krxa_default_ui_components()
+
+def _krxa_save_ui_components(config):
+    _KRXA_UI_COMPONENTS_PATH.parent.mkdir(exist_ok=True)
+    _KRXA_UI_COMPONENTS_PATH.write_text(
+        _krxa_comp_json.dumps(config, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+@app.get("/api/travel-ui-components")
+async def api_travel_ui_components():
+    return {"ok": True, "config": _krxa_load_ui_components()}
+
+@app.post("/api/travel-ui-components/save")
+async def api_travel_ui_components_save(payload: dict = _KRXA_COMP_BODY(...)):
+    if "page1" not in payload:
+        payload["page1"] = {"gps": True, "hero": True, "mic": True}
+    _krxa_save_ui_components(payload)
+    return {"ok": True, "config": payload}
+# ===== End KRXA Travel UI Components API v1 =====

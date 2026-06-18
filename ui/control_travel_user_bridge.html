@@ -178,5 +178,41 @@ function renderRaw(){
 
 loadConfig();
 </script>
+
+<div class="card">
+  <div class="pageHead" onclick="toggle('ui1live')">사용자 UI 1 · 실시간 반영 테스트</div>
+  <div class="children" id="ui1live" style="display:none;padding:10px">
+    <p>CONTROL에서 변경하면 USER /travel-v1에 3초 이내 반영됩니다.</p>
+    <button class="green" onclick="toggleComp('gps')">GPS ON/OFF</button>
+    <button onclick="toggleComp('hero')">HERO ON/OFF</button>
+    <button class="gray" onclick="toggleComp('mic')">미니말하기 ON/OFF</button>
+    <a target="_blank" href="/api/travel-ui-components">컴포넌트 API 확인</a>
+  </div>
+</div>
+
+<script>
+async function loadCompCfg(){
+  const res = await fetch('/api/travel-ui-components?ts=' + Date.now(), {cache:'no-store'});
+  const data = await res.json();
+  return data.config || {version:'v1', page1:{gps:true, hero:true, mic:true}};
+}
+
+async function saveCompCfg(cfg){
+  await fetch('/api/travel-ui-components/save', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(cfg)
+  });
+}
+
+async function toggleComp(key){
+  const cfg = await loadCompCfg();
+  cfg.page1 = cfg.page1 || {gps:true, hero:true, mic:true};
+  cfg.page1[key] = cfg.page1[key] === false ? true : false;
+  await saveCompCfg(cfg);
+  alert('USER UI 1 ' + key + ' = ' + (cfg.page1[key] ? 'ON' : 'OFF'));
+}
+</script>
+
 </body>
 </html>
