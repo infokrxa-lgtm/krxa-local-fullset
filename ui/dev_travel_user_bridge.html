@@ -2,74 +2,107 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA Travel DEV · Page Actions</title>
+<title>KRXA Travel DEV Final Tree</title>
 <style>
-body{font-family:Arial,sans-serif;background:#020617;margin:0;padding:18px;color:#e2e8f0}
-.card{background:#0f172a;border:1px solid #334155;border-radius:16px;padding:14px;margin:10px 0}
-.head{cursor:pointer;font-weight:800;padding:10px;border-radius:12px;background:#1e293b}
-.body{display:none;padding:10px 4px}
-button,a.btn{display:block;text-decoration:none;text-align:center;border:0;border-radius:10px;padding:10px;margin:8px 0;background:#2563eb;color:white;font-weight:700}
-.green{background:#16a34a!important}.red{background:#dc2626!important}.gray{background:#64748b!important}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-code{color:#93c5fd}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:#e2e8f0}
+.layout{display:grid;grid-template-columns:280px 1fr;height:100vh}
+.left{padding:18px;border-right:1px solid #334155;overflow:auto}
+.right{padding:22px;overflow:auto}
+h2{margin-top:0}
+.page{margin:8px 0;border:1px solid #334155;border-radius:14px;overflow:hidden}
+.pageHead{padding:12px;font-weight:900;background:#1e293b;cursor:pointer}
+.children{display:none;padding:8px;background:#0f172a}
+.child{padding:10px;margin:6px 0;border-radius:10px;background:#1e293b;cursor:pointer}
+.card{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:18px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+button,a{border:0;border-radius:12px;padding:12px;font-weight:800;color:white;background:#2563eb;text-decoration:none;text-align:center;cursor:pointer}
+.green{background:#16a34a}.red{background:#dc2626}.gray{background:#64748b}.yellow{background:#ca8a04}
+.work{display:none;margin-top:16px}
+input,textarea{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #334155;background:#020617;color:#e2e8f0}
 </style>
 </head>
 <body>
-<h2>DEV · USER 1~8페이지 코드/프로그램 관리</h2>
-<p>DEV는 코드/프로그램 신규·수정·삭제·ON-OFF 및 CONTROL 승인요청/보고를 담당합니다.</p>
+<div class="layout">
+  <div class="left">
+    <h2>DEV · 코드/프로그램 개발</h2>
+    <p>코드/프로그램 신규·수정·삭제·ON/OFF · CONTROL 승인요청/보고</p>
+    <div id="tree"></div>
+    <hr>
+    <a target="_blank" href="/travel-v1">USER 열기</a>
+    <a target="_blank" href="/control/travel-map-apps">지도관리</a>
+    <a target="_blank" href="/dev/travel-map-apps">DEV 지도검증</a>
+  </div>
+  <div class="right">
+    <div class="card">
+      <h2 id="selectedTitle">하위 기능을 선택하세요</h2>
+      <p id="selectedDesc">좌측에서 사용자 UI 페이지를 열고 하위 기능을 클릭하면 이곳에 표시됩니다.</p>
+    </div>
 
-<div id="wrap"></div>
+    <div class="card">
+      <h3>작업</h3>
+      <div class="grid">
+        <button class="green" onclick="openWork('신규')">신규</button>
+        <button onclick="openWork('수정')">수정</button>
+        <button class="yellow" onclick="openWork('취소')">취소</button>
+        <button class="gray" onclick="openWork('ON/OFF')">ON/OFF</button>
+        <button class="red" onclick="openWork('삭제')">삭제</button>
+        <button onclick="openWork('검증')">검증</button>
+        <button onclick="openWork('보고')">보고</button>
+        <button onclick="openWork('승인요청')">승인요청</button>
+      </div>
+    </div>
+
+    <div class="card work" id="workBox">
+      <h3 id="workTitle">작업창</h3>
+      <input id="workName" placeholder="작업명">
+      <textarea id="workMemo" rows="7" placeholder="수정/관리/개발 내용"></textarea>
+      <button class="green" onclick="saveWork()">저장</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const pages=[
- ["1페이지 Hero/추천","ui/js/travel_recommend.js","Hero·추천·DIR/SEARCH"],
- ["2페이지 실행허브","ui/app.html / ui/js/travel_recommend.js","회전 영역·교통허브"],
- ["3페이지 서비스카드","ui/app.html / ui/js/travel_recommend.js","호텔·식당·길찾기·관광·쇼핑"],
- ["4페이지 말대말","ui/js/m2m_translate.js","음성·번역·대화"],
- ["5페이지 기록","krxa_store.py / storage","히스토리·저장"],
- ["6페이지 즐겨찾기","storage / service links","등록·삭제·ON/OFF"],
- ["7페이지 SOS","ui/app.html / SOS config","긴급 연결"],
- ["8페이지 설정","ui/js/travel_map_apps.js / storage/travel_map_apps.json","지도앱·사용자 설정"]
-];
+const PAGES = [("사용자 UI 1", ["GPS", "Hero", "미니말하기"]), ("사용자 UI 2", ["홈", "맛집", "식당", "교통", "길찾기", "SOS", "미니말하기"]), ("사용자 UI 3", ["공항", "호텔", "식당", "교통", "길찾기", "관광", "쇼핑", "음악", "TV시청", "통화", "사진", "동영상"]), ("사용자 UI 4", ["쇼핑", "미니말하기"]), ("사용자 UI 5", ["말대말통역", "자동", "영어", "일본어", "중국어", "기타언어", "자동대화 ON/OFF", "마이크", "원문", "번역", "텍스트입력", "다시듣기", "말하기", "종료"]), ("사용자 UI 6", ["전화", "WhatsApp", "WeChat", "호텔전화", "식당전화", "택시전화", "전화번호입력란", "전화걸기", "연락처/메신저 등록삭제"]), ("사용자 UI 7", ["최근통역", "최근여행이용", "KRXA기억루프", "통역계속하기", "여행메뉴이동", "사용내역초기화"]), ("사용자 UI 8", ["SOS", "긴급연락", "현지 도움", "대사관", "경찰", "병원", "보험", "위치공유"])];
+let currentPage = "";
+let currentItem = "";
+
+function renderTree(){
+  const box = document.getElementById("tree");
+  box.innerHTML = PAGES.map((p,i)=>`
+    <div class="page">
+      <div class="pageHead" onclick="toggle('p${i}')">${p[0]}</div>
+      <div class="children" id="p${i}">
+        ${p[1].map(x=>`<div class="child" onclick="selectItem('${p[0]}','${x}')">${x}</div>`).join("")}
+      </div>
+    </div>
+  `).join("");
+}
 
 function toggle(id){
- const el=document.getElementById(id);
- el.style.display = el.style.display==="block" ? "none" : "block";
+  const el=document.getElementById(id);
+  el.style.display = el.style.display==="block" ? "none" : "block";
 }
 
-function action(page, kind){
- alert(page + " / DEV " + kind + " 기능 연결 예정");
+function selectItem(page,item){
+  currentPage = page;
+  currentItem = item;
+  document.getElementById("selectedTitle").innerText = page + " · " + item;
+  document.getElementById("selectedDesc").innerText =
+    "DEV 담당: " + item + " 기능을 신규/수정/취소/삭제/ON-OFF로 관리합니다.";
 }
 
-function card(p,i){
- const id="d"+i;
- return `<div class="card">
-  <div class="head" onclick="toggle('${id}')">${p[0]}</div>
-  <div class="body" id="${id}">
-    <p><code>${p[1]}</code></p>
-    <p>${p[2]}</p>
-    <div class="grid">
-      <button onclick="action('${p[0]}','신규 코드')">신규</button>
-      <button onclick="action('${p[0]}','수정 코드')">수정</button>
-      <button class="red" onclick="action('${p[0]}','삭제 코드')">삭제</button>
-      <button class="gray" onclick="action('${p[0]}','ON/OFF 코드')">ON/OFF</button>
-    </div>
-    <button class="green" onclick="action('${p[0]}','CONTROL 승인요청')">CONTROL 승인요청</button>
-    <button onclick="action('${p[0]}','개발 보고')">개발 보고</button>
-    <a class="btn" target="_blank" href="/dev/travel-map-apps">지도앱 코드/템플릿 검증</a>
-  </div>
- </div>`;
+function openWork(kind){
+  if(!currentItem){ alert("먼저 하위 기능을 선택하세요."); return; }
+  document.getElementById("workBox").style.display="block";
+  document.getElementById("workTitle").innerText = currentPage + " · " + currentItem + " · " + kind;
+  document.getElementById("workName").value = kind + " - " + currentItem;
 }
 
-document.getElementById("wrap").innerHTML =
- pages.map((p,i)=>card(p,i)).join("") +
- `<div class="card">
-   <div class="head" onclick="toggle('common')">공통 검증</div>
-   <div class="body" id="common">
-    <a class="btn green" target="_blank" href="/api/travel-map-apps">지도앱 API 확인</a>
-    <a class="btn" target="_blank" href="/control/travel-user-bridge">CONTROL 연결 확인</a>
-   </div>
- </div>`;
+function saveWork(){
+  alert("저장 예정: " + document.getElementById("workTitle").innerText);
+}
+
+renderTree();
 </script>
 </body>
 </html>
