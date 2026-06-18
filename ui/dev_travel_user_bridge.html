@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KRXA Travel USER ↔ DEV Bridge</title>
+<style>
+body{font-family:Arial,sans-serif;background:#020617;margin:0;padding:18px;color:#e2e8f0}
+h2{margin-top:0}.card{background:#0f172a;border:1px solid #334155;border-radius:16px;padding:14px;margin:10px 0}
+.head{cursor:pointer;font-weight:800;padding:10px;border-radius:12px;background:#1e293b}
+.body{display:none;padding:10px 4px}
+button,a.btn{display:block;text-decoration:none;text-align:center;border:0;border-radius:10px;padding:10px;margin:8px 0;background:#2563eb;color:white;font-weight:700}
+.green{background:#16a34a!important}.red{background:#dc2626!important}
+code{color:#93c5fd}
+</style>
+</head>
+<body>
+<h2>DEV · USER 1~8페이지 코드/프로그램 연결</h2>
+<p>기존 DEV 구조는 유지하고, 사용자 페이지별 코드·API·지도앱 검증 연결만 얹습니다.</p>
+
+<div id="wrap"></div>
+
+<script>
+const items=[
+ ["USER 1~8페이지 UI","ui/app.html","사용자 화면 전체 구조"],
+ ["GPS/날짜/시간/장소","ui/js/travel_context.js","KRXA_CONTEXT / deviceContextBar"],
+ ["추천/장소/교통","ui/js/travel_recommend.js","추천 리스트, DIR/SEARCH 연결"],
+ ["지도앱 Provider","ui/js/travel_map_apps.js","Google 기본 + 사용자 등록 지도앱"],
+ ["지도앱 저장소","storage/travel_map_apps.json","providers / user_providers"],
+ ["CONTROL 지도관리","ui/control_travel_map_apps.html","승인/삭제/ON-OFF"],
+ ["DEV 지도검증","ui/dev_travel_map_apps.html","URL 템플릿 검증"],
+ ["main API","main.py","/api/travel-map-apps 등"]
+];
+
+function card(title,file,desc,i){
+ const id="d"+i;
+ return `<div class="card">
+   <div class="head" onclick="toggle('${id}')">${title}</div>
+   <div class="body" id="${id}">
+     <p>${desc}</p>
+     <p><code>${file}</code></p>
+     <button class="green" onclick="alert('검증 대상: ${file}')">검증</button>
+     <a class="btn" target="_blank" href="/dev/travel-map-apps">지도앱 DEV 검증창</a>
+     <a class="btn" target="_blank" href="/api/travel-map-apps">API 확인</a>
+   </div>
+ </div>`;
+}
+function toggle(id){
+ const el=document.getElementById(id);
+ el.style.display = el.style.display==="block" ? "none" : "block";
+}
+document.getElementById("wrap").innerHTML =
+ items.map((p,i)=>card(p[0],p[1],p[2],i)).join("") +
+ `<div class="card">
+   <div class="head" onclick="toggle('req')">CONTROL 승인요청 / 개발보고</div>
+   <div class="body" id="req">
+     <button class="green" onclick="alert('CONTROL 승인요청 등록 예정')">승인요청</button>
+     <button class="red" onclick="alert('개발 수정 요청 등록 예정')">수정요청 보고</button>
+   </div>
+ </div>`;
+</script>
+</body>
+</html>

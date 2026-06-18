@@ -1838,3 +1838,14 @@ async def control_travel_map_apps():
 async def dev_travel_map_apps():
     return FileResponse("ui/dev_travel_map_apps.html")
 # ===== End KRXA Travel Map Apps API v1 =====
+
+
+# ===== KRXA Travel User Control Dev Bridge v1 =====
+@app.get("/control/travel-user-bridge")
+async def control_travel_user_bridge():
+    return FileResponse("ui/control_travel_user_bridge.html")
+
+@app.get("/dev/travel-user-bridge")
+async def dev_travel_user_bridge():
+    return FileResponse("ui/dev_travel_user_bridge.html")
+# ===== End KRXA Travel User Control Dev Bridge v1 =====
