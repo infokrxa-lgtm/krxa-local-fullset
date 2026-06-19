@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "updatedAt": "20260619_203637",
+  "mode": "control_to_user",
+  "user_ui_locked": true,
+  "rules": [
+    {
+      "id": "page1_gps",
+      "page": 1,
+      "target": "gps",
+      "enabled": true,
+      "selectors": [
+        "[data-component='gps']",
+        "[data-kx-id='gps']"
+      ],
+      "action": "show_hide"
+    },
+    {
+      "id": "page1_hero",
+      "page": 1,
+      "target": "hero",
+      "enabled": true,
+      "selectors": [
+        "[data-component='hero']",
+        ".travelHero",
+        ".discoveryHero"
+      ],
+      "action": "show_hide"
+    },
+    {
+      "id": "page1_mini_talk",
+      "page": 1,
+      "target": "mini_talk",
+      "enabled": true,
+      "selectors": [
+        "[data-component='mini_talk']",
+        "[data-component='m2m']",
+        ".miniBar"
+      ],
+      "action": "show_hide"
+    }
+  ],
+  "data_sources": {
+    "hero_groups": "/api/travel-hero-groups",
+    "hero_places": "/api/travel-hero-places",
+    "map_apps": "/api/travel-map-apps"
+  }
+}

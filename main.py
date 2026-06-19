@@ -2309,3 +2309,102 @@ async def gap04_save_places(payload: dict = _GAP04_BODY(...)):
 async def gap04_hero_workspace():
     return FileResponse("ui/control_travel_hero_workspace.html")
 # ===== End Travel GAP Patch 04 API =====
+
+
+# ===== KRXA CONTROL SYNC ENGINE v1 =====
+from fastapi import Body as _SYNC_BODY
+import json as _sync_json
+from pathlib import Path as _SYNC_Path
+from datetime import datetime as _SYNC_datetime
+
+_SYNC_STATE = _SYNC_Path("storage") / "control_sync_state.json"
+
+def _sync_now():
+    return _SYNC_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _sync_default():
+    return {
+        "version": "v1",
+        "updatedAt": _sync_now(),
+        "mode": "control_to_user",
+        "user_ui_locked": True,
+        "rules": [
+            {
+                "id": "page1_gps",
+                "page": 1,
+                "target": "gps",
+                "enabled": True,
+                "selectors": ["[data-component='gps']", "[data-kx-id='gps']"],
+                "action": "show_hide"
+            },
+            {
+                "id": "page1_hero",
+                "page": 1,
+                "target": "hero",
+                "enabled": True,
+                "selectors": ["[data-component='hero']", ".travelHero", ".discoveryHero"],
+                "action": "show_hide"
+            },
+            {
+                "id": "page1_mini_talk",
+                "page": 1,
+                "target": "mini_talk",
+                "enabled": True,
+                "selectors": ["[data-component='mini_talk']", "[data-component='m2m']", ".miniBar"],
+                "action": "show_hide"
+            }
+        ],
+        "data_sources": {
+            "hero_groups": "/api/travel-hero-groups",
+            "hero_places": "/api/travel-hero-places",
+            "map_apps": "/api/travel-map-apps"
+        }
+    }
+
+def _sync_load():
+    _SYNC_STATE.parent.mkdir(exist_ok=True)
+    if not _SYNC_STATE.exists():
+        _SYNC_STATE.write_text(
+            _sync_json.dumps(_sync_default(), ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    try:
+        return _sync_json.loads(_SYNC_STATE.read_text(encoding="utf-8"))
+    except Exception:
+        return _sync_default()
+
+def _sync_save(data):
+    _SYNC_STATE.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _sync_now()
+    _SYNC_STATE.write_text(
+        _sync_json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    return data
+
+@app.get("/api/control-sync-state")
+async def api_control_sync_state():
+    return {"ok": True, "config": _sync_load()}
+
+@app.post("/api/control-sync-state/save")
+async def api_control_sync_state_save(payload: dict = _SYNC_BODY(...)):
+    return {"ok": True, "config": _sync_save(payload)}
+
+@app.post("/api/control-sync-state/apply-rule")
+async def api_control_sync_state_apply_rule(payload: dict = _SYNC_BODY(...)):
+    state = _sync_load()
+    rule_id = payload.get("id")
+    enabled = payload.get("enabled")
+    found = False
+
+    for r in state.get("rules", []):
+        if r.get("id") == rule_id:
+            r["enabled"] = bool(enabled)
+            found = True
+
+    if not found and rule_id:
+        state.setdefault("rules", []).append(payload)
+
+    saved = _sync_save(state)
+    return {"ok": True, "config": saved}
+# ===== End KRXA CONTROL SYNC ENGINE v1 =====

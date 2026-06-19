@@ -234,7 +234,7 @@
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
     <div class="discoveryHero" onclick="KRXA_Recommend.openCurrentDiscoveryCard()">
-      <div class="discoveryBadge">LIVE TRAVEL DISCOVERY</div>
+      <div data-component="hero" class="discoveryBadge">LIVE TRAVEL DISCOVERY</div>
       <div class="discoveryTitle" id="discoveryHeroTitle">주변 인기 장소를 찾는 중</div>
       <div class="discoverySub" id="discoveryHeroSub">방송·유튜브·리뷰 기반 추천 준비 중</div>
       <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_Recommend.openCurrentDiscoveryCard();">둘러보기</button>
@@ -253,7 +253,7 @@
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
 <div class="travelHero" onclick="KRXA_HeroRecommend.openCurrent()">
-      <div class="travelHeroBadge">GPS · MARKET · RECOMMEND</div>
+      <div data-component="gps" class="travelHeroBadge">GPS · MARKET · RECOMMEND</div>
 <div class="travelHeroPlace" id="travelHeroPlace">추천 불러오는 중</div>
 <div class="travelHeroText" id="travelHeroText">현재 위치 기준 추천을 준비합니다</div>
 <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); window.KRXA_Recommend.openMarketResearchV1();">둘러보기</button>
@@ -321,7 +321,7 @@
 
     <section class="page">
       <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title">말대말 통역</div></div>
+        <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div data-component="mini_talk" class="title">말대말 통역</div></div>
         <div class="content">
           <div class="lang">
             <button id="l_auto" onclick="KRXA_Translate.setLang('auto')">자동</button>
@@ -562,5 +562,6 @@ document.addEventListener("keydown", function(e){
 <script src="/ui/js/travel_ui_components.js?v=1"></script>
 <script src="/ui/js/travel_gap_user_sync.js"></script>
 <script src="/ui/js/travel_hub_control.js"></script>
+<script src="/ui/js/krxa_control_sync_engine.js"></script>
 </body>
 </html>
