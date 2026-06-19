@@ -2408,3 +2408,48 @@ async def api_control_sync_state_apply_rule(payload: dict = _SYNC_BODY(...)):
     saved = _sync_save(state)
     return {"ok": True, "config": saved}
 # ===== End KRXA CONTROL SYNC ENGINE v1 =====
+
+
+# ===== Travel UI Master Sync API v1 =====
+from fastapi import Body as _MASTER_BODY
+import json as _master_json
+from pathlib import Path as _MASTER_Path
+from datetime import datetime as _MASTER_datetime
+
+_MASTER_UI_CONFIG = _MASTER_Path("storage") / "travel_ui_config.json"
+
+def _master_now():
+    return _MASTER_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _master_default():
+    return {"version":"v1","updatedAt":_master_now(),"pages":[]}
+
+def _master_load():
+    _MASTER_UI_CONFIG.parent.mkdir(exist_ok=True)
+    if not _MASTER_UI_CONFIG.exists():
+        _MASTER_UI_CONFIG.write_text(
+            _master_json.dumps(_master_default(), ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    try:
+        return _master_json.loads(_MASTER_UI_CONFIG.read_text(encoding="utf-8"))
+    except Exception:
+        return _master_default()
+
+def _master_save(data):
+    _MASTER_UI_CONFIG.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _master_now()
+    _MASTER_UI_CONFIG.write_text(
+        _master_json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    return data
+
+@app.get("/api/travel-ui-master-config")
+async def api_travel_ui_master_config():
+    return {"ok": True, "config": _master_load()}
+
+@app.post("/api/travel-ui-master-config/save")
+async def api_travel_ui_master_config_save(payload: dict = _MASTER_BODY(...)):
+    return {"ok": True, "config": _master_save(payload)}
+# ===== End Travel UI Master Sync API v1 =====

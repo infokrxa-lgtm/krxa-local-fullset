@@ -299,5 +299,140 @@ async function GAP04SaveGroups(){
 GAP04Load();
 </script>
 
+
+<!-- Travel UI Master Control Panel v1 -->
+<style>
+.masterPanel{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
+.masterGrid{display:grid;grid-template-columns:160px 1fr;gap:12px}
+.masterLeft button{display:block;width:100%;margin:4px 0;padding:10px;border:0;border-radius:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
+.masterLeft button.active{background:#2563eb;color:white}
+.masterRow{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;align-items:center;border-bottom:1px solid #e2e8f0;padding:8px}
+.masterOn{background:#16a34a;color:white}
+.masterOff{background:#dc2626;color:white}
+.masterBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
+.masterBlue{background:#2563eb;color:white}
+.masterGray{background:#64748b;color:white}
+.masterRed{background:#dc2626;color:white}
+</style>
+
+<div class="masterPanel">
+  <h3>USER 1~8페이지 마스터 구성 관리</h3>
+  <p>현재 USER 화면은 유지하고, 여기서 ON/OFF·신규·수정·삭제·완료하면 USER에 자동 반영됩니다.</p>
+  <div class="masterGrid">
+    <div class="masterLeft" id="masterPages"></div>
+    <div>
+      <h4 id="masterTitle">페이지 선택</h4>
+      <div id="masterItems"></div>
+      <div style="margin-top:12px">
+        <button class="masterBtn masterBlue" onclick="MasterAddItem()">신규</button>
+        <button class="masterBtn masterGray" onclick="MasterEditItem()">수정</button>
+        <button class="masterBtn masterRed" onclick="MasterDeleteItem()">삭제</button>
+        <button class="masterBtn masterOn" onclick="MasterSave()">완료 / USER 반영</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let MASTER_CFG=null;
+let MASTER_PAGE_INDEX=0;
+let MASTER_SELECTED_ITEM=null;
+
+async function MasterLoad(){
+  const res=await fetch('/api/travel-ui-master-config?ts='+Date.now());
+  const data=await res.json();
+  MASTER_CFG=data.config;
+  MasterRenderPages();
+  MasterRenderItems();
+}
+
+function MasterRenderPages(){
+  const box=document.getElementById('masterPages');
+  if(!box || !MASTER_CFG)return;
+  box.innerHTML='';
+  (MASTER_CFG.pages||[]).forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className=i===MASTER_PAGE_INDEX?'active':'';
+    btn.textContent=(p.title||('사용자 UI '+(i+1)))+' '+(p.enabled===false?'[OFF]':'[ON]');
+    btn.onclick=()=>{MASTER_PAGE_INDEX=i;MASTER_SELECTED_ITEM=null;MasterRenderPages();MasterRenderItems();};
+    box.appendChild(btn);
+  });
+}
+
+function MasterRenderItems(){
+  const title=document.getElementById('masterTitle');
+  const box=document.getElementById('masterItems');
+  if(!box || !MASTER_CFG)return;
+  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
+  if(!page)return;
+  title.textContent=page.title||'페이지';
+  box.innerHTML='';
+
+  const head=document.createElement('div');
+  head.className='masterRow';
+  head.innerHTML='<b>구성 항목</b><b>ON/OFF</b><b>삭제</b>';
+  box.appendChild(head);
+
+  (page.items||[]).forEach((it,idx)=>{
+    const row=document.createElement('div');
+    row.className='masterRow';
+    row.style.background=MASTER_SELECTED_ITEM===idx?'#dbeafe':'';
+    row.innerHTML=`
+      <div>${it.title||it.id}</div>
+      <div><button class="masterBtn ${it.enabled!==false?'masterOn':'masterOff'}">${it.enabled!==false?'ON':'OFF'}</button></div>
+      <div><button class="masterBtn masterRed">삭제</button></div>
+    `;
+    row.children[0].onclick=()=>{MASTER_SELECTED_ITEM=idx;MasterRenderItems();};
+    row.children[1].onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);MasterRenderItems();};
+    row.children[2].onclick=(e)=>{e.stopPropagation();if(confirm('삭제할까요?')){page.items.splice(idx,1);MASTER_SELECTED_ITEM=null;MasterRenderItems();}};
+    box.appendChild(row);
+  });
+}
+
+function MasterAddItem(){
+  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
+  const title=prompt('항목 이름');
+  if(!title)return;
+  const id=prompt('항목 ID 영문', title.toLowerCase().replaceAll(' ','_')) || ('item_'+Date.now());
+  page.items=page.items||[];
+  page.items.push({id,title,enabled:true,type:'custom'});
+  MasterRenderItems();
+}
+
+function MasterEditItem(){
+  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
+  if(MASTER_SELECTED_ITEM===null){alert('수정할 항목을 선택하세요.');return;}
+  const it=page.items[MASTER_SELECTED_ITEM];
+  it.title=prompt('이름',it.title||'')||it.title;
+  it.id=prompt('ID',it.id||'')||it.id;
+  it.type=prompt('type',it.type||'custom')||it.type;
+  MasterRenderItems();
+}
+
+function MasterDeleteItem(){
+  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
+  if(MASTER_SELECTED_ITEM===null){alert('삭제할 항목을 선택하세요.');return;}
+  if(!confirm('삭제할까요?'))return;
+  page.items.splice(MASTER_SELECTED_ITEM,1);
+  MASTER_SELECTED_ITEM=null;
+  MasterRenderItems();
+}
+
+async function MasterSave(){
+  const res=await fetch('/api/travel-ui-master-config/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(MASTER_CFG)
+  });
+  const data=await res.json();
+  MASTER_CFG=data.config;
+  alert('완료 저장 / USER 자동반영');
+  MasterRenderPages();
+  MasterRenderItems();
+}
+
+MasterLoad();
+</script>
+
 </body>
 </html>
