@@ -434,5 +434,144 @@ async function MasterSave(){
 MasterLoad();
 </script>
 
+
+<!-- Travel Function Reverse Map Panel v1 -->
+<style>
+.revPanel{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
+.revGrid{display:grid;grid-template-columns:190px 1fr;gap:12px}
+.revPages button{display:block;width:100%;margin:4px 0;padding:10px;border:0;border-radius:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
+.revPages button.active{background:#2563eb;color:white}
+.revItem{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;border-bottom:1px solid #e2e8f0;padding:8px;align-items:center}
+.revItem:hover{background:#f8fafc}
+.revItem.selected{background:#dbeafe}
+.revBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
+.revOn{background:#16a34a;color:white}
+.revOff{background:#dc2626;color:white}
+.revBlue{background:#2563eb;color:white}
+.revGray{background:#64748b;color:white}
+.revBox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-top:10px;white-space:pre-wrap}
+</style>
+
+<div class="revPanel">
+  <h3>Travel Function Reverse Map · USER 1~8 실제 기능 흐름</h3>
+  <p>사용자 UI 클릭바의 실제 코드/프로그램/API/지도/통역 흐름을 관제 우측에서 확인하고 DEV 개선요청까지 연결합니다.</p>
+  <div class="revGrid">
+    <div class="revPages" id="revPages"></div>
+    <div>
+      <h4 id="revTitle">페이지 선택</h4>
+      <div id="revItems"></div>
+      <div id="revDetail" class="revBox">항목을 선택하세요.</div>
+      <button class="revBtn revBlue" onclick="REVSave()">완료 / Map 저장</button>
+      <button class="revBtn revGray" onclick="REVDevRequest()">DEV 개선요청</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let REV_MAP=null;
+let REV_PAGE=0;
+let REV_ITEM=null;
+
+async function REVLoad(){
+  const res=await fetch('/api/travel-function-map?ts='+Date.now());
+  const data=await res.json();
+  REV_MAP=data.config||{pages:[]};
+  REVRenderPages();
+  REVRenderItems();
+}
+
+function REVRenderPages(){
+  const box=document.getElementById('revPages');
+  box.innerHTML='';
+  (REV_MAP.pages||[]).forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.className=i===REV_PAGE?'active':'';
+    b.textContent=(p.title||('USER '+p.page));
+    b.onclick=()=>{REV_PAGE=i;REV_ITEM=null;REVRenderPages();REVRenderItems();REVDetail();};
+    box.appendChild(b);
+  });
+}
+
+function REVRenderItems(){
+  const page=REV_MAP.pages[REV_PAGE];
+  document.getElementById('revTitle').textContent=page?page.title:'페이지';
+  const box=document.getElementById('revItems');
+  box.innerHTML='';
+  if(!page)return;
+
+  (page.items||[]).forEach((it,i)=>{
+    const row=document.createElement('div');
+    row.className='revItem '+(REV_ITEM===i?'selected':'');
+    row.innerHTML=`
+      <div>${it.title}</div>
+      <div><button class="revBtn ${it.status==='active'?'revOn':'revOff'}">${it.status}</button></div>
+      <div><button class="revBtn revBlue">상세</button></div>
+    `;
+    row.onclick=()=>{REV_ITEM=i;REVRenderItems();REVDetail();};
+    box.appendChild(row);
+  });
+}
+
+function REVDetail(){
+  const page=REV_MAP.pages[REV_PAGE];
+  const it=page && page.items ? page.items[REV_ITEM] : null;
+  const box=document.getElementById('revDetail');
+  if(!it){box.textContent='항목을 선택하세요.';return;}
+  box.textContent =
+`[사용자 표시]
+${it.title}
+
+[현재 상태]
+${it.status}
+
+[USER 클릭/작동]
+${it.user_action}
+
+[실행 결과]
+${it.user_result}
+
+[연결 파일]
+${(it.files||[]).join('\\n')}
+
+[API]
+${(it.api||[]).join('\\n')}
+
+[JSON]
+${(it.json||[]).join('\\n')}
+
+[관제 관리 가능 항목]
+${(it.control_manage||[]).join('\\n')}
+
+[DEV 개선 요청 기준]
+${it.dev_request||''}`;
+}
+
+async function REVSave(){
+  const res=await fetch('/api/travel-function-map/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(REV_MAP)
+  });
+  await res.json();
+  alert('Reverse Map 저장 완료');
+}
+
+async function REVDevRequest(){
+  const page=REV_MAP.pages[REV_PAGE];
+  const it=page && page.items ? page.items[REV_ITEM] : null;
+  if(!it){alert('항목을 선택하세요.');return;}
+  const memo=prompt('DEV 개선요청 내용', it.dev_request||'');
+  if(!memo)return;
+  await fetch('/api/dev-requests/from-function-map',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({page:page.title,item:it.title,item_id:it.id,memo})
+  });
+  alert('DEV 개선요청 저장 완료');
+}
+
+REVLoad();
+</script>
+
 </body>
 </html>

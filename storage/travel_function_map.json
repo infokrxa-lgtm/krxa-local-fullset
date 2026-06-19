@@ -1,0 +1,349 @@
+{
+  "version": "v1",
+  "updatedAt": "20260619_221812",
+  "pages": [
+    {
+      "page": 1,
+      "title": "사용자 UI 1",
+      "items": [
+        {
+          "id": "gps",
+          "title": "GPS",
+          "status": "active",
+          "user_action": "상단 위치/날짜/시간 표시",
+          "user_result": "현재 위치·시간 정보 표시",
+          "files": [
+            "ui/js/travel_context.js",
+            "ui/js/travel_gps_time_place_sync.js"
+          ],
+          "api": [
+            "/api/travel-context-state"
+          ],
+          "json": [
+            "storage/travel_context_state.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시문구",
+            "자동/수동 위치 표시"
+          ],
+          "dev_request": "GPS 표시/권한/위치동기화 오류 수정"
+        },
+        {
+          "id": "hero",
+          "title": "Hero",
+          "status": "active",
+          "user_action": "Hero 카드 클릭",
+          "user_result": "추천 장소 또는 Hero 그룹 리스트 표시",
+          "files": [
+            "ui/js/hero_recommend.js",
+            "ui/js/travel_recommend.js"
+          ],
+          "api": [
+            "/api/travel-recommend",
+            "/api/travel-hero-groups",
+            "/api/travel-hero-places"
+          ],
+          "json": [
+            "storage/travel_hero_cards.json",
+            "storage/travel_hero_groups.json",
+            "storage/travel_hero_places.json"
+          ],
+          "control_manage": [
+            "Hero 그룹 ON/OFF",
+            "장소 리스트 관리",
+            "신규/수정/삭제/완료"
+          ],
+          "dev_request": "Hero가 관제 저장값을 USER에 반영하도록 연결"
+        },
+        {
+          "id": "mini_talk",
+          "title": "미니말하기",
+          "status": "check_required",
+          "user_action": "미니말하기 클릭",
+          "user_result": "말대말 통역 페이지 이동 또는 음성입력",
+          "files": [
+            "ui/app.html",
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시 위치",
+            "통역 연결 여부"
+          ],
+          "dev_request": "클릭바 활성화 및 통역 페이지 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "title": "사용자 UI 2",
+      "items": [
+        {
+          "id": "food",
+          "title": "맛집",
+          "status": "active",
+          "user_action": "맛집 클릭",
+          "user_result": "주변 맛집 추천 리스트 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "추천 리스트/길찾기 동작 검증"
+        },
+        {
+          "id": "transport",
+          "title": "교통",
+          "status": "active",
+          "user_action": "교통 클릭",
+          "user_result": "교통 허브 표시 → 목적지 입력 → 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "목적지 입력창",
+            "지도앱 선택"
+          ],
+          "dev_request": "목적지 입력/새창 길찾기 확인"
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "status": "active",
+          "user_action": "길찾기 클릭",
+          "user_result": "목적지 입력 후 Google Maps 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "지도 URL",
+            "새창 여부"
+          ],
+          "dev_request": "현재위치→목적지 연결 확인"
+        },
+        {
+          "id": "sos",
+          "title": "SOS",
+          "status": "active",
+          "user_action": "SOS 클릭",
+          "user_result": "SOS 페이지 이동",
+          "files": [
+            "ui/app.html"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "긴급 항목 관리"
+          ],
+          "dev_request": "긴급 지도/전화 연결 검증"
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "title": "사용자 UI 3 · 여행허브",
+      "items": [
+        {
+          "id": "hotel",
+          "title": "호텔",
+          "status": "active",
+          "user_action": "호텔 클릭",
+          "user_result": "주변 호텔 추천 리스트 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 개수",
+            "추천 방식",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "호텔 클릭 시 우측 실행 흐름 표시 필요"
+        },
+        {
+          "id": "airport",
+          "title": "공항",
+          "status": "check_required",
+          "user_action": "공항 클릭",
+          "user_result": "공항/항공 관련 링크 또는 지도 검색",
+          "files": [
+            "ui/js/travel_engine.js",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "공항 링크",
+            "항공 링크"
+          ],
+          "dev_request": "항공/공항 흐름 정리 필요"
+        },
+        {
+          "id": "tour",
+          "title": "관광",
+          "status": "active",
+          "user_action": "관광 클릭",
+          "user_result": "주변 관광지 추천 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식"
+          ],
+          "dev_request": "관광 추천 흐름 확인"
+        },
+        {
+          "id": "shopping",
+          "title": "쇼핑",
+          "status": "active",
+          "user_action": "쇼핑 클릭",
+          "user_result": "주변 쇼핑 추천 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식"
+          ],
+          "dev_request": "쇼핑 추천 흐름 확인"
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "title": "사용자 UI 5 · 말대말",
+      "items": [
+        {
+          "id": "m2m",
+          "title": "말대말 통역",
+          "status": "active",
+          "user_action": "마이크/텍스트 입력",
+          "user_result": "STT → 번역 → TTS",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "언어",
+            "자동대화",
+            "마이크"
+          ],
+          "dev_request": "통역 연결/마이크/VAD 검증"
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "title": "사용자 UI 6 · 통화/메신저",
+      "items": [
+        {
+          "id": "call",
+          "title": "통화/메신저",
+          "status": "active",
+          "user_action": "전화/WhatsApp/WeChat 클릭",
+          "user_result": "전화앱 또는 외부 메신저 새창",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "연락처 등록",
+            "ON/OFF",
+            "메신저 링크"
+          ],
+          "dev_request": "연락처 저장 구조 개선"
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "title": "사용자 UI 8 · SOS",
+      "items": [
+        {
+          "id": "sos",
+          "title": "SOS",
+          "status": "active",
+          "user_action": "경찰/구급/병원/대사관 클릭",
+          "user_result": "전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "해외 여행 기준 SOS 번호/대사관 검색 개선"
+        }
+      ]
+    }
+  ]
+}

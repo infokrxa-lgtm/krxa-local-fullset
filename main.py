@@ -2453,3 +2453,55 @@ async def api_travel_ui_master_config():
 async def api_travel_ui_master_config_save(payload: dict = _MASTER_BODY(...)):
     return {"ok": True, "config": _master_save(payload)}
 # ===== End Travel UI Master Sync API v1 =====
+
+
+# ===== Travel Function Reverse Map API v1 =====
+from fastapi import Body as _REV_BODY
+import json as _rev_json
+from pathlib import Path as _REV_Path
+from datetime import datetime as _REV_datetime
+
+_REV_MAP = _REV_Path("storage") / "travel_function_map.json"
+
+def _rev_now():
+    return _REV_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _rev_load():
+    _REV_MAP.parent.mkdir(exist_ok=True)
+    if not _REV_MAP.exists():
+        _REV_MAP.write_text(_rev_json.dumps({"version":"v1","pages":[]}, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _rev_json.loads(_REV_MAP.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version":"v1","pages":[]}
+
+def _rev_save(data):
+    _REV_MAP.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _rev_now()
+    _REV_MAP.write_text(_rev_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/travel-function-map")
+async def api_travel_function_map():
+    return {"ok": True, "config": _rev_load()}
+
+@app.post("/api/travel-function-map/save")
+async def api_travel_function_map_save(payload: dict = _REV_BODY(...)):
+    return {"ok": True, "config": _rev_save(payload)}
+
+@app.post("/api/dev-requests/from-function-map")
+async def api_dev_request_from_function_map(payload: dict = _REV_BODY(...)):
+    path = _REV_Path("storage") / "dev_requests.json"
+    path.parent.mkdir(exist_ok=True)
+    try:
+        data = _rev_json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"items":[]}
+    except Exception:
+        data = {"items":[]}
+    data.setdefault("items", []).append({
+        "createdAt": _rev_now(),
+        "source": "travel_function_map",
+        "payload": payload
+    })
+    path.write_text(_rev_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "message": "DEV 개선요청 저장 완료"}
+# ===== End Travel Function Reverse Map API v1 =====
