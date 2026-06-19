@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Hero 작업창</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f8fafc;color:#0f172a;margin:0;padding:20px}
+h2{margin-top:0}
+.toolbar{display:flex;gap:8px;margin:12px 0}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}
+.green{background:#16a34a;color:white}.blue{background:#2563eb;color:white}.red{background:#dc2626;color:white}.gray{background:#64748b;color:white}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}
+th,td{border:1px solid #cbd5e1;padding:10px;text-align:left}
+th{background:#e2e8f0}
+tr.selected{background:#dbeafe}
+.toggle{border-radius:999px;padding:6px 14px}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}
+input{width:100%;border:0;background:transparent;font-size:14px}
+</style>
+</head>
+<body>
+<h2 id="title">Hero 작업창</h2>
+<p>엑셀 보고서형 장소 리스트입니다. 행 클릭 후 수정/삭제 가능합니다.</p>
+
+<div class="toolbar">
+  <button class="blue" onclick="addRow()">신규</button>
+  <button class="gray" onclick="editRow()">수정</button>
+  <button class="red" onclick="deleteRow()">삭제</button>
+  <button class="green" onclick="save()">완료</button>
+  <button class="gray" onclick="download()">다운로드</button>
+  <button class="gray" onclick="alert('엑셀 업로드 변환엔진은 다음 단계에서 연결')">업로드</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>이름</th>
+<th>지역</th>
+<th>분류</th>
+<th>주소/검색어</th>
+<th>ON/OFF</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+
+<script>
+const params=new URLSearchParams(location.search);
+const group=params.get("group")||"baekban";
+let allPlaces={version:"v1",places:[]};
+let groupInfo=null;
+let selectedId=null;
+
+async function load(){
+  const gs=await fetch('/api/travel-hero-groups?ts='+Date.now()).then(r=>r.json());
+  groupInfo=(gs.config.groups||[]).find(g=>g.id===group);
+  document.getElementById('title').textContent=(groupInfo?groupInfo.title:group)+' 작업창';
+
+  const ps=await fetch('/api/travel-hero-places?ts='+Date.now()).then(r=>r.json());
+  allPlaces=ps.config||{version:"v1",places:[]};
+  render();
+}
+
+function render(){
+  const tbody=document.getElementById('rows');
+  tbody.innerHTML='';
+  allPlaces.places.filter(p=>p.group_id===group).forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.className=selectedId===p.id?'selected':'';
+    tr.innerHTML=`
+      <td>${p.name||''}</td>
+      <td>${p.region||''}</td>
+      <td>${p.category||''}</td>
+      <td>${p.keyword||p.address||''}</td>
+      <td><button class="toggle ${p.enabled!==false?'on':'off'}">${p.enabled!==false?'ON':'OFF'}</button></td>
+    `;
+    tr.onclick=()=>{selectedId=p.id;render();};
+    tr.children[4].onclick=(e)=>{e.stopPropagation();p.enabled=!(p.enabled!==false);render();};
+    tbody.appendChild(tr);
+  });
+}
+
+function addRow(){
+  const name=prompt('이름');
+  if(!name)return;
+  allPlaces.places.push({
+    id:group+'_'+Date.now(),
+    group_id:group,
+    name,
+    region:'',
+    category:'',
+    address:'',
+    keyword:name,
+    enabled:true,
+    memo:''
+  });
+  render();
+}
+
+function editRow(){
+  const p=allPlaces.places.find(x=>x.id===selectedId);
+  if(!p){alert('수정할 행을 선택하세요.');return;}
+  p.name=prompt('이름',p.name||'')||p.name;
+  p.region=prompt('지역',p.region||'')||p.region;
+  p.category=prompt('분류',p.category||'')||p.category;
+  p.address=prompt('주소',p.address||'')||p.address;
+  p.keyword=prompt('검색어',p.keyword||p.name||'')||p.keyword;
+  render();
+}
+
+function deleteRow(){
+  if(!selectedId){alert('삭제할 행을 선택하세요.');return;}
+  if(!confirm('삭제할까요?'))return;
+  allPlaces.places=allPlaces.places.filter(x=>x.id!==selectedId);
+  selectedId=null;
+  render();
+}
+
+async function save(){
+  const res=await fetch('/api/travel-hero-places/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(allPlaces)
+  });
+  await res.json();
+  alert('완료 저장됨');
+}
+
+function download(){
+  const rows=allPlaces.places.filter(p=>p.group_id===group);
+  const csv=['이름,지역,분류,주소,검색어,enabled']
+    .concat(rows.map(p=>[p.name,p.region,p.category,p.address,p.keyword,p.enabled!==false].map(v=>'"'+String(v||'').replaceAll('"','""')+'"').join(',')))
+    .join('\n');
+  const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=group+'_places.csv';
+  a.click();
+}
+
+load();
+</script>
+</body>
+</html>

@@ -218,205 +218,85 @@ async function toggleComp(key){
 <!-- Travel GAP Patch 02 Control Panel removed by GAP03 -->
 
 
-<!-- Travel GAP Patch 03 Excel Style Hero Control -->
+<!-- GAP03 panel removed by GAP04 -->
+
+
+<!-- Travel GAP Patch 04 Hero Group Panel -->
 <style>
-.krxa-gap03-wrap{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-.krxa-gap03-title{font-size:18px;font-weight:900;margin-bottom:10px}
-.krxa-gap03-grid{display:grid;grid-template-columns:1fr 90px 80px;gap:8px;align-items:center}
-.krxa-gap03-head{font-weight:900;background:#f1f5f9;padding:8px;border-radius:8px}
-.krxa-gap03-row{padding:8px;border-bottom:1px solid #e2e8f0;cursor:pointer}
-.krxa-gap03-row:hover{background:#f8fafc}
-.krxa-gap03-selected{background:#dbeafe!important}
-.krxa-gap03-btn{border:0;border-radius:10px;padding:8px 10px;margin:3px;font-weight:900;cursor:pointer}
-.krxa-gap03-on{background:#16a34a;color:white}
-.krxa-gap03-off{background:#dc2626;color:white}
-.krxa-gap03-blue{background:#2563eb;color:white}
-.krxa-gap03-gray{background:#64748b;color:white}
-.krxa-gap03-red{background:#dc2626;color:white}
-.krxa-gap03-input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px}
-.krxa-gap03-table{margin-top:10px;border:1px solid #e2e8f0;border-radius:12px;padding:8px}
+.gap04{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
+.gap04 h3{margin-top:0}
+.gap04-grid{display:grid;grid-template-columns:1fr 100px 80px;gap:8px;align-items:center}
+.gap04-head{font-weight:900;background:#e2e8f0;padding:10px;border-radius:8px}
+.gap04-row{padding:10px;border-bottom:1px solid #e2e8f0;cursor:pointer}
+.gap04-row:hover{background:#f8fafc}
+.gap04-btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
+.gap04-on{background:#16a34a;color:white}
+.gap04-off{background:#dc2626;color:white}
+.gap04-blue{background:#2563eb;color:white}
+.gap04-red{background:#dc2626;color:white}
 </style>
 
-<div class="krxa-gap03-wrap">
-  <div class="krxa-gap03-title">사용자 UI 1페이지 · Hero 운영 리스트</div>
-  <p>좌측 Hero ON/OFF는 전체 반영, 우측 리스트는 Hero 내부 항목별 ON/OFF·삭제·신규·완료 구조입니다.</p>
-
-  <div class="krxa-gap03-table">
-    <div class="krxa-gap03-grid">
-      <div class="krxa-gap03-head">Hero 그룹</div>
-      <div class="krxa-gap03-head">ON/OFF</div>
-      <div class="krxa-gap03-head">삭제</div>
-    </div>
-    <div id="gap03HeroGroups"></div>
-    <button class="krxa-gap03-btn krxa-gap03-blue" onclick="GAP03AddGroup()">신규 추가</button>
-    <button class="krxa-gap03-btn krxa-gap03-on" onclick="GAP03SaveGroups()">완료 / 그룹 저장</button>
+<div class="gap04">
+  <h3>사용자 UI 1페이지 · Hero 구성</h3>
+  <p>Hero 클릭 시 보이는 하위 구성입니다. 각 항목 클릭 시 새 작업창이 열립니다.</p>
+  <div class="gap04-grid">
+    <div class="gap04-head">Hero 구성</div>
+    <div class="gap04-head">ON/OFF</div>
+    <div class="gap04-head">삭제</div>
   </div>
-
-  <div class="krxa-gap03-table">
-    <div class="krxa-gap03-title" id="gap03PlaceTitle">상세 장소 리스트</div>
-    <div class="krxa-gap03-grid" style="grid-template-columns:1.2fr 1fr 1fr 90px;">
-      <div class="krxa-gap03-head">이름</div>
-      <div class="krxa-gap03-head">지역</div>
-      <div class="krxa-gap03-head">분류</div>
-      <div class="krxa-gap03-head">ON/OFF</div>
-    </div>
-    <div id="gap03HeroPlaces"></div>
-    <div style="margin-top:10px">
-      <button class="krxa-gap03-btn krxa-gap03-blue" onclick="GAP03AddPlace()">신규</button>
-      <button class="krxa-gap03-btn krxa-gap03-gray" onclick="GAP03EditSelectedPlace()">수정</button>
-      <button class="krxa-gap03-btn krxa-gap03-red" onclick="GAP03DeleteSelectedPlace()">삭제</button>
-      <button class="krxa-gap03-btn krxa-gap03-on" onclick="GAP03SavePlaces()">완료 / USER 반영</button>
-      <button class="krxa-gap03-btn krxa-gap03-gray" onclick="GAP03Download()">다운로드</button>
-      <button class="krxa-gap03-btn krxa-gap03-gray" onclick="alert('업로드는 다음 패치에서 파일 변환엔진으로 연결합니다.')">업로드</button>
-    </div>
-  </div>
+  <div id="gap04Groups"></div>
+  <button class="gap04-btn gap04-blue" onclick="GAP04AddGroup()">신규 추가</button>
+  <button class="gap04-btn gap04-on" onclick="GAP04SaveGroups()">완료</button>
 </div>
 
 <script>
-let GAP03_GROUPS={version:"v1",groups:[]};
-let GAP03_PLACES={version:"v1",places:[]};
-let GAP03_SELECTED_GROUP=null;
-let GAP03_SELECTED_PLACE=null;
+let GAP04_GROUPS={version:'v1',groups:[]};
 
-async function GAP03Load(){
-  const g=await fetch('/api/travel-hero-groups?ts='+Date.now()).then(r=>r.json());
-  const p=await fetch('/api/travel-hero-places?ts='+Date.now()).then(r=>r.json());
-  GAP03_GROUPS=g.config||{groups:[]};
-  GAP03_PLACES=p.config||{places:[]};
-  if(!GAP03_SELECTED_GROUP && GAP03_GROUPS.groups.length){
-    GAP03_SELECTED_GROUP=GAP03_GROUPS.groups[0].id;
-  }
-  GAP03RenderGroups();
-  GAP03RenderPlaces();
+async function GAP04Load(){
+  const res=await fetch('/api/travel-hero-groups?ts='+Date.now());
+  const data=await res.json();
+  GAP04_GROUPS=data.config||{version:'v1',groups:[]};
+  GAP04Render();
 }
 
-function GAP03Bar(on){
-  return `<button class="krxa-gap03-btn ${on?'krxa-gap03-on':'krxa-gap03-off'}">${on?'ON':'OFF'}</button>`;
-}
-
-function GAP03RenderGroups(){
-  const box=document.getElementById('gap03HeroGroups');
+function GAP04Render(){
+  const box=document.getElementById('gap04Groups');
   if(!box)return;
   box.innerHTML='';
-  GAP03_GROUPS.groups.forEach((g,i)=>{
+  GAP04_GROUPS.groups.forEach((g,i)=>{
     const row=document.createElement('div');
-    row.className='krxa-gap03-grid krxa-gap03-row '+(GAP03_SELECTED_GROUP===g.id?'krxa-gap03-selected':'');
+    row.className='gap04-grid gap04-row';
     row.innerHTML=`
       <div>${g.title}</div>
-      <div>${GAP03Bar(g.enabled!==false)}</div>
-      <div><button class="krxa-gap03-btn krxa-gap03-red">삭제</button></div>
+      <div><button class="gap04-btn ${g.enabled!==false?'gap04-on':'gap04-off'}">${g.enabled!==false?'ON':'OFF'}</button></div>
+      <div><button class="gap04-btn gap04-red">삭제</button></div>
     `;
-    row.children[0].onclick=()=>{GAP03_SELECTED_GROUP=g.id;GAP03_SELECTED_PLACE=null;GAP03RenderGroups();GAP03RenderPlaces();};
-    row.children[1].onclick=(e)=>{e.stopPropagation();g.enabled=!(g.enabled!==false);GAP03RenderGroups();};
-    row.children[2].onclick=(e)=>{e.stopPropagation();if(confirm('삭제할까요?')){GAP03_GROUPS.groups.splice(i,1);if(GAP03_SELECTED_GROUP===g.id)GAP03_SELECTED_GROUP=null;GAP03RenderGroups();GAP03RenderPlaces();}};
+    row.children[0].onclick=()=>window.open('/control/travel-hero-workspace?group='+encodeURIComponent(g.id),'_blank');
+    row.children[1].onclick=(e)=>{e.stopPropagation();g.enabled=!(g.enabled!==false);GAP04Render();};
+    row.children[2].onclick=(e)=>{e.stopPropagation();if(confirm('삭제할까요?')){GAP04_GROUPS.groups.splice(i,1);GAP04Render();}};
     box.appendChild(row);
   });
 }
 
-function GAP03RenderPlaces(){
-  const title=document.getElementById('gap03PlaceTitle');
-  const group=GAP03_GROUPS.groups.find(x=>x.id===GAP03_SELECTED_GROUP);
-  if(title) title.textContent = group ? group.title + ' · 상세 장소 리스트' : '상세 장소 리스트';
-
-  const box=document.getElementById('gap03HeroPlaces');
-  if(!box)return;
-  box.innerHTML='';
-
-  GAP03_PLACES.places
-    .filter(p=>p.group_id===GAP03_SELECTED_GROUP)
-    .forEach((p)=>{
-      const row=document.createElement('div');
-      row.className='krxa-gap03-grid krxa-gap03-row '+(GAP03_SELECTED_PLACE===p.id?'krxa-gap03-selected':'');
-      row.style.gridTemplateColumns='1.2fr 1fr 1fr 90px';
-      row.innerHTML=`
-        <div>${p.name||''}</div>
-        <div>${p.region||''}</div>
-        <div>${p.category||''}</div>
-        <div>${GAP03Bar(p.enabled!==false)}</div>
-      `;
-      row.onclick=()=>{GAP03_SELECTED_PLACE=p.id;GAP03RenderPlaces();};
-      row.children[3].onclick=(e)=>{e.stopPropagation();p.enabled=!(p.enabled!==false);GAP03RenderPlaces();};
-      box.appendChild(row);
-    });
-}
-
-function GAP03AddGroup(){
-  const title=prompt('Hero 그룹명');
+function GAP04AddGroup(){
+  const title=prompt('Hero 구성 이름');
   if(!title)return;
-  const id='group_'+Date.now();
-  GAP03_GROUPS.groups.push({id,title,enabled:true,type:'hero'});
-  GAP03_SELECTED_GROUP=id;
-  GAP03RenderGroups();
-  GAP03RenderPlaces();
+  const id='hero_'+Date.now();
+  GAP04_GROUPS.groups.push({id,title,enabled:true});
+  GAP04Render();
 }
 
-function GAP03AddPlace(){
-  if(!GAP03_SELECTED_GROUP){alert('먼저 Hero 그룹을 선택하세요.');return;}
-  const name=prompt('장소 이름');
-  if(!name)return;
-  GAP03_PLACES.places.push({
-    id:GAP03_SELECTED_GROUP+'_'+Date.now(),
-    group_id:GAP03_SELECTED_GROUP,
-    name,
-    region:'',
-    category:'',
-    address:'',
-    keyword:name,
-    enabled:true,
-    memo:''
-  });
-  GAP03RenderPlaces();
-}
-
-function GAP03EditSelectedPlace(){
-  const p=GAP03_PLACES.places.find(x=>x.id===GAP03_SELECTED_PLACE);
-  if(!p){alert('수정할 행을 선택하세요.');return;}
-  p.name=prompt('이름',p.name||'')||p.name;
-  p.region=prompt('지역',p.region||'')||p.region;
-  p.category=prompt('분류',p.category||'')||p.category;
-  p.address=prompt('주소',p.address||'')||p.address;
-  p.keyword=prompt('검색어',p.keyword||p.name||'')||p.keyword;
-  GAP03RenderPlaces();
-}
-
-function GAP03DeleteSelectedPlace(){
-  if(!GAP03_SELECTED_PLACE){alert('삭제할 행을 선택하세요.');return;}
-  if(!confirm('선택한 장소를 삭제할까요?'))return;
-  GAP03_PLACES.places=GAP03_PLACES.places.filter(x=>x.id!==GAP03_SELECTED_PLACE);
-  GAP03_SELECTED_PLACE=null;
-  GAP03RenderPlaces();
-}
-
-async function GAP03SaveGroups(){
+async function GAP04SaveGroups(){
   const res=await fetch('/api/travel-hero-groups/save',{
-    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(GAP03_GROUPS)
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(GAP04_GROUPS)
   });
-  const data=await res.json();
-  GAP03_GROUPS=data.config;
-  alert('Hero 그룹 저장 완료');
-  GAP03RenderGroups();
+  await res.json();
+  alert('Hero 구성 완료 저장됨');
 }
 
-async function GAP03SavePlaces(){
-  await GAP03SaveGroups();
-  const res=await fetch('/api/travel-hero-places/save',{
-    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(GAP03_PLACES)
-  });
-  const data=await res.json();
-  GAP03_PLACES=data.config;
-  alert('장소 리스트 저장 완료 / USER 반영 준비');
-  GAP03RenderPlaces();
-}
-
-function GAP03Download(){
-  const blob=new Blob([JSON.stringify(GAP03_PLACES,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='travel_hero_places.json';
-  a.click();
-}
-
-GAP03Load();
+GAP04Load();
 </script>
 
 </body>

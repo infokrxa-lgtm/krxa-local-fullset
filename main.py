@@ -2234,3 +2234,78 @@ async def api_travel_hero_places_save(payload: dict = _GAP03_BODY(...)):
     saved = _gap03_save(_GAP03_PLACES, payload)
     return {"ok": True, "config": saved}
 # ===== End Travel GAP Patch 03 API =====
+
+
+# ===== Travel GAP Patch 04 API =====
+from fastapi import Body as _GAP04_BODY
+from fastapi import Query as _GAP04_Query
+import json as _gap04_json
+from pathlib import Path as _GAP04_Path
+from datetime import datetime as _GAP04_datetime
+
+_GAP04_STORAGE = _GAP04_Path("storage")
+_GAP04_GROUPS = _GAP04_STORAGE / "travel_hero_groups.json"
+_GAP04_PLACES = _GAP04_STORAGE / "travel_hero_places.json"
+
+def _gap04_now():
+    return _GAP04_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _gap04_load(path, default):
+    path.parent.mkdir(exist_ok=True)
+    if not path.exists():
+        path.write_text(_gap04_json.dumps(default, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _gap04_json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+def _gap04_save(path, data):
+    path.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _gap04_now()
+    path.write_text(_gap04_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+_GAP04_DEFAULT_GROUPS = {
+    "version": "v1",
+    "groups": [
+        {"id": "baekban", "title": "허영만 백반기행", "enabled": True},
+        {"id": "baekjong", "title": "백종원 추천맛집", "enabled": True},
+        {"id": "nearby_food", "title": "주변맛집", "enabled": True},
+        {"id": "festival", "title": "지역축제", "enabled": True},
+        {"id": "tour_news", "title": "뉴스관광지", "enabled": True}
+    ]
+}
+
+_GAP04_DEFAULT_PLACES = {
+    "version": "v1",
+    "places": [
+        {"id": "baekban-001", "group_id": "baekban", "name": "늘본점수서본점", "region": "서울 강남", "category": "복어요리", "address": "서울 강남구", "keyword": "늘본점 수서본점", "enabled": True},
+        {"id": "baekban-002", "group_id": "baekban", "name": "최가네", "region": "부천", "category": "한식", "address": "경기 부천시", "keyword": "최가네 부천", "enabled": True},
+        {"id": "baekban-003", "group_id": "baekban", "name": "허가네백반기행", "region": "주변", "category": "맛집", "address": "", "keyword": "허가네 백반기행", "enabled": True}
+    ]
+}
+
+@app.get("/api/travel-hero-groups")
+async def gap04_get_groups():
+    return {"ok": True, "config": _gap04_load(_GAP04_GROUPS, _GAP04_DEFAULT_GROUPS)}
+
+@app.post("/api/travel-hero-groups/save")
+async def gap04_save_groups(payload: dict = _GAP04_BODY(...)):
+    return {"ok": True, "config": _gap04_save(_GAP04_GROUPS, payload)}
+
+@app.get("/api/travel-hero-places")
+async def gap04_get_places(group: str = _GAP04_Query("")):
+    data = _gap04_load(_GAP04_PLACES, _GAP04_DEFAULT_PLACES)
+    if group:
+        data = dict(data)
+        data["places"] = [p for p in data.get("places", []) if p.get("group_id") == group]
+    return {"ok": True, "config": data}
+
+@app.post("/api/travel-hero-places/save")
+async def gap04_save_places(payload: dict = _GAP04_BODY(...)):
+    return {"ok": True, "config": _gap04_save(_GAP04_PLACES, payload)}
+
+@app.get("/control/travel-hero-workspace")
+async def gap04_hero_workspace():
+    return FileResponse("ui/control_travel_hero_workspace.html")
+# ===== End Travel GAP Patch 04 API =====
