@@ -573,5 +573,320 @@ async function REVDevRequest(){
 REVLoad();
 </script>
 
+
+<!-- Travel Control Left Right Function Inspector v1 -->
+<style>
+.krxaInspector{
+  margin:16px;
+  padding:16px;
+  border-radius:18px;
+  background:#fff;
+  border:1px solid #cbd5e1;
+  color:#0f172a;
+  font-family:Arial,sans-serif;
+}
+.krxaInspector h2{margin:0 0 8px 0;font-size:22px}
+.krxaInspectorLayout{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:16px;
+}
+.krxaInspectorPages button{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  margin:6px 0;
+  padding:12px;
+  border:0;
+  border-radius:12px;
+  background:#e2e8f0;
+  font-weight:900;
+  cursor:pointer;
+}
+.krxaInspectorPages button.active{background:#2563eb;color:#fff}
+.krxaToggle{
+  border:0;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:900;
+  cursor:pointer;
+}
+.krxaOn{background:#16a34a;color:white}
+.krxaOff{background:#dc2626;color:white}
+.krxaBlue{background:#2563eb;color:white}
+.krxaGray{background:#64748b;color:white}
+.krxaRed{background:#dc2626;color:white}
+.krxaItemRow{
+  display:grid;
+  grid-template-columns:1fr 100px 110px;
+  gap:8px;
+  align-items:center;
+  border-bottom:1px solid #e2e8f0;
+  padding:10px;
+  cursor:pointer;
+}
+.krxaItemRow:hover{background:#f8fafc}
+.krxaItemRow.selected{background:#dbeafe}
+.krxaDetail{
+  margin-top:14px;
+  padding:14px;
+  border-radius:14px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+.krxaToolbar{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+</style>
+
+<div class="krxaInspector">
+  <h2>USER 1~8페이지 기능 검사기</h2>
+  <p>좌측은 USER 페이지 ON/OFF, 우측은 실제 기능 흐름·코드·API·JSON·DEV 개선요청을 표시합니다.</p>
+
+  <div class="krxaInspectorLayout">
+    <div class="krxaInspectorPages" id="inspPages"></div>
+
+    <div>
+      <h3 id="inspPageTitle">페이지 선택</h3>
+      <div id="inspItems"></div>
+      <div id="inspDetail" class="krxaDetail">항목을 선택하세요.</div>
+
+      <div class="krxaToolbar">
+        <button class="krxaToggle krxaBlue" onclick="INSPAddItem()">신규</button>
+        <button class="krxaToggle krxaGray" onclick="INSPEditItem()">수정</button>
+        <button class="krxaToggle krxaRed" onclick="INSPDeleteItem()">삭제</button>
+        <button class="krxaToggle krxaOn" onclick="INSPSave()">완료 / USER 반영</button>
+        <button class="krxaToggle krxaGray" onclick="INSPDevRequest()">DEV 개선요청</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let INSP_UI=null;
+let INSP_MAP=null;
+let INSP_PAGE=0;
+let INSP_ITEM=null;
+
+async function INSPLoad(){
+  const res = await fetch('/api/travel-control-inspector?ts='+Date.now());
+  const data = await res.json();
+  INSP_UI = data.ui || {pages:[]};
+  INSP_MAP = data.function_map || {pages:[]};
+  INSPRenderPages();
+  INSPRenderItems();
+  INSPRenderDetail();
+}
+
+function INSPPageTitle(p, idx){
+  return p.title || ('사용자 UI '+(idx+1));
+}
+
+function INSPFindMapItem(pageIdx, item){
+  const uiPage = INSP_UI.pages[pageIdx];
+  if(!uiPage || !item) return null;
+  const n = pageIdx + 1;
+  const mapPage = (INSP_MAP.pages || []).find(p => Number(p.page) === n || (p.title||'').includes(String(n)));
+  if(!mapPage) return null;
+  return (mapPage.items || []).find(x => x.id === item.id || x.title === item.title) || null;
+}
+
+function INSPRenderPages(){
+  const box = document.getElementById('inspPages');
+  box.innerHTML = '';
+  (INSP_UI.pages || []).forEach((p, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = idx === INSP_PAGE ? 'active' : '';
+    btn.innerHTML = `<span>${INSPPageTitle(p,idx)}</span><span>${p.enabled===false?'OFF':'ON'}</span>`;
+    btn.onclick = () => {
+      INSP_PAGE = idx;
+      INSP_ITEM = null;
+      INSPRenderPages();
+      INSPRenderItems();
+      INSPRenderDetail();
+    };
+    box.appendChild(btn);
+  });
+}
+
+function INSPRenderItems(){
+  const box = document.getElementById('inspItems');
+  const title = document.getElementById('inspPageTitle');
+  const page = INSP_UI.pages[INSP_PAGE];
+  if(!page){
+    title.textContent = '페이지 없음';
+    box.innerHTML = '';
+    return;
+  }
+
+  title.textContent = INSPPageTitle(page, INSP_PAGE);
+  box.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.className = 'krxaItemRow';
+  head.innerHTML = '<b>구성 항목</b><b>ON/OFF</b><b>기능상태</b>';
+  box.appendChild(head);
+
+  (page.items || []).forEach((it, idx)=>{
+    const map = INSPFindMapItem(INSP_PAGE, it);
+    const status = map ? (map.status || 'mapped') : '미매핑';
+    const row = document.createElement('div');
+    row.className = 'krxaItemRow ' + (INSP_ITEM === idx ? 'selected':'');
+    row.innerHTML = `
+      <div>${it.title || it.id}</div>
+      <div><button class="krxaToggle ${it.enabled!==false?'krxaOn':'krxaOff'}">${it.enabled!==false?'ON':'OFF'}</button></div>
+      <div>${status}</div>
+    `;
+    row.onclick = () => {
+      INSP_ITEM = idx;
+      INSPRenderItems();
+      INSPRenderDetail();
+    };
+    row.children[1].onclick = (e) => {
+      e.stopPropagation();
+      it.enabled = !(it.enabled !== false);
+      INSPRenderItems();
+      INSPRenderDetail();
+    };
+    box.appendChild(row);
+  });
+}
+
+function INSPRenderDetail(){
+  const box = document.getElementById('inspDetail');
+  const page = INSP_UI.pages[INSP_PAGE];
+  const item = page && page.items ? page.items[INSP_ITEM] : null;
+
+  if(!item){
+    box.textContent = '항목을 선택하세요.';
+    return;
+  }
+
+  const map = INSPFindMapItem(INSP_PAGE, item);
+
+  if(!map){
+    box.textContent =
+`[사용자 표시]
+${item.title || item.id}
+
+[현재 상태]
+${item.enabled !== false ? 'ON' : 'OFF'}
+
+[기능 매핑]
+미매핑 상태입니다.
+
+[관제 판단]
+이 항목은 USER 화면 구성에는 있지만, 실제 코드/프로그램 실행 흐름이 아직 Reverse Map에 연결되지 않았습니다.
+
+[다음 조치]
+DEV 개선요청으로 실제 클릭 함수/API/JSON 연결을 확인해야 합니다.`;
+    return;
+  }
+
+  box.textContent =
+`[사용자 표시]
+${map.title}
+
+[현재 ON/OFF]
+${item.enabled !== false ? 'ON' : 'OFF'}
+
+[클릭/작동 상태]
+${map.status || '확인 필요'}
+
+[USER 클릭/작동]
+${map.user_action || ''}
+
+[실행 결과]
+${map.user_result || ''}
+
+[연결 파일]
+${(map.files || []).join('\\n')}
+
+[API]
+${(map.api || []).join('\\n')}
+
+[JSON]
+${(map.json || []).join('\\n')}
+
+[관제 수정 가능 항목]
+${(map.control_manage || []).join('\\n')}
+
+[DEV 개선 요청 기준]
+${map.dev_request || ''}`;
+}
+
+function INSPAddItem(){
+  const page = INSP_UI.pages[INSP_PAGE];
+  if(!page) return;
+  const title = prompt('항목 이름');
+  if(!title) return;
+  const id = prompt('항목 ID', title.toLowerCase().replaceAll(' ','_')) || ('item_'+Date.now());
+  page.items = page.items || [];
+  page.items.push({id, title, enabled:true, type:'custom'});
+  INSPRenderItems();
+}
+
+function INSPEditItem(){
+  const page = INSP_UI.pages[INSP_PAGE];
+  if(!page || INSP_ITEM === null){alert('수정할 항목을 선택하세요.');return;}
+  const it = page.items[INSP_ITEM];
+  it.title = prompt('이름', it.title || '') || it.title;
+  it.id = prompt('ID', it.id || '') || it.id;
+  it.type = prompt('type', it.type || 'custom') || it.type;
+  INSPRenderItems();
+  INSPRenderDetail();
+}
+
+function INSPDeleteItem(){
+  const page = INSP_UI.pages[INSP_PAGE];
+  if(!page || INSP_ITEM === null){alert('삭제할 항목을 선택하세요.');return;}
+  if(!confirm('삭제할까요?')) return;
+  page.items.splice(INSP_ITEM,1);
+  INSP_ITEM = null;
+  INSPRenderItems();
+  INSPRenderDetail();
+}
+
+async function INSPSave(){
+  const res = await fetch('/api/travel-control-inspector/save-ui',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(INSP_UI)
+  });
+  const data = await res.json();
+  INSP_UI = data.config;
+  alert('완료 저장 / USER 반영 준비');
+  INSPRenderPages();
+  INSPRenderItems();
+  INSPRenderDetail();
+}
+
+async function INSPDevRequest(){
+  const page = INSP_UI.pages[INSP_PAGE];
+  const item = page && page.items ? page.items[INSP_ITEM] : null;
+  if(!item){alert('항목을 선택하세요.');return;}
+  const map = INSPFindMapItem(INSP_PAGE,item);
+  const memo = prompt('DEV 개선요청', map ? map.dev_request : '미매핑 항목 기능 연결 확인');
+  if(!memo)return;
+
+  await fetch('/api/travel-control-inspector/dev-request',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      page: page.title,
+      item: item.title,
+      item_id: item.id,
+      memo,
+      map: map || null
+    })
+  });
+
+  alert('DEV 개선요청 저장 완료');
+}
+
+INSPLoad();
+</script>
+
 </body>
 </html>

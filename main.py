@@ -2505,3 +2505,55 @@ async def api_dev_request_from_function_map(payload: dict = _REV_BODY(...)):
     path.write_text(_rev_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "message": "DEV 개선요청 저장 완료"}
 # ===== End Travel Function Reverse Map API v1 =====
+
+
+# ===== Travel Control Function Inspector API v1 =====
+from fastapi import Body as _INSP_BODY
+import json as _insp_json
+from pathlib import Path as _INSP_Path
+from datetime import datetime as _INSP_datetime
+
+_INSP_UI_CONFIG = _INSP_Path("storage") / "travel_ui_config.json"
+_INSP_FUNCTION_MAP = _INSP_Path("storage") / "travel_function_map.json"
+_INSP_DEV_REQUESTS = _INSP_Path("storage") / "dev_requests.json"
+
+def _insp_now():
+    return _INSP_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _insp_load(path, default):
+    path.parent.mkdir(exist_ok=True)
+    if not path.exists():
+        path.write_text(_insp_json.dumps(default, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _insp_json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+def _insp_save(path, data):
+    path.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _insp_now()
+    path.write_text(_insp_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/travel-control-inspector")
+async def api_travel_control_inspector():
+    ui = _insp_load(_INSP_UI_CONFIG, {"version":"v1","pages":[]})
+    fmap = _insp_load(_INSP_FUNCTION_MAP, {"version":"v1","pages":[]})
+    return {"ok": True, "ui": ui, "function_map": fmap}
+
+@app.post("/api/travel-control-inspector/save-ui")
+async def api_travel_control_inspector_save_ui(payload: dict = _INSP_BODY(...)):
+    saved = _insp_save(_INSP_UI_CONFIG, payload)
+    return {"ok": True, "config": saved}
+
+@app.post("/api/travel-control-inspector/dev-request")
+async def api_travel_control_inspector_dev_request(payload: dict = _INSP_BODY(...)):
+    data = _insp_load(_INSP_DEV_REQUESTS, {"items":[]})
+    data.setdefault("items", []).append({
+        "createdAt": _insp_now(),
+        "source": "travel_control_function_inspector",
+        "payload": payload
+    })
+    _insp_save(_INSP_DEV_REQUESTS, data)
+    return {"ok": True, "message": "DEV 개선요청 저장 완료"}
+# ===== End Travel Control Function Inspector API v1 =====
