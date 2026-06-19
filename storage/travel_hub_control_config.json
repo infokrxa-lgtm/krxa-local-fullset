@@ -1,0 +1,73 @@
+{
+  "version": "v1",
+  "enabled": true,
+  "title": "여행허브 추천",
+  "input_enabled": true,
+  "placeholder": "목적지나 원하는 장소를 입력하세요",
+  "result_count": 8,
+  "open_new_window": true,
+  "origin_mode": "gps",
+  "map_provider": "google",
+  "categories": [
+    {
+      "id": "food",
+      "name": "맛집",
+      "enabled": true,
+      "keywords": [
+        "근처 맛집",
+        "현지 인기 맛집",
+        "허영만 백반기행 맛집"
+      ]
+    },
+    {
+      "id": "hotel",
+      "name": "호텔",
+      "enabled": true,
+      "keywords": [
+        "근처 호텔",
+        "인기 숙소",
+        "가성비 호텔"
+      ]
+    },
+    {
+      "id": "tour",
+      "name": "관광지",
+      "enabled": true,
+      "keywords": [
+        "근처 관광지",
+        "인기 명소",
+        "현지 추천 관광"
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "교통",
+      "enabled": true,
+      "keywords": [
+        "가까운 역",
+        "택시",
+        "버스 정류장"
+      ]
+    },
+    {
+      "id": "shopping",
+      "name": "쇼핑",
+      "enabled": true,
+      "keywords": [
+        "근처 쇼핑",
+        "시장",
+        "마트"
+      ]
+    },
+    {
+      "id": "airport",
+      "name": "항공/공항",
+      "enabled": true,
+      "keywords": [
+        "공항",
+        "항공권",
+        "공항 가는 길"
+      ]
+    }
+  ]
+}

@@ -214,5 +214,57 @@ async function toggleComp(key){
 }
 </script>
 
+
+<!-- Travel GAP Patch 02 Control Panel -->
+<div style="margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1">
+  <h3>여행허브 입력/추천/지도 설정</h3>
+  <button onclick="KRXAHubLoad()">불러오기</button>
+  <button onclick="KRXAHubSave()" style="background:#16a34a;color:white">완료 / USER 반영</button>
+  <label>제목</label>
+  <input id="hub_title" style="width:100%;padding:8px;margin:4px">
+  <label>입력창 문구</label>
+  <input id="hub_placeholder" style="width:100%;padding:8px;margin:4px">
+  <label>추천 개수</label>
+  <input id="hub_count" type="number" min="1" max="20" style="width:100%;padding:8px;margin:4px">
+  <label><input id="hub_enabled" type="checkbox"> 여행허브 추천 ON</label><br>
+  <label><input id="hub_input_enabled" type="checkbox"> 목적지 입력창 ON</label><br>
+  <label><input id="hub_new_window" type="checkbox"> 지도 새창 열기 ON</label>
+  <p>카테고리 JSON</p>
+  <textarea id="hub_categories" style="width:100%;height:220px"></textarea>
+</div>
+<script>
+let KRXA_HUB_CFG=null;
+async function KRXAHubLoad(){
+  const res=await fetch('/api/travel-hub-control-config?ts='+Date.now());
+  const data=await res.json();
+  KRXA_HUB_CFG=data.config;
+  document.getElementById('hub_title').value=KRXA_HUB_CFG.title||'';
+  document.getElementById('hub_placeholder').value=KRXA_HUB_CFG.placeholder||'';
+  document.getElementById('hub_count').value=KRXA_HUB_CFG.result_count||8;
+  document.getElementById('hub_enabled').checked=KRXA_HUB_CFG.enabled!==false;
+  document.getElementById('hub_input_enabled').checked=KRXA_HUB_CFG.input_enabled!==false;
+  document.getElementById('hub_new_window').checked=KRXA_HUB_CFG.open_new_window!==false;
+  document.getElementById('hub_categories').value=JSON.stringify(KRXA_HUB_CFG.categories||[], null, 2);
+}
+async function KRXAHubSave(){
+  if(!KRXA_HUB_CFG) KRXA_HUB_CFG={};
+  KRXA_HUB_CFG.title=document.getElementById('hub_title').value;
+  KRXA_HUB_CFG.placeholder=document.getElementById('hub_placeholder').value;
+  KRXA_HUB_CFG.result_count=Number(document.getElementById('hub_count').value||8);
+  KRXA_HUB_CFG.enabled=document.getElementById('hub_enabled').checked;
+  KRXA_HUB_CFG.input_enabled=document.getElementById('hub_input_enabled').checked;
+  KRXA_HUB_CFG.open_new_window=document.getElementById('hub_new_window').checked;
+  KRXA_HUB_CFG.categories=JSON.parse(document.getElementById('hub_categories').value||'[]');
+  const res=await fetch('/api/travel-hub-control-config/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(KRXA_HUB_CFG)
+  });
+  const data=await res.json();
+  alert('저장 완료 / USER 반영 준비');
+}
+KRXAHubLoad();
+</script>
+
 </body>
 </html>

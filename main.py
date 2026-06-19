@@ -2062,3 +2062,84 @@ async def api_gap01_travel_ui_components_save(payload: dict = _GAP01_BODY(...)):
     synced = _gap01_sync_components(payload)
     return {"ok": True, "config": synced, "message": "CONTROL saved and USER sync ready"}
 # ===== End Travel GAP Patch 01 API =====
+
+
+# ===== Travel GAP Patch 02 API =====
+from fastapi import Body as _GAP02_BODY
+from fastapi import Query as _GAP02_Query
+import json as _gap02_json
+from pathlib import Path as _GAP02_Path
+
+_GAP02_CFG = _GAP02_Path("storage") / "travel_hub_control_config.json"
+
+def _gap02_default():
+    return {
+        "version": "v1",
+        "enabled": True,
+        "title": "여행허브 추천",
+        "input_enabled": True,
+        "placeholder": "목적지나 원하는 장소를 입력하세요",
+        "result_count": 8,
+        "open_new_window": True,
+        "origin_mode": "gps",
+        "map_provider": "google",
+        "categories": [
+            {"id": "food", "name": "맛집", "enabled": True, "keywords": ["근처 맛집", "현지 인기 맛집", "허영만 백반기행 맛집"]},
+            {"id": "hotel", "name": "호텔", "enabled": True, "keywords": ["근처 호텔", "인기 숙소", "가성비 호텔"]},
+            {"id": "tour", "name": "관광지", "enabled": True, "keywords": ["근처 관광지", "인기 명소", "현지 추천 관광"]},
+            {"id": "transport", "name": "교통", "enabled": True, "keywords": ["가까운 역", "택시", "버스 정류장"]},
+            {"id": "shopping", "name": "쇼핑", "enabled": True, "keywords": ["근처 쇼핑", "시장", "마트"]},
+            {"id": "airport", "name": "항공/공항", "enabled": True, "keywords": ["공항", "항공권", "공항 가는 길"]}
+        ]
+    }
+
+def _gap02_load():
+    _GAP02_CFG.parent.mkdir(exist_ok=True)
+    if not _GAP02_CFG.exists():
+        _GAP02_CFG.write_text(_gap02_json.dumps(_gap02_default(), ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _gap02_json.loads(_GAP02_CFG.read_text(encoding="utf-8"))
+    except Exception:
+        return _gap02_default()
+
+def _gap02_save(data):
+    _GAP02_CFG.parent.mkdir(exist_ok=True)
+    _GAP02_CFG.write_text(_gap02_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+@app.get("/api/travel-hub-control-config")
+async def api_travel_hub_control_config():
+    return {"ok": True, "config": _gap02_load()}
+
+@app.post("/api/travel-hub-control-config/save")
+async def api_travel_hub_control_config_save(payload: dict = _GAP02_BODY(...)):
+    _gap02_save(payload)
+    return {"ok": True, "config": payload}
+
+@app.get("/api/travel-hub-recommend")
+async def api_travel_hub_recommend(
+    category: str = _GAP02_Query("food"),
+    query: str = _GAP02_Query(""),
+    lat: str = _GAP02_Query(""),
+    lng: str = _GAP02_Query("")
+):
+    cfg = _gap02_load()
+    count = int(cfg.get("result_count", 8))
+    cats = cfg.get("categories", [])
+    cat = next((c for c in cats if c.get("id") == category), None)
+    name = cat.get("name", category) if cat else category
+    keywords = cat.get("keywords", []) if cat else [name]
+
+    base = query.strip() if query and query.strip() else name
+    items = []
+    seed = keywords or [base]
+    for i in range(count):
+        kw = seed[i % len(seed)]
+        title = f"{base} · {kw}" if query else kw
+        items.append({
+            "id": f"{category}-{i+1}",
+            "title": title,
+            "destination": title,
+            "memo": "선택하면 현재 위치에서 목적지까지 Google Maps 길찾기를 엽니다."
+        })
+    return {"ok": True, "category": category, "items": items}
+# ===== End Travel GAP Patch 02 API =====
