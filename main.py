@@ -2012,3 +2012,53 @@ async def api_travel_ui_components_save(payload: dict = _KRXA_COMP_BODY(...)):
     _krxa_save_ui_components(payload)
     return {"ok": True, "config": payload}
 # ===== End KRXA Travel UI Components API v1 =====
+
+
+# ===== Travel GAP Patch 01 API =====
+from fastapi import Body as _GAP01_BODY
+import json as _gap01_json
+from pathlib import Path as _GAP01_Path
+from datetime import datetime as _GAP01_datetime
+
+_GAP01_STORAGE = _GAP01_Path("storage")
+_GAP01_UI_CONFIG = _GAP01_STORAGE / "travel_ui_config.json"
+_GAP01_COMPONENTS = _GAP01_STORAGE / "travel_ui_components.json"
+
+def _gap01_load_json(path, default):
+    try:
+        if path.exists():
+            return _gap01_json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return default
+
+def _gap01_save_json(path, data):
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(
+        _gap01_json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+def _gap01_sync_components(config):
+    synced = {
+        "version": config.get("version", "v1"),
+        "updatedAt": _GAP01_datetime.now().strftime("%Y%m%d_%H%M%S"),
+        "pages": config.get("pages", [])
+    }
+    _gap01_save_json(_GAP01_COMPONENTS, synced)
+    return synced
+
+@app.get("/api/travel-ui-components")
+async def api_gap01_travel_ui_components():
+    config = _gap01_load_json(_GAP01_COMPONENTS, None)
+    if config is None:
+        base = _gap01_load_json(_GAP01_UI_CONFIG, {"version": "v1", "pages": []})
+        config = _gap01_sync_components(base)
+    return {"ok": True, "config": config}
+
+@app.post("/api/travel-ui-components/save")
+async def api_gap01_travel_ui_components_save(payload: dict = _GAP01_BODY(...)):
+    _gap01_save_json(_GAP01_UI_CONFIG, payload)
+    synced = _gap01_sync_components(payload)
+    return {"ok": True, "config": synced, "message": "CONTROL saved and USER sync ready"}
+# ===== End Travel GAP Patch 01 API =====
