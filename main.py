@@ -2143,3 +2143,94 @@ async def api_travel_hub_recommend(
         })
     return {"ok": True, "category": category, "items": items}
 # ===== End Travel GAP Patch 02 API =====
+
+
+# ===== Travel GAP Patch 03 API =====
+from fastapi import Body as _GAP03_BODY
+import json as _gap03_json
+from pathlib import Path as _GAP03_Path
+from datetime import datetime as _GAP03_datetime
+
+_GAP03_STORAGE = _GAP03_Path("storage")
+_GAP03_GROUPS = _GAP03_STORAGE / "travel_hero_groups.json"
+_GAP03_PLACES = _GAP03_STORAGE / "travel_hero_places.json"
+
+def _gap03_now():
+    return _GAP03_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _gap03_default_groups():
+    return {
+        "version": "v1",
+        "updatedAt": _gap03_now(),
+        "groups": [
+            {"id": "baekban", "title": "허영만 백반기행", "enabled": True, "type": "hero"},
+            {"id": "baekjong", "title": "백종원 추천맛집", "enabled": True, "type": "hero"},
+            {"id": "nearby_food", "title": "주변맛집", "enabled": True, "type": "hero"},
+            {"id": "festival", "title": "지역축제", "enabled": True, "type": "hero"},
+            {"id": "tour_news", "title": "뉴스관광지", "enabled": True, "type": "hero"}
+        ]
+    }
+
+def _gap03_default_places():
+    return {
+        "version": "v1",
+        "updatedAt": _gap03_now(),
+        "places": [
+            {
+                "id": "baekban-001",
+                "group_id": "baekban",
+                "name": "늘본점수서본점",
+                "region": "서울 강남",
+                "category": "복어요리",
+                "address": "서울 강남구 수서동",
+                "keyword": "늘본점 수서본점",
+                "enabled": True,
+                "memo": "허영만 백반기행 예시 데이터"
+            },
+            {
+                "id": "baekban-002",
+                "group_id": "baekban",
+                "name": "최가네",
+                "region": "부천",
+                "category": "한식",
+                "address": "경기 부천시",
+                "keyword": "최가네 부천 한식",
+                "enabled": True,
+                "memo": "예시 데이터"
+            }
+        ]
+    }
+
+def _gap03_load(path, default):
+    path.parent.mkdir(exist_ok=True)
+    if not path.exists():
+        path.write_text(_gap03_json.dumps(default(), ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _gap03_json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default()
+
+def _gap03_save(path, data):
+    path.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _gap03_now()
+    path.write_text(_gap03_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/travel-hero-groups")
+async def api_travel_hero_groups():
+    return {"ok": True, "config": _gap03_load(_GAP03_GROUPS, _gap03_default_groups)}
+
+@app.post("/api/travel-hero-groups/save")
+async def api_travel_hero_groups_save(payload: dict = _GAP03_BODY(...)):
+    saved = _gap03_save(_GAP03_GROUPS, payload)
+    return {"ok": True, "config": saved}
+
+@app.get("/api/travel-hero-places")
+async def api_travel_hero_places():
+    return {"ok": True, "config": _gap03_load(_GAP03_PLACES, _gap03_default_places)}
+
+@app.post("/api/travel-hero-places/save")
+async def api_travel_hero_places_save(payload: dict = _GAP03_BODY(...)):
+    saved = _gap03_save(_GAP03_PLACES, payload)
+    return {"ok": True, "config": saved}
+# ===== End Travel GAP Patch 03 API =====

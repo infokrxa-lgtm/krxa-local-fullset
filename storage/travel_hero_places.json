@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "updatedAt": "20260619_190753",
+  "places": [
+    {
+      "id": "baekban-001",
+      "group_id": "baekban",
+      "name": "늘본점수서본점",
+      "region": "서울 강남",
+      "category": "복어요리",
+      "address": "서울 강남구 수서동",
+      "keyword": "늘본점 수서본점",
+      "enabled": true,
+      "memo": "허영만 백반기행 예시 데이터"
+    },
+    {
+      "id": "baekban-002",
+      "group_id": "baekban",
+      "name": "최가네",
+      "region": "부천",
+      "category": "한식",
+      "address": "경기 부천시",
+      "keyword": "최가네 부천 한식",
+      "enabled": true,
+      "memo": "예시 데이터"
+    }
+  ]
+}

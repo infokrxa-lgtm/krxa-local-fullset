@@ -1,0 +1,36 @@
+{
+  "version": "v1",
+  "updatedAt": "20260619_190753",
+  "groups": [
+    {
+      "id": "baekban",
+      "title": "허영만 백반기행",
+      "enabled": true,
+      "type": "hero"
+    },
+    {
+      "id": "baekjong",
+      "title": "백종원 추천맛집",
+      "enabled": true,
+      "type": "hero"
+    },
+    {
+      "id": "nearby_food",
+      "title": "주변맛집",
+      "enabled": true,
+      "type": "hero"
+    },
+    {
+      "id": "festival",
+      "title": "지역축제",
+      "enabled": true,
+      "type": "hero"
+    },
+    {
+      "id": "tour_news",
+      "title": "뉴스관광지",
+      "enabled": true,
+      "type": "hero"
+    }
+  ]
+}
