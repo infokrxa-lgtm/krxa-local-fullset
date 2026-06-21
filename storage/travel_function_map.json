@@ -1,17 +1,19 @@
 {
-  "version": "v1",
-  "updatedAt": "20260619_221812",
+  "version": "v2_rescan",
+  "updatedAt": "20260621_153926",
+  "source": "travel_ui_config + current app.html/js rescan",
   "pages": [
     {
       "page": 1,
       "title": "사용자 UI 1",
+      "enabled": true,
       "items": [
         {
           "id": "gps",
           "title": "GPS",
           "status": "active",
-          "user_action": "상단 위치/날짜/시간 표시",
-          "user_result": "현재 위치·시간 정보 표시",
+          "user_action": "GPS 클릭",
+          "user_result": "현재 위치·날짜·시간·언어 표시",
           "files": [
             "ui/js/travel_context.js",
             "ui/js/travel_gps_time_place_sync.js"
@@ -24,17 +26,18 @@
           ],
           "control_manage": [
             "ON/OFF",
-            "표시문구",
-            "자동/수동 위치 표시"
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
           ],
-          "dev_request": "GPS 표시/권한/위치동기화 오류 수정"
+          "dev_request": "GPS 실제 클릭 함수/API/JSON 연결 확인"
         },
         {
-          "id": "hero",
-          "title": "Hero",
-          "status": "active",
-          "user_action": "Hero 카드 클릭",
-          "user_result": "추천 장소 또는 Hero 그룹 리스트 표시",
+          "id": "hero_baekban",
+          "title": "Hero · 허영만 백반기행",
+          "status": "check_required",
+          "user_action": "Hero · 허영만 백반기행 클릭",
+          "user_result": "Hero 추천/그룹/장소 리스트 표시",
           "files": [
             "ui/js/hero_recommend.js",
             "ui/js/travel_recommend.js"
@@ -51,226 +54,44 @@
           ],
           "control_manage": [
             "Hero 그룹 ON/OFF",
-            "장소 리스트 관리",
+            "장소 리스트",
             "신규/수정/삭제/완료"
           ],
-          "dev_request": "Hero가 관제 저장값을 USER에 반영하도록 연결"
+          "dev_request": "Hero · 허영만 백반기행 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "hero_tour",
+          "title": "Hero · 주변 관광지",
+          "status": "check_required",
+          "user_action": "Hero · 주변 관광지 클릭",
+          "user_result": "Hero 추천/그룹/장소 리스트 표시",
+          "files": [
+            "ui/js/hero_recommend.js",
+            "ui/js/travel_recommend.js"
+          ],
+          "api": [
+            "/api/travel-recommend",
+            "/api/travel-hero-groups",
+            "/api/travel-hero-places"
+          ],
+          "json": [
+            "storage/travel_hero_cards.json",
+            "storage/travel_hero_groups.json",
+            "storage/travel_hero_places.json"
+          ],
+          "control_manage": [
+            "Hero 그룹 ON/OFF",
+            "장소 리스트",
+            "신규/수정/삭제/완료"
+          ],
+          "dev_request": "Hero · 주변 관광지 실제 클릭 함수/API/JSON 연결 확인"
         },
         {
           "id": "mini_talk",
           "title": "미니말하기",
-          "status": "check_required",
+          "status": "active",
           "user_action": "미니말하기 클릭",
-          "user_result": "말대말 통역 페이지 이동 또는 음성입력",
-          "files": [
-            "ui/app.html",
-            "ui/js/m2m_translate.js"
-          ],
-          "api": [
-            "/api/stt",
-            "/api/translate",
-            "/api/tts"
-          ],
-          "json": [],
-          "control_manage": [
-            "ON/OFF",
-            "표시 위치",
-            "통역 연결 여부"
-          ],
-          "dev_request": "클릭바 활성화 및 통역 페이지 연결 확인"
-        }
-      ]
-    },
-    {
-      "page": 2,
-      "title": "사용자 UI 2",
-      "items": [
-        {
-          "id": "food",
-          "title": "맛집",
-          "status": "active",
-          "user_action": "맛집 클릭",
-          "user_result": "주변 맛집 추천 리스트 → 지도 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js",
-            "ui/js/travel_map_apps.js",
-            "ui/js/travel_context.js"
-          ],
-          "api": [
-            "/api/recommend-market"
-          ],
-          "json": [
-            "storage/travel_map_apps.json"
-          ],
-          "control_manage": [
-            "ON/OFF",
-            "추천 방식",
-            "지도 연결",
-            "DEV 개선요청"
-          ],
-          "dev_request": "추천 리스트/길찾기 동작 검증"
-        },
-        {
-          "id": "transport",
-          "title": "교통",
-          "status": "active",
-          "user_action": "교통 클릭",
-          "user_result": "교통 허브 표시 → 목적지 입력 → 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js",
-            "ui/js/travel_map_apps.js"
-          ],
-          "api": [],
-          "json": [
-            "storage/travel_map_apps.json"
-          ],
-          "control_manage": [
-            "ON/OFF",
-            "목적지 입력창",
-            "지도앱 선택"
-          ],
-          "dev_request": "목적지 입력/새창 길찾기 확인"
-        },
-        {
-          "id": "route",
-          "title": "길찾기",
-          "status": "active",
-          "user_action": "길찾기 클릭",
-          "user_result": "목적지 입력 후 Google Maps 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js",
-            "ui/js/travel_context.js"
-          ],
-          "api": [],
-          "json": [
-            "storage/travel_map_apps.json"
-          ],
-          "control_manage": [
-            "ON/OFF",
-            "지도 URL",
-            "새창 여부"
-          ],
-          "dev_request": "현재위치→목적지 연결 확인"
-        },
-        {
-          "id": "sos",
-          "title": "SOS",
-          "status": "active",
-          "user_action": "SOS 클릭",
-          "user_result": "SOS 페이지 이동",
-          "files": [
-            "ui/app.html"
-          ],
-          "api": [],
-          "json": [],
-          "control_manage": [
-            "ON/OFF",
-            "긴급 항목 관리"
-          ],
-          "dev_request": "긴급 지도/전화 연결 검증"
-        }
-      ]
-    },
-    {
-      "page": 3,
-      "title": "사용자 UI 3 · 여행허브",
-      "items": [
-        {
-          "id": "hotel",
-          "title": "호텔",
-          "status": "active",
-          "user_action": "호텔 클릭",
-          "user_result": "주변 호텔 추천 리스트 → 지도 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js",
-            "ui/js/travel_map_apps.js"
-          ],
-          "api": [
-            "/api/recommend-market"
-          ],
-          "json": [
-            "storage/travel_map_apps.json"
-          ],
-          "control_manage": [
-            "ON/OFF",
-            "추천 개수",
-            "추천 방식",
-            "지도 연결",
-            "DEV 개선요청"
-          ],
-          "dev_request": "호텔 클릭 시 우측 실행 흐름 표시 필요"
-        },
-        {
-          "id": "airport",
-          "title": "공항",
-          "status": "check_required",
-          "user_action": "공항 클릭",
-          "user_result": "공항/항공 관련 링크 또는 지도 검색",
-          "files": [
-            "ui/js/travel_engine.js",
-            "ui/js/user_links.js"
-          ],
-          "api": [],
-          "json": [
-            "storage/travel_service_links.json"
-          ],
-          "control_manage": [
-            "ON/OFF",
-            "공항 링크",
-            "항공 링크"
-          ],
-          "dev_request": "항공/공항 흐름 정리 필요"
-        },
-        {
-          "id": "tour",
-          "title": "관광",
-          "status": "active",
-          "user_action": "관광 클릭",
-          "user_result": "주변 관광지 추천 → 지도 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js"
-          ],
-          "api": [
-            "/api/recommend-market"
-          ],
-          "json": [],
-          "control_manage": [
-            "ON/OFF",
-            "추천 방식"
-          ],
-          "dev_request": "관광 추천 흐름 확인"
-        },
-        {
-          "id": "shopping",
-          "title": "쇼핑",
-          "status": "active",
-          "user_action": "쇼핑 클릭",
-          "user_result": "주변 쇼핑 추천 → 지도 길찾기",
-          "files": [
-            "ui/js/travel_recommend.js"
-          ],
-          "api": [
-            "/api/recommend-market"
-          ],
-          "json": [],
-          "control_manage": [
-            "ON/OFF",
-            "추천 방식"
-          ],
-          "dev_request": "쇼핑 추천 흐름 확인"
-        }
-      ]
-    },
-    {
-      "page": 5,
-      "title": "사용자 UI 5 · 말대말",
-      "items": [
-        {
-          "id": "m2m",
-          "title": "말대말 통역",
-          "status": "active",
-          "user_action": "마이크/텍스트 입력",
-          "user_result": "STT → 번역 → TTS",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
           "files": [
             "ui/js/m2m_translate.js"
           ],
@@ -285,51 +106,131 @@
           ],
           "control_manage": [
             "ON/OFF",
-            "언어",
-            "자동대화",
-            "마이크"
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
           ],
-          "dev_request": "통역 연결/마이크/VAD 검증"
+          "dev_request": "미니말하기 실제 클릭 함수/API/JSON 연결 확인"
         }
       ]
     },
     {
-      "page": 6,
-      "title": "사용자 UI 6 · 통화/메신저",
+      "page": 2,
+      "title": "사용자 UI 2",
+      "enabled": true,
       "items": [
         {
-          "id": "call",
-          "title": "통화/메신저",
+          "id": "home",
+          "title": "홈",
           "status": "active",
-          "user_action": "전화/WhatsApp/WeChat 클릭",
-          "user_result": "전화앱 또는 외부 메신저 새창",
+          "user_action": "홈 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "홈 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "food",
+          "title": "맛집",
+          "status": "active",
+          "user_action": "맛집 클릭",
+          "user_result": "맛집 추천 리스트 → 장소 선택 → 지도 길찾기",
           "files": [
-            "ui/app.html",
-            "ui/js/user_links.js"
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "추천 개수",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "맛집 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "restaurant",
+          "title": "식당",
+          "status": "active",
+          "user_action": "식당 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "식당 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "transport",
+          "title": "교통",
+          "status": "active",
+          "user_action": "교통 클릭",
+          "user_result": "목적지 입력 → 현재위치 기준 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
           ],
           "api": [],
           "json": [
-            "storage/travel_service_links.json"
+            "storage/travel_map_apps.json"
           ],
           "control_manage": [
-            "연락처 등록",
             "ON/OFF",
-            "메신저 링크"
+            "목적지 입력창",
+            "지도앱",
+            "새창 여부"
           ],
-          "dev_request": "연락처 저장 구조 개선"
-        }
-      ]
-    },
-    {
-      "page": 8,
-      "title": "사용자 UI 8 · SOS",
-      "items": [
+          "dev_request": "교통 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "status": "active",
+          "user_action": "길찾기 클릭",
+          "user_result": "목적지 입력 → 현재위치 기준 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "목적지 입력창",
+            "지도앱",
+            "새창 여부"
+          ],
+          "dev_request": "길찾기 실제 클릭 함수/API/JSON 연결 확인"
+        },
         {
           "id": "sos",
           "title": "SOS",
           "status": "active",
-          "user_action": "경찰/구급/병원/대사관 클릭",
-          "user_result": "전화 또는 주변 지도 검색",
+          "user_action": "SOS 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
           "files": [
             "ui/app.html",
             "ui/js/travel_context.js"
@@ -341,7 +242,1109 @@
             "전화번호",
             "지도검색 키워드"
           ],
-          "dev_request": "해외 여행 기준 SOS 번호/대사관 검색 개선"
+          "dev_request": "SOS 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "mini_talk",
+          "title": "미니말하기",
+          "status": "active",
+          "user_action": "미니말하기 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "미니말하기 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "title": "사용자 UI 3",
+      "enabled": true,
+      "items": [
+        {
+          "id": "airport",
+          "title": "공항",
+          "status": "active",
+          "user_action": "공항 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "공항 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "hotel",
+          "title": "호텔",
+          "status": "active",
+          "user_action": "호텔 클릭",
+          "user_result": "호텔 추천 리스트 → 장소 선택 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "추천 개수",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "호텔 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "restaurant",
+          "title": "식당",
+          "status": "active",
+          "user_action": "식당 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "식당 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "transport",
+          "title": "교통",
+          "status": "active",
+          "user_action": "교통 클릭",
+          "user_result": "목적지 입력 → 현재위치 기준 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "목적지 입력창",
+            "지도앱",
+            "새창 여부"
+          ],
+          "dev_request": "교통 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "status": "active",
+          "user_action": "길찾기 클릭",
+          "user_result": "목적지 입력 → 현재위치 기준 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "목적지 입력창",
+            "지도앱",
+            "새창 여부"
+          ],
+          "dev_request": "길찾기 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "tour",
+          "title": "관광",
+          "status": "active",
+          "user_action": "관광 클릭",
+          "user_result": "관광 추천 리스트 → 장소 선택 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "추천 개수",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "관광 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "shopping",
+          "title": "쇼핑",
+          "status": "active",
+          "user_action": "쇼핑 클릭",
+          "user_result": "쇼핑 추천 리스트 → 장소 선택 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "추천 개수",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "쇼핑 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "music",
+          "title": "음악",
+          "status": "active",
+          "user_action": "음악 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "음악 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "tv",
+          "title": "TV시청",
+          "status": "active",
+          "user_action": "TV시청 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "TV시청 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "call",
+          "title": "통화",
+          "status": "active",
+          "user_action": "통화 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "통화 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "photo",
+          "title": "사진",
+          "status": "active",
+          "user_action": "사진 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "사진 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "video",
+          "title": "동영상",
+          "status": "active",
+          "user_action": "동영상 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "동영상 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "title": "사용자 UI 4",
+      "enabled": true,
+      "items": [
+        {
+          "id": "shopping",
+          "title": "쇼핑",
+          "status": "active",
+          "user_action": "쇼핑 클릭",
+          "user_result": "쇼핑 추천 리스트 → 장소 선택 → 지도 길찾기",
+          "files": [
+            "ui/js/travel_recommend.js",
+            "ui/js/travel_map_apps.js",
+            "ui/js/travel_context.js"
+          ],
+          "api": [
+            "/api/recommend-market"
+          ],
+          "json": [
+            "storage/travel_map_apps.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "추천 방식",
+            "추천 개수",
+            "지도 연결",
+            "DEV 개선요청"
+          ],
+          "dev_request": "쇼핑 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "mini_talk",
+          "title": "미니말하기",
+          "status": "active",
+          "user_action": "미니말하기 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "미니말하기 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "title": "사용자 UI 5",
+      "enabled": true,
+      "items": [
+        {
+          "id": "m2m",
+          "title": "말대말통역",
+          "status": "active",
+          "user_action": "말대말통역 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "말대말통역 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "auto",
+          "title": "자동",
+          "status": "active",
+          "user_action": "자동 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "자동 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "english",
+          "title": "영어",
+          "status": "check_required",
+          "user_action": "영어 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "영어 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "japanese",
+          "title": "일본어",
+          "status": "check_required",
+          "user_action": "일본어 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "일본어 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "chinese",
+          "title": "중국어",
+          "status": "check_required",
+          "user_action": "중국어 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "중국어 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "other_lang",
+          "title": "기타언어",
+          "status": "check_required",
+          "user_action": "기타언어 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "기타언어 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "auto_talk",
+          "title": "자동대화 ON/OFF",
+          "status": "check_required",
+          "user_action": "자동대화 ON/OFF 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "자동대화 ON/OFF 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "mic",
+          "title": "마이크",
+          "status": "active",
+          "user_action": "마이크 클릭",
+          "user_result": "STT → 번역 → TTS 또는 통역 페이지 연결",
+          "files": [
+            "ui/js/m2m_translate.js"
+          ],
+          "api": [
+            "/api/stt",
+            "/api/translate",
+            "/api/tts"
+          ],
+          "json": [
+            "storage/voice_filter_config.json",
+            "storage/turn_config.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "마이크 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "original",
+          "title": "원문",
+          "status": "check_required",
+          "user_action": "원문 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "원문 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "translated",
+          "title": "번역",
+          "status": "check_required",
+          "user_action": "번역 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "번역 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "text_input",
+          "title": "텍스트입력",
+          "status": "check_required",
+          "user_action": "텍스트입력 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "텍스트입력 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "replay",
+          "title": "다시듣기",
+          "status": "active",
+          "user_action": "다시듣기 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "다시듣기 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "speak",
+          "title": "말하기",
+          "status": "active",
+          "user_action": "말하기 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "말하기 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "exit",
+          "title": "종료",
+          "status": "check_required",
+          "user_action": "종료 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "종료 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "title": "사용자 UI 6",
+      "enabled": true,
+      "items": [
+        {
+          "id": "phone",
+          "title": "전화",
+          "status": "active",
+          "user_action": "전화 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "전화 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "whatsapp",
+          "title": "WhatsApp",
+          "status": "active",
+          "user_action": "WhatsApp 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "WhatsApp 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "wechat",
+          "title": "WeChat",
+          "status": "active",
+          "user_action": "WeChat 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "WeChat 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "hotel_call",
+          "title": "호텔전화",
+          "status": "check_required",
+          "user_action": "호텔전화 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "호텔전화 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "restaurant_call",
+          "title": "식당전화",
+          "status": "check_required",
+          "user_action": "식당전화 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "식당전화 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "taxi_call",
+          "title": "택시전화",
+          "status": "check_required",
+          "user_action": "택시전화 클릭",
+          "user_result": "전화앱 또는 외부 메신저 연결",
+          "files": [
+            "ui/app.html",
+            "ui/js/user_links.js"
+          ],
+          "api": [],
+          "json": [
+            "storage/travel_service_links.json"
+          ],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "택시전화 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "phone_input",
+          "title": "전화번호입력란",
+          "status": "check_required",
+          "user_action": "전화번호입력란 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "전화번호입력란 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "dial",
+          "title": "전화걸기",
+          "status": "active",
+          "user_action": "전화걸기 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "전화걸기 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "contact_manage",
+          "title": "연락처/메신저 등록삭제",
+          "status": "check_required",
+          "user_action": "연락처/메신저 등록삭제 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "연락처/메신저 등록삭제 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "title": "사용자 UI 7",
+      "enabled": true,
+      "items": [
+        {
+          "id": "recent_translate",
+          "title": "최근통역",
+          "status": "check_required",
+          "user_action": "최근통역 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "최근통역 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "recent_travel",
+          "title": "최근여행이용",
+          "status": "check_required",
+          "user_action": "최근여행이용 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "최근여행이용 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "memory_loop",
+          "title": "KRXA기억루프",
+          "status": "check_required",
+          "user_action": "KRXA기억루프 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "KRXA기억루프 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "continue_translate",
+          "title": "통역계속하기",
+          "status": "check_required",
+          "user_action": "통역계속하기 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "통역계속하기 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "travel_menu",
+          "title": "여행메뉴이동",
+          "status": "check_required",
+          "user_action": "여행메뉴이동 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "여행메뉴이동 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "clear_history",
+          "title": "사용내역초기화",
+          "status": "check_required",
+          "user_action": "사용내역초기화 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "사용내역초기화 실제 클릭 함수/API/JSON 연결 확인"
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "title": "사용자 UI 8",
+      "enabled": true,
+      "items": [
+        {
+          "id": "sos",
+          "title": "SOS",
+          "status": "active",
+          "user_action": "SOS 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "SOS 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "emergency_contact",
+          "title": "긴급연락",
+          "status": "check_required",
+          "user_action": "긴급연락 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "긴급연락 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "local_help",
+          "title": "현지 도움",
+          "status": "check_required",
+          "user_action": "현지 도움 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "현지 도움 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "embassy",
+          "title": "대사관",
+          "status": "active",
+          "user_action": "대사관 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "대사관 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "police",
+          "title": "경찰",
+          "status": "active",
+          "user_action": "경찰 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "경찰 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "hospital",
+          "title": "병원",
+          "status": "active",
+          "user_action": "병원 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "병원 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "insurance",
+          "title": "보험",
+          "status": "check_required",
+          "user_action": "보험 클릭",
+          "user_result": "현재 USER 코드 기준 실행 흐름 확인 필요",
+          "files": [],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "ON/OFF",
+            "표시명",
+            "실행 흐름 확인",
+            "DEV 개선요청"
+          ],
+          "dev_request": "보험 실제 클릭 함수/API/JSON 연결 확인"
+        },
+        {
+          "id": "location_share",
+          "title": "위치공유",
+          "status": "check_required",
+          "user_action": "위치공유 클릭",
+          "user_result": "긴급 전화 또는 주변 지도 검색",
+          "files": [
+            "ui/app.html",
+            "ui/js/travel_context.js"
+          ],
+          "api": [],
+          "json": [],
+          "control_manage": [
+            "긴급 항목 ON/OFF",
+            "전화번호",
+            "지도검색 키워드"
+          ],
+          "dev_request": "위치공유 실제 클릭 함수/API/JSON 연결 확인"
         }
       ]
     }
