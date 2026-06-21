@@ -1,5 +1,6 @@
 /* Admin Dynamic Bar Sync v1 - binding reinforced */
 (function(){
+  window.SYNC_ENGINE_CLEANUP_V1 = true;
   let last = "";
 
   async function load(){
