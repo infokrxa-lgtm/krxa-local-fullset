@@ -1376,6 +1376,42 @@ function DYNRender(){
   });
 }
 
+
+function KRXAAdminDetailHTML(it){
+  const id = it.id || "";
+  if(id === "gps"){
+    return `
+      <div class="krxaDetailBox">
+        <h3>GPS 구성 관리</h3>
+        <div class="krxaSubRow"><b>위치</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+        <div class="krxaSubRow"><b>날짜</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+        <div class="krxaSubRow"><b>시간</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+        <div class="krxaSubRow"><b>장소</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+      </div>`;
+  }
+  if(id === "hero"){
+    return `
+      <div class="krxaDetailBox">
+        <h3>Hero 구성 관리</h3>
+        <p>Hero 하위 구성은 사용자 좌측에는 보이지 않고, 여기서 관리합니다.</p>
+        <div class="krxaSubRow"><b>허영만 백반기행</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-hero-workspace?group=baekban','_blank')">작업창</button></div>
+        <div class="krxaSubRow"><b>주변 관광지</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-hero-workspace?group=tour','_blank')">작업창</button></div>
+        <div class="krxaSubRow"><b>백종원 맛집</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">작업창</button></div>
+        <div class="krxaSubRow"><b>지역축제</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">작업창</button></div>
+      </div>`;
+  }
+  if(id === "mini_talk" || id === "m2m"){
+    return `
+      <div class="krxaDetailBox">
+        <h3>미니말하기 구성 관리</h3>
+        <div class="krxaSubRow"><b>버튼명</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+        <div class="krxaSubRow"><b>아이콘</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+        <div class="krxaSubRow"><b>통역 연결</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-context','_blank')">작업창</button></div>
+      </div>`;
+  }
+  return "";
+}
+
 function DYNRight(){
   const title=document.getElementById('dynTitle');
   const box=document.getElementById('dynRight');
@@ -1494,6 +1530,60 @@ async function DYNSave(){
 
 DYNLoad();
 </script>
+
+
+<!-- Admin Compact Detail Binding v1 -->
+<style>
+.dynMgr{margin:10px!important;padding:12px!important;border-radius:14px!important}
+.dynGrid{grid-template-columns:390px 1fr!important;gap:14px!important}
+.dynPage{margin-bottom:6px!important;border-radius:10px!important}
+.dynHead{padding:8px 10px!important;font-size:15px!important}
+.dynItems{padding:6px!important}
+.dynItem{
+  grid-template-columns:1fr 54px 54px 54px!important;
+  gap:4px!important;
+  padding:6px 8px!important;
+  margin:4px 0!important;
+  border-radius:8px!important;
+  font-size:14px!important;
+}
+.dynBtn{
+  padding:5px 8px!important;
+  font-size:12px!important;
+  min-width:auto!important;
+}
+.dynRight{
+  padding:14px!important;
+  min-height:360px!important;
+}
+.dynInput{
+  padding:7px!important;
+  font-size:14px!important;
+}
+.krxaDetailBox{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid #dbe3ee;
+  border-radius:12px;
+  background:#fff;
+}
+.krxaSubRow{
+  display:grid;
+  grid-template-columns:1fr 70px 70px 80px;
+  gap:6px;
+  align-items:center;
+  border-bottom:1px solid #e5e7eb;
+  padding:8px 4px;
+}
+.krxaSmallBtn{
+  border:0;
+  border-radius:999px;
+  padding:5px 8px;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+}
+</style>
 
 </body>
 </html>

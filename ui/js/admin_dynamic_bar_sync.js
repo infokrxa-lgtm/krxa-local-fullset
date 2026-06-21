@@ -1,4 +1,4 @@
-/* Admin Dynamic Bar Sync v1 */
+/* Admin Dynamic Bar Sync v1 - binding reinforced */
 (function(){
   let last = "";
 
@@ -20,6 +20,42 @@
     return document.querySelectorAll("#pages > .page");
   }
 
+
+  function forceBindKnownItems(pageEl){
+    const known = {
+      "gps":["위치 확인됨","GPS"],
+      "hero":["LIVE TRAVEL DISCOVERY","주변 인기 장소","둘러보기"],
+      "mini_talk":["말대말","말하면 바로 통역"],
+      "airport":["공항"],
+      "hotel":["호텔"],
+      "restaurant":["식당"],
+      "food":["맛집"],
+      "transport":["교통"],
+      "route":["길찾기"],
+      "tour":["관광"],
+      "shopping":["쇼핑"],
+      "music":["음악"],
+      "tv":["TV시청"],
+      "call":["통화"],
+      "photo":["사진"],
+      "video":["동영상"],
+      "sos":["SOS"]
+    };
+
+    Object.keys(known).forEach(function(id){
+      known[id].forEach(function(key){
+        pageEl.querySelectorAll("button,.quickCard,.card,.serviceCard,.hero,.hero-card,.bottomBar,.btn,div").forEach(function(el){
+          const txt = (el.innerText || el.textContent || "").trim();
+          if(txt && txt.indexOf(key) >= 0){
+            if(!el.getAttribute("data-admin-id")){
+              el.setAttribute("data-admin-id", id);
+            }
+          }
+        });
+      });
+    });
+  }
+
   function apply(cfg){
     const pages = pageEls();
 
@@ -30,6 +66,7 @@
       pageEl.setAttribute("data-admin-page", page.id || ("page"+(idx+1)));
       pageEl.style.display = page.enabled === false ? "none" : "";
 
+      forceBindKnownItems(pageEl);
       ensureDynamicZone(pageEl);
 
       (page.items || []).forEach(function(item){
