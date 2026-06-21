@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KRXA AI GATE V1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb}
+header{padding:18px 22px;background:#111827;border-bottom:1px solid #374151}
+h1{margin:0;font-size:22px}
+main{padding:20px;display:grid;gap:16px}
+.card{background:#111827;border:1px solid #374151;border-radius:12px;padding:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:bold}
+.approve{background:#16a34a;color:white}
+.reject{background:#dc2626;color:white}
+.refresh{background:#2563eb;color:white}
+.pending{color:#facc15}.approved{color:#22c55e}.rejected{color:#f87171}
+pre{white-space:pre-wrap;background:#020617;padding:12px;border-radius:8px;overflow:auto}
+.small{color:#9ca3af;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>KRXA AI GATE V1</h1>
+<div class="small">AI 조회 · 패치 제안 · 사용자 승인 클릭바</div>
+</header>
+<main>
+<section class="card">
+<div class="row">
+<button class="refresh" onclick="loadAll()">새로고침</button>
+<span id="statusText">상태 확인 전</span>
+</div>
+<pre id="statusBox"></pre>
+</section>
+
+<section class="card">
+<h2>승인 대기 / 처리 목록</h2>
+<div id="approvalList">불러오는 중...</div>
+</section>
+</main>
+
+<script>
+async function api(path, options={}){
+  const res = await fetch(path,{headers:{"Content-Type":"application/json"},...options});
+  if(!res.ok) throw new Error(await res.text());
+  return await res.json();
+}
+function esc(t){
+  return String(t||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function statusClass(s){
+  if(s==="approved")return"approved";
+  if(s==="rejected")return"rejected";
+  return"pending";
+}
+async function loadStatus(){
+  const data=await api("/api/krxa/status");
+  document.getElementById("statusText").textContent=data.gate+" / "+data.mode;
+  document.getElementById("statusBox").textContent=JSON.stringify(data,null,2);
+}
+async function loadApprovals(){
+  const data=await api("/api/krxa/approval/list");
+  const box=document.getElementById("approvalList");
+  if(!data.items||data.items.length===0){
+    box.innerHTML="<p class='small'>승인 요청이 없습니다.</p>";
+    return;
+  }
+  box.innerHTML=data.items.map(item=>`
+    <div class="card">
+      <h3>${esc(item.title||"제목 없음")}</h3>
+      <p class="${statusClass(item.status)}">상태: ${esc(item.status)}</p>
+      <p>위험도: ${esc(item.risk_level||"-")}</p>
+      <p>사유: ${esc(item.reason||"-")}</p>
+      <p>대상 파일: ${esc((item.target_files||[]).join(", "))}</p>
+      <pre>${esc(item.patch_text||"")}</pre>
+      <div class="row">
+        <button class="approve" onclick="approve('${item.approval_id}')">승인</button>
+        <button class="reject" onclick="reject('${item.approval_id}')">거절</button>
+      </div>
+    </div>`).join("");
+}
+async function approve(id){
+  await api("/api/krxa/approval/approve",{method:"POST",body:JSON.stringify({approval_id:id,memo:"사용자 승인 클릭"})});
+  await loadAll();
+}
+async function reject(id){
+  await api("/api/krxa/approval/reject",{method:"POST",body:JSON.stringify({approval_id:id,memo:"사용자 거절 클릭"})});
+  await loadAll();
+}
+async function loadAll(){
+  try{
+    await loadStatus();
+    await loadApprovals();
+  }catch(err){
+    document.getElementById("approvalList").innerHTML="<pre>"+esc(err.message)+"</pre>";
+  }
+}
+loadAll();
+</script>
+</body>
+</html>

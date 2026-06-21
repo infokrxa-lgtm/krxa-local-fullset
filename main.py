@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 
+from core.krxa_ai_gate import router as krxa_ai_gate_router
 from fastapi import FastAPI, Form, UploadFile, File, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
@@ -32,6 +33,7 @@ from core.krxa_links import (
 )
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
+app.include_router(krxa_ai_gate_router)
 ROOT = Path(".").resolve()
 
 VOICE_FILTER_PATH = "storage/voice_filter_config.json"
@@ -2631,3 +2633,10 @@ async def api_admin_dynamic_bars():
 async def api_admin_dynamic_bars_save(payload: dict = _DYN_BODY(...)):
     return {"ok": True, "config": _dyn_save(payload)}
 # ===== End Admin Dynamic Bar Manager API v1 =====
+
+
+# ===== KRXA AI GATE V1 PAGE =====
+@app.get("/ai-gate")
+def ai_gate_page():
+    return FileResponse("ui/ai_gate.html")
+# ===== End KRXA AI GATE V1 PAGE =====
