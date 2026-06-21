@@ -888,5 +888,210 @@ async function INSPDevRequest(){
 INSPLoad();
 </script>
 
+
+<!-- Accordion Control Workspace v1 -->
+<style>
+.accWrap{margin:16px;padding:16px;border:1px solid #cbd5e1;border-radius:18px;background:#fff;color:#0f172a}
+.accLayout{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.accPage{margin-bottom:8px;border:1px solid #dbe3ee;border-radius:12px;overflow:hidden}
+.accHead{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#e2e8f0;font-weight:900;cursor:pointer}
+.accHead.active{background:#2563eb;color:white}
+.accItems{display:none;padding:8px;background:#f8fafc}
+.accItems.open{display:block}
+.accItem{padding:10px;margin:5px 0;border-radius:10px;background:white;border:1px solid #e2e8f0;cursor:pointer}
+.accItem:hover{background:#dbeafe}
+.accBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:4px}
+.accOn{background:#16a34a;color:white}.accOff{background:#dc2626;color:white}.accBlue{background:#2563eb;color:white}.accGray{background:#64748b;color:white}
+.accDetail{padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;white-space:pre-wrap;line-height:1.55;min-height:260px}
+</style>
+
+<div class="accWrap">
+  <h2>Accordion Control Workspace · USER 1~8</h2>
+  <p>좌측은 사용자가 보는 페이지/구성, 우측은 선택 구성의 상태·실행흐름·작업창 연결입니다.</p>
+  <div class="accLayout">
+    <div id="accLeft"></div>
+    <div>
+      <h3 id="accTitle">구성을 선택하세요</h3>
+      <div id="accDetail" class="accDetail">좌측 페이지를 펼치고 항목을 선택하세요.</div>
+      <div>
+        <button class="accBtn accBlue" onclick="ACCOpenWorkspace()">작업창 열기</button>
+        <button class="accBtn accGray" onclick="ACCDevRequest()">DEV 개선요청</button>
+        <button class="accBtn accOn" onclick="ACCSave()">완료 / USER 반영</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let ACC_UI=null;
+let ACC_MAP=null;
+let ACC_SELECTED_PAGE=null;
+let ACC_SELECTED_ITEM=null;
+
+async function ACCLoad(){
+  const res=await fetch('/api/travel-control-inspector?ts='+Date.now());
+  const data=await res.json();
+  ACC_UI=data.ui||{pages:[]};
+  ACC_MAP=data.function_map||{pages:[]};
+  ACCRender();
+}
+
+function ACCFindMap(pageIdx,item){
+  const n=pageIdx+1;
+  const mp=(ACC_MAP.pages||[]).find(p=>Number(p.page)===n);
+  if(!mp)return null;
+  return (mp.items||[]).find(x=>x.id===item.id || x.title===item.title) || null;
+}
+
+function ACCRender(){
+  const left=document.getElementById('accLeft');
+  left.innerHTML='';
+  (ACC_UI.pages||[]).forEach((page,pi)=>{
+    const box=document.createElement('div');
+    box.className='accPage';
+
+    const head=document.createElement('div');
+    head.className='accHead '+(ACC_SELECTED_PAGE===pi?'active':'');
+    head.innerHTML=`<span>${page.title||('사용자 UI '+(pi+1))}</span><span>${page.enabled===false?'OFF':'ON'}</span>`;
+    head.onclick=()=>{
+      ACC_SELECTED_PAGE = ACC_SELECTED_PAGE===pi ? null : pi;
+      ACC_SELECTED_ITEM=null;
+      ACCRender();
+      ACCDetail();
+    };
+
+    const items=document.createElement('div');
+    items.className='accItems '+(ACC_SELECTED_PAGE===pi?'open':'');
+    (page.items||[]).forEach((it,ii)=>{
+      const m=ACCFindMap(pi,it);
+      const row=document.createElement('div');
+      row.className='accItem';
+      row.innerHTML=`${it.title||it.id} <span style="float:right">${it.enabled===false?'OFF':'ON'} · ${(m&&m.status)||'미매핑'}</span>`;
+      row.onclick=(e)=>{
+        e.stopPropagation();
+        ACC_SELECTED_PAGE=pi;
+        ACC_SELECTED_ITEM=ii;
+        ACCRender();
+        ACCDetail();
+      };
+      items.appendChild(row);
+    });
+
+    box.appendChild(head);
+    box.appendChild(items);
+    left.appendChild(box);
+  });
+}
+
+function ACCDetail(){
+  const title=document.getElementById('accTitle');
+  const box=document.getElementById('accDetail');
+
+  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){
+    title.textContent='구성을 선택하세요';
+    box.textContent='좌측 페이지를 펼치고 항목을 선택하세요.';
+    return;
+  }
+
+  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
+  const item=page.items[ACC_SELECTED_ITEM];
+  const map=ACCFindMap(ACC_SELECTED_PAGE,item);
+
+  title.textContent=(page.title||'USER')+' · '+(item.title||item.id);
+
+  if(!map){
+    box.textContent=`[사용자 표시]
+${item.title||item.id}
+
+[ON/OFF]
+${item.enabled===false?'OFF':'ON'}
+
+[기능상태]
+미매핑
+
+[다음 조치]
+작업창 또는 DEV 개선요청에서 실제 클릭 함수/API/JSON 연결을 확인해야 합니다.`;
+    return;
+  }
+
+  box.textContent=`[사용자 표시]
+${map.title}
+
+[ON/OFF]
+${item.enabled===false?'OFF':'ON'}
+
+[기능상태]
+${map.status}
+
+[USER 클릭/작동]
+${map.user_action}
+
+[실행 결과]
+${map.user_result}
+
+[연결 파일]
+${(map.files||[]).join('\n')}
+
+[API]
+${(map.api||[]).join('\n')}
+
+[JSON]
+${(map.json||[]).join('\n')}
+
+[관제 관리 가능 항목]
+${(map.control_manage||[]).join('\n')}
+
+[DEV 개선요청 기준]
+${map.dev_request||''}`;
+}
+
+function ACCOpenWorkspace(){
+  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){alert('항목을 선택하세요.');return;}
+  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
+  const item=page.items[ACC_SELECTED_ITEM];
+  const id=item.id||'';
+
+  if(id.includes('hero')){
+    window.open('/control/travel-hero-workspace?group=baekban','_blank');
+    return;
+  }
+  if(['hotel','food','restaurant','tour','shopping','transport','route'].includes(id)){
+    window.open('/control/travel-map-apps','_blank');
+    return;
+  }
+  if(['m2m','mini_talk','mic'].includes(id)){
+    window.open('/control/travel-context','_blank');
+    return;
+  }
+  window.open('/dev/travel-user-bridge','_blank');
+}
+
+async function ACCDevRequest(){
+  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){alert('항목을 선택하세요.');return;}
+  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
+  const item=page.items[ACC_SELECTED_ITEM];
+  const map=ACCFindMap(ACC_SELECTED_PAGE,item);
+  const memo=prompt('DEV 개선요청', map?map.dev_request:'미매핑 항목 연결 확인');
+  if(!memo)return;
+  await fetch('/api/travel-control-inspector/dev-request',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({page:page.title,item:item.title,item_id:item.id,memo,map:map||null})
+  });
+  alert('DEV 개선요청 저장 완료');
+}
+
+async function ACCSave(){
+  await fetch('/api/travel-control-inspector/save-ui',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(ACC_UI)
+  });
+  alert('완료 저장 / USER 반영');
+}
+
+ACCLoad();
+</script>
+
 </body>
 </html>
