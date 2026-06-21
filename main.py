@@ -5,6 +5,7 @@ import os
 import shutil
 
 from core.krxa_ai_gate import router as krxa_ai_gate_router
+from core.krxa_project_inspector import router as krxa_project_inspector_router
 from fastapi import FastAPI, Form, UploadFile, File, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
@@ -33,6 +34,7 @@ from core.krxa_links import (
 )
 
 app = FastAPI(title="KRXA LOCAL FULLSET REAL")
+app.include_router(krxa_project_inspector_router)
 app.include_router(krxa_ai_gate_router)
 ROOT = Path(".").resolve()
 
@@ -2640,3 +2642,10 @@ async def api_admin_dynamic_bars_save(payload: dict = _DYN_BODY(...)):
 def ai_gate_page():
     return FileResponse("ui/ai_gate.html")
 # ===== End KRXA AI GATE V1 PAGE =====
+
+
+# ===== KRXA PROJECT INSPECTOR V1 PAGE =====
+@app.get("/project-inspector")
+def project_inspector_page():
+    return FileResponse("ui/project_inspector.html")
+# ===== End KRXA PROJECT INSPECTOR V1 PAGE =====

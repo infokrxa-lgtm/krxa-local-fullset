@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KRXA Project Inspector V1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#0f172a;color:#e5e7eb;font-family:Arial,sans-serif}
+header{padding:18px 22px;background:#111827;border-bottom:1px solid #374151}
+main{padding:20px;display:grid;grid-template-columns:320px 1fr;gap:16px}
+.card{background:#111827;border:1px solid #374151;border-radius:12px;padding:14px}
+button{border:0;border-radius:8px;padding:9px 12px;margin:4px;cursor:pointer;font-weight:900;background:#2563eb;color:white}
+pre{white-space:pre-wrap;background:#020617;padding:12px;border-radius:8px;overflow:auto;max-height:70vh}
+.item{padding:8px;border-bottom:1px solid #374151;cursor:pointer}
+.item:hover{background:#1f2937}
+.small{color:#9ca3af;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>KRXA Project Inspector V1</h1>
+<div class="small">프로젝트 내부 지도 · 파일 · API · JSON · 기능 연결 조회</div>
+</header>
+<main>
+<section class="card">
+<button onclick="loadSummary()">Summary</button>
+<button onclick="loadRoutes()">Routes</button>
+<button onclick="loadStorage()">Storage</button>
+<button onclick="loadFeatures()">Feature Map</button>
+<button onclick="loadFunctions()">JS Functions</button>
+<h3>파일</h3>
+<div id="fileList">파일 목록 대기</div>
+</section>
+<section class="card">
+<h2 id="title">결과</h2>
+<pre id="out">왼쪽 버튼을 누르세요.</pre>
+</section>
+</main>
+<script>
+async function api(path){
+  const r=await fetch(path,{cache:"no-store"});
+  if(!r.ok) throw new Error(await r.text());
+  return await r.json();
+}
+function show(title,data){
+  document.getElementById("title").textContent=title;
+  document.getElementById("out").textContent=JSON.stringify(data,null,2);
+}
+async function loadSummary(){show("Summary",await api("/api/krxa/project/summary")); loadFiles();}
+async function loadRoutes(){show("Routes",await api("/api/krxa/project/routes"));}
+async function loadStorage(){show("Storage",await api("/api/krxa/project/storage"));}
+async function loadFeatures(){show("Feature Map",await api("/api/krxa/project/feature-map"));}
+async function loadFunctions(){show("JS Functions",await api("/api/krxa/project/functions"));}
+async function loadFiles(){
+  const data=await api("/api/krxa/project/files");
+  const box=document.getElementById("fileList");
+  box.innerHTML=(data.files||[]).slice(0,300).map(f=>`<div class="item" onclick="readFile('${f.path}')">${f.path}</div>`).join("");
+}
+async function readFile(path){
+  const data=await api("/api/krxa/project/read?path="+encodeURIComponent(path));
+  show(path,data.content);
+}
+loadSummary();
+</script>
+</body>
+</html>
