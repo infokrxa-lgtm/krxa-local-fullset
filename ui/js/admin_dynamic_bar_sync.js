@@ -153,6 +153,7 @@
     };
   }
 
+  // Admin Action Flow Runner v1
   function runAction(item){
     const a = item.action || {};
     if(a.kind === "url" && a.url){
@@ -171,7 +172,24 @@
       }
       return;
     }
+    
+    if(a.kind === "recommend"){
+      const cat = a.value || item.id || "food";
+      if(window.KRXA_Recommend && window.KRXA_Recommend.showMarketCards){
+        window.KRXA_Recommend.showMarketCards(cat, item.title || cat);
+        return;
+      }
+    }
+    if(a.kind === "workspace" && a.url){
+      window.open(a.url, "_blank");
+      return;
+    }
+    if(a.kind === "call" && a.value){
+      location.href = "tel:" + a.value;
+      return;
+    }
     alert((item.title || item.id) + " 실행 설정이 필요합니다.");
+
   }
 
   window.KRXA_DYNAMIC_BAR_RELOAD = load;

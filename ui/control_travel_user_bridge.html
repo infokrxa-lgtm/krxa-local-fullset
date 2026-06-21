@@ -1412,6 +1412,121 @@ function KRXAAdminDetailHTML(it){
   return "";
 }
 
+
+function KRXAActionFlowHTML(it){
+  it.action = it.action || {kind:"none"};
+  it.flow = it.flow || defaultFlowForItem(it);
+
+  return `
+    <div class="flowBox">
+      <h3>실행 흐름 편집</h3>
+
+      <div class="flowGrid"><b>실행종류</b>
+        <select class="flowInput" id="flow_kind">
+          ${["none","url","page","map","recommend","workspace","call"].map(k=>`<option value="${k}" ${it.action.kind===k?'selected':''}>${k}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="flowGrid"><b>실행값</b>
+        <input class="flowInput" id="flow_value" value="${it.action.url || it.action.value || it.action.page || ''}" placeholder="URL / page 번호 / recommend category / 전화번호">
+      </div>
+
+      <h4>구성 요소</h4>
+      <div id="flow_steps">
+        ${(it.flow.steps||[]).map((s,i)=>`
+          <div class="flowStep">
+            <span>${s.title}</span>
+            <button class="flowBtn ${s.enabled!==false?'flowOn':'flowRed'}" onclick="FLOWToggleStep(${i})">${s.enabled!==false?'ON':'OFF'}</button>
+            <button class="flowBtn flowGray" onclick="FLOWEditStep(${i})">수정</button>
+          </div>
+        `).join("")}
+      </div>
+
+      <button class="flowBtn flowBlue" onclick="FLOWAddStep()">+ 단계 추가</button>
+      <button class="flowBtn flowGray" onclick="FLOWApplyToItem()">흐름 반영</button>
+    </div>
+  `;
+}
+
+function defaultFlowForItem(it){
+  const id = it.id || "";
+  if(["hotel","food","restaurant","tour","shopping"].includes(id)){
+    return {steps:[
+      {id:"default_sites",title:"기본 사이트 등록",enabled:true},
+      {id:"user_links",title:"사용자 등록/삭제",enabled:true},
+      {id:"recommend",title:"추천 리스트",enabled:true},
+      {id:"destination",title:"목적지 입력",enabled:true},
+      {id:"map_route",title:"현재위치 → 목적지 지도연결",enabled:true}
+    ]};
+  }
+  if(["transport","route"].includes(id)){
+    return {steps:[
+      {id:"destination",title:"목적지 입력",enabled:true},
+      {id:"map_app",title:"지도앱 선택",enabled:true},
+      {id:"route",title:"길찾기",enabled:true}
+    ]};
+  }
+  if(id==="hero"){
+    return {steps:[
+      {id:"hero_groups",title:"허영만 백반기행/주변관광지 그룹",enabled:true},
+      {id:"place_list",title:"장소 리스트",enabled:true},
+      {id:"map_route",title:"장소 선택 → 지도연결",enabled:true}
+    ]};
+  }
+  if(["mini_talk","m2m","mic"].includes(id)){
+    return {steps:[
+      {id:"stt",title:"음성입력 STT",enabled:true},
+      {id:"translate",title:"번역",enabled:true},
+      {id:"tts",title:"음성출력 TTS",enabled:true}
+    ]};
+  }
+  return {steps:[
+    {id:"click",title:"사용자 클릭",enabled:true},
+    {id:"action",title:"실행 연결",enabled:true}
+  ]};
+}
+
+function FLOWCurrentItem(){
+  if(DYN_PAGE===null || DYN_ITEM===null)return null;
+  return DYN_CFG.pages[DYN_PAGE].items[DYN_ITEM];
+}
+
+function FLOWToggleStep(i){
+  const it = FLOWCurrentItem(); if(!it)return;
+  it.flow = it.flow || defaultFlowForItem(it);
+  it.flow.steps[i].enabled = !(it.flow.steps[i].enabled !== false);
+  DYNRight();
+}
+
+function FLOWEditStep(i){
+  const it = FLOWCurrentItem(); if(!it)return;
+  it.flow = it.flow || defaultFlowForItem(it);
+  const s = it.flow.steps[i];
+  s.title = prompt("단계명", s.title || "") || s.title;
+  s.id = prompt("단계 ID", s.id || "") || s.id;
+  DYNRight();
+}
+
+function FLOWAddStep(){
+  const it = FLOWCurrentItem(); if(!it)return;
+  it.flow = it.flow || defaultFlowForItem(it);
+  const title = prompt("새 단계명");
+  if(!title)return;
+  it.flow.steps.push({id:"step_"+Date.now(), title, enabled:true});
+  DYNRight();
+}
+
+function FLOWApplyToItem(){
+  const it = FLOWCurrentItem(); if(!it)return;
+  const kind = document.getElementById("flow_kind").value;
+  const value = document.getElementById("flow_value").value.trim();
+  it.action = {kind};
+  if(kind === "url" || kind === "workspace") it.action.url = value;
+  else if(kind === "page") it.action.page = value;
+  else if(kind === "call" || kind === "map" || kind === "recommend") it.action.value = value;
+  alert("실행 흐름이 반영되었습니다. 완료 / USER 반영을 누르세요.");
+}
+
 function DYNRight(){
   const title=document.getElementById('dynTitle');
   const box=document.getElementById('dynRight');
@@ -1590,6 +1705,17 @@ DYNLoad();
 <script>
 console.log("[KRXA] Sync Engine Cleanup v1: USER sync uses only /api/admin-dynamic-bars + admin_dynamic_bar_sync.js");
 </script>
+
+
+<!-- Admin Action Flow Editor v1 -->
+<style>
+.flowBox{margin-top:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;background:#fff}
+.flowGrid{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;margin:6px 0}
+.flowInput{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px}
+.flowStep{display:grid;grid-template-columns:1fr 70px 70px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:7px 0}
+.flowBtn{border:0;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;cursor:pointer}
+.flowOn{background:#16a34a;color:#fff}.flowBlue{background:#2563eb;color:#fff}.flowGray{background:#64748b;color:#fff}.flowRed{background:#dc2626;color:#fff}
+</style>
 
 </body>
 </html>
