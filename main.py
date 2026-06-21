@@ -2593,3 +2593,41 @@ async def api_admin_user_screen_config():
 async def api_admin_user_screen_config_save(payload: dict = _AUSM_BODY(...)):
     return {"ok": True, "config": _ausm_save(payload)}
 # ===== End Admin User Screen Manager API v1 =====
+
+
+# ===== Admin Dynamic Bar Manager API v1 =====
+from fastapi import Body as _DYN_BODY
+import json as _dyn_json
+from pathlib import Path as _DYN_Path
+from datetime import datetime as _DYN_datetime
+
+_DYN_CONFIG = _DYN_Path("storage") / "travel_ui_config.json"
+
+def _dyn_now():
+    return _DYN_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _dyn_load():
+    if not _DYN_CONFIG.exists():
+        return {"version":"dynamic_bar_v1","pages":[]}
+    try:
+        return _dyn_json.loads(_DYN_CONFIG.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version":"dynamic_bar_v1","pages":[]}
+
+def _dyn_save(data):
+    _DYN_CONFIG.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _dyn_now()
+    _DYN_CONFIG.write_text(
+        _dyn_json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    return data
+
+@app.get("/api/admin-dynamic-bars")
+async def api_admin_dynamic_bars():
+    return {"ok": True, "config": _dyn_load()}
+
+@app.post("/api/admin-dynamic-bars/save")
+async def api_admin_dynamic_bars_save(payload: dict = _DYN_BODY(...)):
+    return {"ok": True, "config": _dyn_save(payload)}
+# ===== End Admin Dynamic Bar Manager API v1 =====

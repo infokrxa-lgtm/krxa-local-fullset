@@ -1286,5 +1286,214 @@ async function AUSMSave(){
 AUSMLoad();
 </script>
 
+
+<!-- Admin Dynamic Bar Manager v1 -->
+<style>
+.dynMgr{margin:16px;padding:16px;border-radius:18px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
+.dynGrid{display:grid;grid-template-columns:320px 1fr;gap:16px}
+.dynPage{border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px;overflow:hidden}
+.dynHead{display:flex;justify-content:space-between;align-items:center;background:#e2e8f0;padding:12px;font-weight:900;cursor:pointer}
+.dynHead.active{background:#2563eb;color:white}
+.dynItems{display:none;background:#f8fafc;padding:8px}
+.dynItems.open{display:block}
+.dynItem{display:grid;grid-template-columns:1fr 70px 70px 70px;gap:6px;align-items:center;padding:8px;margin:5px 0;background:white;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer}
+.dynBtn{border:0;border-radius:999px;padding:7px 10px;font-weight:900;cursor:pointer}
+.dynOn{background:#16a34a;color:white}.dynOff{background:#dc2626;color:white}.dynBlue{background:#2563eb;color:white}.dynGray{background:#64748b;color:white}.dynRed{background:#dc2626;color:white}
+.dynRight{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px;min-height:300px}
+.dynInput{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin:4px 0}
+</style>
+
+<div class="dynMgr">
+  <h2>관리자 · 페이지/클릭바 동적 관리</h2>
+  <p>좌측에서 페이지·클릭바를 추가/삭제/ON-OFF 하고, 완료하면 USER 화면에 반영됩니다.</p>
+  <div class="dynGrid">
+    <div>
+      <div id="dynLeft"></div>
+      <button class="dynBtn dynBlue" onclick="DYNAddPage()">+ 새 페이지</button>
+    </div>
+    <div>
+      <h3 id="dynTitle">선택 없음</h3>
+      <div id="dynRight" class="dynRight">좌측에서 페이지 또는 클릭바를 선택하세요.</div>
+      <div style="margin-top:12px">
+        <button class="dynBtn dynBlue" onclick="DYNAddBar()">+ 신규바 추가</button>
+        <button class="dynBtn dynGray" onclick="DYNEdit()">수정</button>
+        <button class="dynBtn dynRed" onclick="DYNDelete()">삭제</button>
+        <button class="dynBtn dynOn" onclick="DYNSave()">완료 / USER 반영</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let DYN_CFG=null;
+let DYN_OPEN=0;
+let DYN_PAGE=null;
+let DYN_ITEM=null;
+
+async function DYNLoad(){
+  const res=await fetch('/api/admin-dynamic-bars?ts='+Date.now());
+  const data=await res.json();
+  DYN_CFG=data.config||{version:'dynamic_bar_v1',pages:[]};
+  DYNRender();
+  DYNRight();
+}
+
+function DYNRender(){
+  const left=document.getElementById('dynLeft');
+  left.innerHTML='';
+
+  (DYN_CFG.pages||[]).forEach((page,pi)=>{
+    const box=document.createElement('div');
+    box.className='dynPage';
+
+    const head=document.createElement('div');
+    head.className='dynHead '+(DYN_OPEN===pi?'active':'');
+    head.innerHTML=`<span>${page.title||page.id}</span><button class="dynBtn ${page.enabled!==false?'dynOn':'dynOff'}">${page.enabled!==false?'ON':'OFF'}</button>`;
+    head.onclick=()=>{DYN_OPEN=DYN_OPEN===pi?null:pi;DYN_PAGE=pi;DYN_ITEM=null;DYNRender();DYNRight();};
+    head.querySelector('button').onclick=(e)=>{e.stopPropagation();page.enabled=!(page.enabled!==false);DYNRender();DYNRight();};
+
+    const items=document.createElement('div');
+    items.className='dynItems '+(DYN_OPEN===pi?'open':'');
+    (page.items||[]).forEach((it,ii)=>{
+      const row=document.createElement('div');
+      row.className='dynItem';
+      row.innerHTML=`
+        <span>${it.icon||''} ${it.title||it.id}</span>
+        <button class="dynBtn ${it.enabled!==false?'dynOn':'dynOff'}">${it.enabled!==false?'ON':'OFF'}</button>
+        <button class="dynBtn dynGray">수정</button>
+        <button class="dynBtn dynRed">삭제</button>
+      `;
+      row.onclick=()=>{DYN_PAGE=pi;DYN_ITEM=ii;DYNRight();};
+      row.children[1].onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);DYNRender();DYNRight();};
+      row.children[2].onclick=(e)=>{e.stopPropagation();DYN_PAGE=pi;DYN_ITEM=ii;DYNEdit();};
+      row.children[3].onclick=(e)=>{e.stopPropagation();DYN_PAGE=pi;DYN_ITEM=ii;DYNDelete();};
+      items.appendChild(row);
+    });
+
+    box.appendChild(head);
+    box.appendChild(items);
+    left.appendChild(box);
+  });
+}
+
+function DYNRight(){
+  const title=document.getElementById('dynTitle');
+  const box=document.getElementById('dynRight');
+
+  if(DYN_PAGE===null){
+    title.textContent='선택 없음';
+    box.textContent='좌측에서 페이지 또는 클릭바를 선택하세요.';
+    return;
+  }
+
+  const page=DYN_CFG.pages[DYN_PAGE];
+
+  if(DYN_ITEM===null){
+    title.textContent=page.title||page.id;
+    box.innerHTML=`
+      <b>페이지 관리</b><br>
+      페이지명: ${page.title||''}<br>
+      상태: ${page.enabled!==false?'ON':'OFF'}<br>
+      클릭바 수: ${(page.items||[]).length}<br><br>
+      <button class="dynBtn ${page.enabled!==false?'dynOn':'dynOff'}" onclick="DYNTogglePage()">${page.enabled!==false?'ON':'OFF'}</button>
+    `;
+    return;
+  }
+
+  const it=page.items[DYN_ITEM];
+  title.textContent=(page.title||page.id)+' · '+(it.title||it.id);
+  box.innerHTML=`
+    <label>ID</label><input class="dynInput" id="dyn_id" value="${it.id||''}">
+    <label>표시명</label><input class="dynInput" id="dyn_title" value="${it.title||''}">
+    <label>아이콘</label><input class="dynInput" id="dyn_icon" value="${it.icon||''}">
+    <label>실행종류(url/page/map/none)</label><input class="dynInput" id="dyn_kind" value="${(it.action&&it.action.kind)||'none'}">
+    <label>URL 또는 값</label><input class="dynInput" id="dyn_value" value="${(it.action&&(it.action.url||it.action.page||it.action.value))||''}">
+    <label><input type="checkbox" id="dyn_dynamic" ${it.dynamic?'checked':''}> USER 자동 생성 클릭바</label><br>
+    <label><input type="checkbox" id="dyn_enabled" ${it.enabled!==false?'checked':''}> ON</label>
+  `;
+}
+
+function DYNTogglePage(){
+  const page=DYN_CFG.pages[DYN_PAGE];
+  page.enabled=!(page.enabled!==false);
+  DYNRender();DYNRight();
+}
+
+function DYNAddPage(){
+  const title=prompt('새 페이지 이름','사용자 UI '+((DYN_CFG.pages||[]).length+1));
+  if(!title)return;
+  DYN_CFG.pages.push({id:'page'+Date.now(),title,enabled:true,items:[]});
+  DYN_OPEN=DYN_CFG.pages.length-1;
+  DYN_PAGE=DYN_OPEN;
+  DYN_ITEM=null;
+  DYNRender();DYNRight();
+}
+
+function DYNAddBar(){
+  if(DYN_PAGE===null){alert('페이지를 선택하세요.');return;}
+  const title=prompt('신규바 이름');
+  if(!title)return;
+  const id=prompt('ID 영문', title.toLowerCase().replaceAll(' ','_'))||('bar_'+Date.now());
+  DYN_CFG.pages[DYN_PAGE].items.push({
+    id,title,icon:'🔹',enabled:true,dynamic:true,
+    action:{kind:'none'}
+  });
+  DYN_ITEM=DYN_CFG.pages[DYN_PAGE].items.length-1;
+  DYNRender();DYNRight();
+}
+
+function DYNEdit(){
+  if(DYN_PAGE===null||DYN_ITEM===null){alert('수정할 클릭바를 선택하세요.');return;}
+  const it=DYN_CFG.pages[DYN_PAGE].items[DYN_ITEM];
+  const id=document.getElementById('dyn_id');
+  if(id){
+    it.id=id.value.trim()||it.id;
+    it.title=document.getElementById('dyn_title').value.trim()||it.title;
+    it.icon=document.getElementById('dyn_icon').value.trim();
+    it.dynamic=document.getElementById('dyn_dynamic').checked;
+    it.enabled=document.getElementById('dyn_enabled').checked;
+    const kind=document.getElementById('dyn_kind').value.trim()||'none';
+    const value=document.getElementById('dyn_value').value.trim();
+    it.action={kind};
+    if(kind==='url') it.action.url=value;
+    if(kind==='page') it.action.page=value;
+    if(kind==='map') it.action.value=value;
+    alert('수정 반영됨. 완료를 눌러 저장하세요.');
+  }
+  DYNRender();DYNRight();
+}
+
+function DYNDelete(){
+  if(DYN_PAGE===null){alert('선택하세요.');return;}
+  if(DYN_ITEM===null){
+    if(!confirm('페이지를 삭제할까요?'))return;
+    DYN_CFG.pages.splice(DYN_PAGE,1);
+    DYN_PAGE=null;DYN_ITEM=null;DYN_OPEN=0;
+  }else{
+    if(!confirm('클릭바를 삭제할까요?'))return;
+    DYN_CFG.pages[DYN_PAGE].items.splice(DYN_ITEM,1);
+    DYN_ITEM=null;
+  }
+  DYNRender();DYNRight();
+}
+
+async function DYNSave(){
+  if(DYN_PAGE!==null && DYN_ITEM!==null && document.getElementById('dyn_id')){
+    DYNEdit();
+  }
+  const res=await fetch('/api/admin-dynamic-bars/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(DYN_CFG)
+  });
+  const data=await res.json();
+  DYN_CFG=data.config;
+  alert('완료 저장 / USER 반영');
+  DYNRender();DYNRight();
+}
+
+DYNLoad();
+</script>
+
 </body>
 </html>
