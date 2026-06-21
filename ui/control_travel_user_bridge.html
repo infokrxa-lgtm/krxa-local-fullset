@@ -1,1721 +1,194 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA Travel CONTROL UI Config</title>
+<title>KRXA Travel V1 Admin Action Flow Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f8fafc;color:#0f172a}
-.layout{display:grid;grid-template-columns:310px 1fr;height:100vh}
-.left{padding:18px;border-right:1px solid #cbd5e1;overflow:auto}
-.right{padding:22px;overflow:auto}
-.page{margin:8px 0;border:1px solid #cbd5e1;border-radius:14px;overflow:hidden}
-.pageHead{padding:12px;font-weight:900;background:#e2e8f0;cursor:pointer}
-.children{display:none;padding:8px;background:#ffffff}
-.child{padding:10px;margin:6px 0;border-radius:10px;background:#e2e8f0;cursor:pointer}
-.card{background:#ffffff;border:1px solid #cbd5e1;border-radius:18px;padding:18px;margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-button,a{border:0;border-radius:12px;padding:12px;font-weight:800;color:white;background:#2563eb;text-decoration:none;text-align:center;cursor:pointer;display:block}
-.green{background:#16a34a}.red{background:#dc2626}.gray{background:#64748b}.yellow{background:#ca8a04}
-input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a}
-pre{white-space:pre-wrap;word-break:break-word;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:12px}
+body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
+.wrap{padding:18px}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+.page{margin:8px 0;border-radius:14px;overflow:hidden;border:1px solid #dbe3ee}
+.head{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#e2e8f0;font-weight:900;cursor:pointer}
+.head.active{background:#2563eb;color:white}
+.items{display:none;padding:8px;background:#f8fafc}
+.items.open{display:block}
+.item{display:flex;justify-content:space-between;align-items:center;padding:10px;margin:6px 0;border:1px solid #e2e8f0;border-radius:10px;background:white;cursor:pointer}
+.item.active{background:#dbeafe}
+.btn{border:0;border-radius:999px;padding:7px 12px;font-weight:900;cursor:pointer}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
+.right{background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;min-height:620px}
+.row{display:grid;grid-template-columns:170px 1fr;gap:10px;margin:8px 0;align-items:center}
+input,select{padding:10px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;width:100%}
+.step{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:9px;border-bottom:1px solid #e5e7eb;align-items:center}
+.toolbar{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<div class="layout">
-  <div class="left">
-    <h2>CONTROL · 사용자 UI 기능 관리</h2>
-    <p>기능 신규·수정·삭제·ON/OFF · USER UI 실제 반영</p>
-    <button class="green" onclick="loadConfig()">새로고침</button>
-    <a target="_blank" href="/travel-v1">USER 화면 열기</a>
-    <div id="tree"></div>
-  </div>
-
-  <div class="right">
-    <div class="card">
-      <h2 id="selectedTitle">하위 기능을 선택하세요</h2>
-      <p id="selectedDesc">좌측에서 사용자 UI 페이지와 하위 기능을 선택하세요.</p>
-    </div>
-
-    <div class="card">
-      <h3>작업</h3>
-      <div class="grid">
-        <button class="green" onclick="newItem()">신규</button>
-        <button onclick="editItem()">수정</button>
-        <button class="red" onclick="deleteItem()">삭제</button>
-        <button class="gray" onclick="toggleItem()">ON/OFF</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>선택 항목 편집</h3>
-      <input id="itemTitle" placeholder="표시명">
-      <input id="itemType" placeholder="type 예: recommend, route, voice, site">
-      <textarea id="itemMemo" rows="5" placeholder="관리/개발 메모"></textarea>
-      <button class="green" onclick="saveSelected()">저장 → USER UI 반영</button>
-    </div>
-
-    <div class="card">
-      <h3>JSON 상태</h3>
-      <pre id="raw"></pre>
-    </div>
-  </div>
-</div>
-
-<script>
-let config = null;
-let currentPageId = null;
-let currentItemId = null;
-
-async function loadConfig(){
-  const res = await fetch("/api/travel-ui-config");
-  const data = await res.json();
-  config = data.config || {pages:[]};
-  renderTree();
-  renderRaw();
-}
-
-async function saveConfig(){
-  const res = await fetch("/api/travel-ui-config/save", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(config)
-  });
-  const data = await res.json();
-  config = data.config;
-  renderTree();
-  renderRaw();
-  alert("저장 완료. USER UI 새로고침 시 반영됩니다.");
-}
-
-function renderTree(){
-  const box = document.getElementById("tree");
-  box.innerHTML = (config.pages||[]).map((p,i)=>`
-    <div class="page">
-      <div class="pageHead" onclick="toggle('p${i}')">${p.title} ${p.enabled===false?"[OFF]":"[ON]"}</div>
-      <div class="children" id="p${i}">
-        ${(p.items||[]).map(it=>`
-          <div class="child" onclick="selectItem('${p.id}','${it.id}')">
-            ${it.title} ${it.enabled===false?"[OFF]":"[ON]"}
-          </div>`).join("")}
-      </div>
-    </div>
-  `).join("");
-}
-
-function toggle(id){
-  const el=document.getElementById(id);
-  el.style.display = el.style.display==="block" ? "none" : "block";
-}
-
-function getPage(){
-  return (config.pages||[]).find(p=>p.id===currentPageId);
-}
-
-function getItem(){
-  const p=getPage();
-  if(!p) return null;
-  return (p.items||[]).find(it=>it.id===currentItemId);
-}
-
-function selectItem(pageId,itemId){
-  currentPageId = pageId;
-  currentItemId = itemId;
-  const p=getPage();
-  const it=getItem();
-  document.getElementById("selectedTitle").innerText = p.title + " · " + it.title;
-  document.getElementById("selectedDesc").innerText = "CONTROL 담당 항목입니다.";
-  document.getElementById("itemTitle").value = it.title || "";
-  document.getElementById("itemType").value = it.type || "";
-  document.getElementById("itemMemo").value = it.memo || "";
-}
-
-function newItem(){
-  if(!currentPageId){
-    alert("먼저 페이지/항목을 선택하세요.");
-    return;
-  }
-  const p=getPage();
-  const id="item_"+Date.now();
-  p.items=p.items||[];
-  p.items.push({id:id,title:"신규 항목",enabled:true,type:"custom",memo:""});
-  currentItemId=id;
-  renderTree();
-  selectItem(currentPageId,currentItemId);
-}
-
-function editItem(){
-  if(!getItem()){alert("항목을 선택하세요.");return;}
-  document.getElementById("itemTitle").focus();
-}
-
-function deleteItem(){
-  const p=getPage();
-  if(!p||!currentItemId){alert("항목을 선택하세요.");return;}
-  p.items=(p.items||[]).filter(it=>it.id!==currentItemId);
-  currentItemId=null;
-  saveConfig();
-}
-
-function toggleItem(){
-  const it=getItem();
-  if(!it){alert("항목을 선택하세요.");return;}
-  it.enabled = it.enabled===false ? true : false;
-  saveConfig();
-}
-
-function saveSelected(){
-  const it=getItem();
-  if(!it){alert("항목을 선택하세요.");return;}
-  it.title=document.getElementById("itemTitle").value.trim() || it.title;
-  it.type=document.getElementById("itemType").value.trim() || it.type;
-  it.memo=document.getElementById("itemMemo").value;
-  saveConfig();
-}
-
-function renderRaw(){
-  document.getElementById("raw").textContent = JSON.stringify(config,null,2);
-}
-
-loadConfig();
-</script>
-
-<div class="card">
-  <div class="pageHead" onclick="toggle('ui1live')">사용자 UI 1 · 실시간 반영 테스트</div>
-  <div class="children" id="ui1live" style="display:none;padding:10px">
-    <p>CONTROL에서 변경하면 USER /travel-v1에 3초 이내 반영됩니다.</p>
-    <button class="green" onclick="toggleComp('gps')">GPS ON/OFF</button>
-    <button onclick="toggleComp('hero')">HERO ON/OFF</button>
-    <button class="gray" onclick="toggleComp('mic')">미니말하기 ON/OFF</button>
-    <a target="_blank" href="/api/travel-ui-components">컴포넌트 API 확인</a>
-  </div>
-</div>
-
-<script>
-async function loadCompCfg(){
-  const res = await fetch('/api/travel-ui-components?ts=' + Date.now(), {cache:'no-store'});
-  const data = await res.json();
-  return data.config || {version:'v1', page1:{gps:true, hero:true, mic:true}};
-}
-
-async function saveCompCfg(cfg){
-  await fetch('/api/travel-ui-components/save', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(cfg)
-  });
-}
-
-async function toggleComp(key){
-  const cfg = await loadCompCfg();
-  cfg.page1 = cfg.page1 || {gps:true, hero:true, mic:true};
-  cfg.page1[key] = cfg.page1[key] === false ? true : false;
-  await saveCompCfg(cfg);
-  alert('USER UI 1 ' + key + ' = ' + (cfg.page1[key] ? 'ON' : 'OFF'));
-}
-</script>
-
-
-<!-- Travel GAP Patch 02 Control Panel removed by GAP03 -->
-
-
-<!-- GAP03 panel removed by GAP04 -->
-
-
-<!-- Travel GAP Patch 04 Hero Group Panel -->
-<style>
-.gap04{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-.gap04 h3{margin-top:0}
-.gap04-grid{display:grid;grid-template-columns:1fr 100px 80px;gap:8px;align-items:center}
-.gap04-head{font-weight:900;background:#e2e8f0;padding:10px;border-radius:8px}
-.gap04-row{padding:10px;border-bottom:1px solid #e2e8f0;cursor:pointer}
-.gap04-row:hover{background:#f8fafc}
-.gap04-btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
-.gap04-on{background:#16a34a;color:white}
-.gap04-off{background:#dc2626;color:white}
-.gap04-blue{background:#2563eb;color:white}
-.gap04-red{background:#dc2626;color:white}
-</style>
-
-<div class="gap04">
-  <h3>사용자 UI 1페이지 · Hero 구성</h3>
-  <p>Hero 클릭 시 보이는 하위 구성입니다. 각 항목 클릭 시 새 작업창이 열립니다.</p>
-  <div class="gap04-grid">
-    <div class="gap04-head">Hero 구성</div>
-    <div class="gap04-head">ON/OFF</div>
-    <div class="gap04-head">삭제</div>
-  </div>
-  <div id="gap04Groups"></div>
-  <button class="gap04-btn gap04-blue" onclick="GAP04AddGroup()">신규 추가</button>
-  <button class="gap04-btn gap04-on" onclick="GAP04SaveGroups()">완료</button>
-</div>
-
-<script>
-let GAP04_GROUPS={version:'v1',groups:[]};
-
-async function GAP04Load(){
-  const res=await fetch('/api/travel-hero-groups?ts='+Date.now());
-  const data=await res.json();
-  GAP04_GROUPS=data.config||{version:'v1',groups:[]};
-  GAP04Render();
-}
-
-function GAP04Render(){
-  const box=document.getElementById('gap04Groups');
-  if(!box)return;
-  box.innerHTML='';
-  GAP04_GROUPS.groups.forEach((g,i)=>{
-    const row=document.createElement('div');
-    row.className='gap04-grid gap04-row';
-    row.innerHTML=`
-      <div>${g.title}</div>
-      <div><button class="gap04-btn ${g.enabled!==false?'gap04-on':'gap04-off'}">${g.enabled!==false?'ON':'OFF'}</button></div>
-      <div><button class="gap04-btn gap04-red">삭제</button></div>
-    `;
-    row.children[0].onclick=()=>window.open('/control/travel-hero-workspace?group='+encodeURIComponent(g.id),'_blank');
-    row.children[1].onclick=(e)=>{e.stopPropagation();g.enabled=!(g.enabled!==false);GAP04Render();};
-    row.children[2].onclick=(e)=>{e.stopPropagation();if(confirm('삭제할까요?')){GAP04_GROUPS.groups.splice(i,1);GAP04Render();}};
-    box.appendChild(row);
-  });
-}
-
-function GAP04AddGroup(){
-  const title=prompt('Hero 구성 이름');
-  if(!title)return;
-  const id='hero_'+Date.now();
-  GAP04_GROUPS.groups.push({id,title,enabled:true});
-  GAP04Render();
-}
-
-async function GAP04SaveGroups(){
-  const res=await fetch('/api/travel-hero-groups/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(GAP04_GROUPS)
-  });
-  await res.json();
-  alert('Hero 구성 완료 저장됨');
-}
-
-GAP04Load();
-</script>
-
-
-<!-- Travel UI Master Control Panel v1 -->
-<style>
-.masterPanel{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-.masterGrid{display:grid;grid-template-columns:160px 1fr;gap:12px}
-.masterLeft button{display:block;width:100%;margin:4px 0;padding:10px;border:0;border-radius:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
-.masterLeft button.active{background:#2563eb;color:white}
-.masterRow{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;align-items:center;border-bottom:1px solid #e2e8f0;padding:8px}
-.masterOn{background:#16a34a;color:white}
-.masterOff{background:#dc2626;color:white}
-.masterBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
-.masterBlue{background:#2563eb;color:white}
-.masterGray{background:#64748b;color:white}
-.masterRed{background:#dc2626;color:white}
-</style>
-
-<div class="masterPanel">
-  <h3>USER 1~8페이지 마스터 구성 관리</h3>
-  <p>현재 USER 화면은 유지하고, 여기서 ON/OFF·신규·수정·삭제·완료하면 USER에 자동 반영됩니다.</p>
-  <div class="masterGrid">
-    <div class="masterLeft" id="masterPages"></div>
-    <div>
-      <h4 id="masterTitle">페이지 선택</h4>
-      <div id="masterItems"></div>
-      <div style="margin-top:12px">
-        <button class="masterBtn masterBlue" onclick="MasterAddItem()">신규</button>
-        <button class="masterBtn masterGray" onclick="MasterEditItem()">수정</button>
-        <button class="masterBtn masterRed" onclick="MasterDeleteItem()">삭제</button>
-        <button class="masterBtn masterOn" onclick="MasterSave()">완료 / USER 반영</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let MASTER_CFG=null;
-let MASTER_PAGE_INDEX=0;
-let MASTER_SELECTED_ITEM=null;
-
-async function MasterLoad(){
-  const res=await fetch('/api/travel-ui-master-config?ts='+Date.now());
-  const data=await res.json();
-  MASTER_CFG=data.config;
-  MasterRenderPages();
-  MasterRenderItems();
-}
-
-function MasterRenderPages(){
-  const box=document.getElementById('masterPages');
-  if(!box || !MASTER_CFG)return;
-  box.innerHTML='';
-  (MASTER_CFG.pages||[]).forEach((p,i)=>{
-    const btn=document.createElement('button');
-    btn.className=i===MASTER_PAGE_INDEX?'active':'';
-    btn.textContent=(p.title||('사용자 UI '+(i+1)))+' '+(p.enabled===false?'[OFF]':'[ON]');
-    btn.onclick=()=>{MASTER_PAGE_INDEX=i;MASTER_SELECTED_ITEM=null;MasterRenderPages();MasterRenderItems();};
-    box.appendChild(btn);
-  });
-}
-
-function MasterRenderItems(){
-  const title=document.getElementById('masterTitle');
-  const box=document.getElementById('masterItems');
-  if(!box || !MASTER_CFG)return;
-  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
-  if(!page)return;
-  title.textContent=page.title||'페이지';
-  box.innerHTML='';
-
-  const head=document.createElement('div');
-  head.className='masterRow';
-  head.innerHTML='<b>구성 항목</b><b>ON/OFF</b><b>삭제</b>';
-  box.appendChild(head);
-
-  (page.items||[]).forEach((it,idx)=>{
-    const row=document.createElement('div');
-    row.className='masterRow';
-    row.style.background=MASTER_SELECTED_ITEM===idx?'#dbeafe':'';
-    row.innerHTML=`
-      <div>${it.title||it.id}</div>
-      <div><button class="masterBtn ${it.enabled!==false?'masterOn':'masterOff'}">${it.enabled!==false?'ON':'OFF'}</button></div>
-      <div><button class="masterBtn masterRed">삭제</button></div>
-    `;
-    row.children[0].onclick=()=>{MASTER_SELECTED_ITEM=idx;MasterRenderItems();};
-    row.children[1].onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);MasterRenderItems();};
-    row.children[2].onclick=(e)=>{e.stopPropagation();if(confirm('삭제할까요?')){page.items.splice(idx,1);MASTER_SELECTED_ITEM=null;MasterRenderItems();}};
-    box.appendChild(row);
-  });
-}
-
-function MasterAddItem(){
-  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
-  const title=prompt('항목 이름');
-  if(!title)return;
-  const id=prompt('항목 ID 영문', title.toLowerCase().replaceAll(' ','_')) || ('item_'+Date.now());
-  page.items=page.items||[];
-  page.items.push({id,title,enabled:true,type:'custom'});
-  MasterRenderItems();
-}
-
-function MasterEditItem(){
-  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
-  if(MASTER_SELECTED_ITEM===null){alert('수정할 항목을 선택하세요.');return;}
-  const it=page.items[MASTER_SELECTED_ITEM];
-  it.title=prompt('이름',it.title||'')||it.title;
-  it.id=prompt('ID',it.id||'')||it.id;
-  it.type=prompt('type',it.type||'custom')||it.type;
-  MasterRenderItems();
-}
-
-function MasterDeleteItem(){
-  const page=MASTER_CFG.pages[MASTER_PAGE_INDEX];
-  if(MASTER_SELECTED_ITEM===null){alert('삭제할 항목을 선택하세요.');return;}
-  if(!confirm('삭제할까요?'))return;
-  page.items.splice(MASTER_SELECTED_ITEM,1);
-  MASTER_SELECTED_ITEM=null;
-  MasterRenderItems();
-}
-
-async function MasterSave(){
-  const res=await fetch('/api/travel-ui-master-config/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(MASTER_CFG)
-  });
-  const data=await res.json();
-  MASTER_CFG=data.config;
-  alert('완료 저장 / USER 자동반영');
-  MasterRenderPages();
-  MasterRenderItems();
-}
-
-MasterLoad();
-</script>
-
-
-<!-- Travel Function Reverse Map Panel v1 -->
-<style>
-.revPanel{margin:16px;padding:16px;border-radius:16px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-.revGrid{display:grid;grid-template-columns:190px 1fr;gap:12px}
-.revPages button{display:block;width:100%;margin:4px 0;padding:10px;border:0;border-radius:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
-.revPages button.active{background:#2563eb;color:white}
-.revItem{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;border-bottom:1px solid #e2e8f0;padding:8px;align-items:center}
-.revItem:hover{background:#f8fafc}
-.revItem.selected{background:#dbeafe}
-.revBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
-.revOn{background:#16a34a;color:white}
-.revOff{background:#dc2626;color:white}
-.revBlue{background:#2563eb;color:white}
-.revGray{background:#64748b;color:white}
-.revBox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-top:10px;white-space:pre-wrap}
-</style>
-
-<div class="revPanel">
-  <h3>Travel Function Reverse Map · USER 1~8 실제 기능 흐름</h3>
-  <p>사용자 UI 클릭바의 실제 코드/프로그램/API/지도/통역 흐름을 관제 우측에서 확인하고 DEV 개선요청까지 연결합니다.</p>
-  <div class="revGrid">
-    <div class="revPages" id="revPages"></div>
-    <div>
-      <h4 id="revTitle">페이지 선택</h4>
-      <div id="revItems"></div>
-      <div id="revDetail" class="revBox">항목을 선택하세요.</div>
-      <button class="revBtn revBlue" onclick="REVSave()">완료 / Map 저장</button>
-      <button class="revBtn revGray" onclick="REVDevRequest()">DEV 개선요청</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let REV_MAP=null;
-let REV_PAGE=0;
-let REV_ITEM=null;
-
-async function REVLoad(){
-  const res=await fetch('/api/travel-function-map?ts='+Date.now());
-  const data=await res.json();
-  REV_MAP=data.config||{pages:[]};
-  REVRenderPages();
-  REVRenderItems();
-}
-
-function REVRenderPages(){
-  const box=document.getElementById('revPages');
-  box.innerHTML='';
-  (REV_MAP.pages||[]).forEach((p,i)=>{
-    const b=document.createElement('button');
-    b.className=i===REV_PAGE?'active':'';
-    b.textContent=(p.title||('USER '+p.page));
-    b.onclick=()=>{REV_PAGE=i;REV_ITEM=null;REVRenderPages();REVRenderItems();REVDetail();};
-    box.appendChild(b);
-  });
-}
-
-function REVRenderItems(){
-  const page=REV_MAP.pages[REV_PAGE];
-  document.getElementById('revTitle').textContent=page?page.title:'페이지';
-  const box=document.getElementById('revItems');
-  box.innerHTML='';
-  if(!page)return;
-
-  (page.items||[]).forEach((it,i)=>{
-    const row=document.createElement('div');
-    row.className='revItem '+(REV_ITEM===i?'selected':'');
-    row.innerHTML=`
-      <div>${it.title}</div>
-      <div><button class="revBtn ${it.status==='active'?'revOn':'revOff'}">${it.status}</button></div>
-      <div><button class="revBtn revBlue">상세</button></div>
-    `;
-    row.onclick=()=>{REV_ITEM=i;REVRenderItems();REVDetail();};
-    box.appendChild(row);
-  });
-}
-
-function REVDetail(){
-  const page=REV_MAP.pages[REV_PAGE];
-  const it=page && page.items ? page.items[REV_ITEM] : null;
-  const box=document.getElementById('revDetail');
-  if(!it){box.textContent='항목을 선택하세요.';return;}
-  box.textContent =
-`[사용자 표시]
-${it.title}
-
-[현재 상태]
-${it.status}
-
-[USER 클릭/작동]
-${it.user_action}
-
-[실행 결과]
-${it.user_result}
-
-[연결 파일]
-${(it.files||[]).join('\\n')}
-
-[API]
-${(it.api||[]).join('\\n')}
-
-[JSON]
-${(it.json||[]).join('\\n')}
-
-[관제 관리 가능 항목]
-${(it.control_manage||[]).join('\\n')}
-
-[DEV 개선 요청 기준]
-${it.dev_request||''}`;
-}
-
-async function REVSave(){
-  const res=await fetch('/api/travel-function-map/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(REV_MAP)
-  });
-  await res.json();
-  alert('Reverse Map 저장 완료');
-}
-
-async function REVDevRequest(){
-  const page=REV_MAP.pages[REV_PAGE];
-  const it=page && page.items ? page.items[REV_ITEM] : null;
-  if(!it){alert('항목을 선택하세요.');return;}
-  const memo=prompt('DEV 개선요청 내용', it.dev_request||'');
-  if(!memo)return;
-  await fetch('/api/dev-requests/from-function-map',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({page:page.title,item:it.title,item_id:it.id,memo})
-  });
-  alert('DEV 개선요청 저장 완료');
-}
-
-REVLoad();
-</script>
-
-
-<!-- Travel Control Left Right Function Inspector v1 -->
-<style>
-.krxaInspector{
-  margin:16px;
-  padding:16px;
-  border-radius:18px;
-  background:#fff;
-  border:1px solid #cbd5e1;
-  color:#0f172a;
-  font-family:Arial,sans-serif;
-}
-.krxaInspector h2{margin:0 0 8px 0;font-size:22px}
-.krxaInspectorLayout{
-  display:grid;
-  grid-template-columns:220px 1fr;
-  gap:16px;
-}
-.krxaInspectorPages button{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:100%;
-  margin:6px 0;
-  padding:12px;
-  border:0;
-  border-radius:12px;
-  background:#e2e8f0;
-  font-weight:900;
-  cursor:pointer;
-}
-.krxaInspectorPages button.active{background:#2563eb;color:#fff}
-.krxaToggle{
-  border:0;
-  border-radius:999px;
-  padding:8px 12px;
-  font-weight:900;
-  cursor:pointer;
-}
-.krxaOn{background:#16a34a;color:white}
-.krxaOff{background:#dc2626;color:white}
-.krxaBlue{background:#2563eb;color:white}
-.krxaGray{background:#64748b;color:white}
-.krxaRed{background:#dc2626;color:white}
-.krxaItemRow{
-  display:grid;
-  grid-template-columns:1fr 100px 110px;
-  gap:8px;
-  align-items:center;
-  border-bottom:1px solid #e2e8f0;
-  padding:10px;
-  cursor:pointer;
-}
-.krxaItemRow:hover{background:#f8fafc}
-.krxaItemRow.selected{background:#dbeafe}
-.krxaDetail{
-  margin-top:14px;
-  padding:14px;
-  border-radius:14px;
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
-  white-space:pre-wrap;
-  line-height:1.55;
-}
-.krxaToolbar{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-</style>
-
-<div class="krxaInspector">
-  <h2>USER 1~8페이지 기능 검사기</h2>
-  <p>좌측은 USER 페이지 ON/OFF, 우측은 실제 기능 흐름·코드·API·JSON·DEV 개선요청을 표시합니다.</p>
-
-  <div class="krxaInspectorLayout">
-    <div class="krxaInspectorPages" id="inspPages"></div>
-
-    <div>
-      <h3 id="inspPageTitle">페이지 선택</h3>
-      <div id="inspItems"></div>
-      <div id="inspDetail" class="krxaDetail">항목을 선택하세요.</div>
-
-      <div class="krxaToolbar">
-        <button class="krxaToggle krxaBlue" onclick="INSPAddItem()">신규</button>
-        <button class="krxaToggle krxaGray" onclick="INSPEditItem()">수정</button>
-        <button class="krxaToggle krxaRed" onclick="INSPDeleteItem()">삭제</button>
-        <button class="krxaToggle krxaOn" onclick="INSPSave()">완료 / USER 반영</button>
-        <button class="krxaToggle krxaGray" onclick="INSPDevRequest()">DEV 개선요청</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let INSP_UI=null;
-let INSP_MAP=null;
-let INSP_PAGE=0;
-let INSP_ITEM=null;
-
-async function INSPLoad(){
-  const res = await fetch('/api/travel-control-inspector?ts='+Date.now());
-  const data = await res.json();
-  INSP_UI = data.ui || {pages:[]};
-  INSP_MAP = data.function_map || {pages:[]};
-  INSPRenderPages();
-  INSPRenderItems();
-  INSPRenderDetail();
-}
-
-function INSPPageTitle(p, idx){
-  return p.title || ('사용자 UI '+(idx+1));
-}
-
-function INSPFindMapItem(pageIdx, item){
-  const uiPage = INSP_UI.pages[pageIdx];
-  if(!uiPage || !item) return null;
-  const n = pageIdx + 1;
-  const mapPage = (INSP_MAP.pages || []).find(p => Number(p.page) === n || (p.title||'').includes(String(n)));
-  if(!mapPage) return null;
-  return (mapPage.items || []).find(x => x.id === item.id || x.title === item.title) || null;
-}
-
-function INSPRenderPages(){
-  const box = document.getElementById('inspPages');
-  box.innerHTML = '';
-  (INSP_UI.pages || []).forEach((p, idx)=>{
-    const btn = document.createElement('button');
-    btn.className = idx === INSP_PAGE ? 'active' : '';
-    btn.innerHTML = `<span>${INSPPageTitle(p,idx)}</span><span>${p.enabled===false?'OFF':'ON'}</span>`;
-    btn.onclick = () => {
-      INSP_PAGE = idx;
-      INSP_ITEM = null;
-      INSPRenderPages();
-      INSPRenderItems();
-      INSPRenderDetail();
-    };
-    box.appendChild(btn);
-  });
-}
-
-function INSPRenderItems(){
-  const box = document.getElementById('inspItems');
-  const title = document.getElementById('inspPageTitle');
-  const page = INSP_UI.pages[INSP_PAGE];
-  if(!page){
-    title.textContent = '페이지 없음';
-    box.innerHTML = '';
-    return;
-  }
-
-  title.textContent = INSPPageTitle(page, INSP_PAGE);
-  box.innerHTML = '';
-
-  const head = document.createElement('div');
-  head.className = 'krxaItemRow';
-  head.innerHTML = '<b>구성 항목</b><b>ON/OFF</b><b>기능상태</b>';
-  box.appendChild(head);
-
-  (page.items || []).forEach((it, idx)=>{
-    const map = INSPFindMapItem(INSP_PAGE, it);
-    const status = map ? (map.status || 'mapped') : '미매핑';
-    const row = document.createElement('div');
-    row.className = 'krxaItemRow ' + (INSP_ITEM === idx ? 'selected':'');
-    row.innerHTML = `
-      <div>${it.title || it.id}</div>
-      <div><button class="krxaToggle ${it.enabled!==false?'krxaOn':'krxaOff'}">${it.enabled!==false?'ON':'OFF'}</button></div>
-      <div>${status}</div>
-    `;
-    row.onclick = () => {
-      INSP_ITEM = idx;
-      INSPRenderItems();
-      INSPRenderDetail();
-    };
-    row.children[1].onclick = (e) => {
-      e.stopPropagation();
-      it.enabled = !(it.enabled !== false);
-      INSPRenderItems();
-      INSPRenderDetail();
-    };
-    box.appendChild(row);
-  });
-}
-
-function INSPRenderDetail(){
-  const box = document.getElementById('inspDetail');
-  const page = INSP_UI.pages[INSP_PAGE];
-  const item = page && page.items ? page.items[INSP_ITEM] : null;
-
-  if(!item){
-    box.textContent = '항목을 선택하세요.';
-    return;
-  }
-
-  const map = INSPFindMapItem(INSP_PAGE, item);
-
-  if(!map){
-    box.textContent =
-`[사용자 표시]
-${item.title || item.id}
-
-[현재 상태]
-${item.enabled !== false ? 'ON' : 'OFF'}
-
-[기능 매핑]
-미매핑 상태입니다.
-
-[관제 판단]
-이 항목은 USER 화면 구성에는 있지만, 실제 코드/프로그램 실행 흐름이 아직 Reverse Map에 연결되지 않았습니다.
-
-[다음 조치]
-DEV 개선요청으로 실제 클릭 함수/API/JSON 연결을 확인해야 합니다.`;
-    return;
-  }
-
-  box.textContent =
-`[사용자 표시]
-${map.title}
-
-[현재 ON/OFF]
-${item.enabled !== false ? 'ON' : 'OFF'}
-
-[클릭/작동 상태]
-${map.status || '확인 필요'}
-
-[USER 클릭/작동]
-${map.user_action || ''}
-
-[실행 결과]
-${map.user_result || ''}
-
-[연결 파일]
-${(map.files || []).join('\\n')}
-
-[API]
-${(map.api || []).join('\\n')}
-
-[JSON]
-${(map.json || []).join('\\n')}
-
-[관제 수정 가능 항목]
-${(map.control_manage || []).join('\\n')}
-
-[DEV 개선 요청 기준]
-${map.dev_request || ''}`;
-}
-
-function INSPAddItem(){
-  const page = INSP_UI.pages[INSP_PAGE];
-  if(!page) return;
-  const title = prompt('항목 이름');
-  if(!title) return;
-  const id = prompt('항목 ID', title.toLowerCase().replaceAll(' ','_')) || ('item_'+Date.now());
-  page.items = page.items || [];
-  page.items.push({id, title, enabled:true, type:'custom'});
-  INSPRenderItems();
-}
-
-function INSPEditItem(){
-  const page = INSP_UI.pages[INSP_PAGE];
-  if(!page || INSP_ITEM === null){alert('수정할 항목을 선택하세요.');return;}
-  const it = page.items[INSP_ITEM];
-  it.title = prompt('이름', it.title || '') || it.title;
-  it.id = prompt('ID', it.id || '') || it.id;
-  it.type = prompt('type', it.type || 'custom') || it.type;
-  INSPRenderItems();
-  INSPRenderDetail();
-}
-
-function INSPDeleteItem(){
-  const page = INSP_UI.pages[INSP_PAGE];
-  if(!page || INSP_ITEM === null){alert('삭제할 항목을 선택하세요.');return;}
-  if(!confirm('삭제할까요?')) return;
-  page.items.splice(INSP_ITEM,1);
-  INSP_ITEM = null;
-  INSPRenderItems();
-  INSPRenderDetail();
-}
-
-async function INSPSave(){
-  const res = await fetch('/api/travel-control-inspector/save-ui',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(INSP_UI)
-  });
-  const data = await res.json();
-  INSP_UI = data.config;
-  alert('완료 저장 / USER 반영 준비');
-  INSPRenderPages();
-  INSPRenderItems();
-  INSPRenderDetail();
-}
-
-async function INSPDevRequest(){
-  const page = INSP_UI.pages[INSP_PAGE];
-  const item = page && page.items ? page.items[INSP_ITEM] : null;
-  if(!item){alert('항목을 선택하세요.');return;}
-  const map = INSPFindMapItem(INSP_PAGE,item);
-  const memo = prompt('DEV 개선요청', map ? map.dev_request : '미매핑 항목 기능 연결 확인');
-  if(!memo)return;
-
-  await fetch('/api/travel-control-inspector/dev-request',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      page: page.title,
-      item: item.title,
-      item_id: item.id,
-      memo,
-      map: map || null
-    })
-  });
-
-  alert('DEV 개선요청 저장 완료');
-}
-
-INSPLoad();
-</script>
-
-
-<!-- Accordion Control Workspace v1 -->
-<style>
-.accWrap{margin:16px;padding:16px;border:1px solid #cbd5e1;border-radius:18px;background:#fff;color:#0f172a}
-.accLayout{display:grid;grid-template-columns:300px 1fr;gap:16px}
-.accPage{margin-bottom:8px;border:1px solid #dbe3ee;border-radius:12px;overflow:hidden}
-.accHead{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#e2e8f0;font-weight:900;cursor:pointer}
-.accHead.active{background:#2563eb;color:white}
-.accItems{display:none;padding:8px;background:#f8fafc}
-.accItems.open{display:block}
-.accItem{padding:10px;margin:5px 0;border-radius:10px;background:white;border:1px solid #e2e8f0;cursor:pointer}
-.accItem:hover{background:#dbeafe}
-.accBtn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:4px}
-.accOn{background:#16a34a;color:white}.accOff{background:#dc2626;color:white}.accBlue{background:#2563eb;color:white}.accGray{background:#64748b;color:white}
-.accDetail{padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;white-space:pre-wrap;line-height:1.55;min-height:260px}
-</style>
-
-<div class="accWrap">
-  <h2>Accordion Control Workspace · USER 1~8</h2>
-  <p>좌측은 사용자가 보는 페이지/구성, 우측은 선택 구성의 상태·실행흐름·작업창 연결입니다.</p>
-  <div class="accLayout">
-    <div id="accLeft"></div>
-    <div>
-      <h3 id="accTitle">구성을 선택하세요</h3>
-      <div id="accDetail" class="accDetail">좌측 페이지를 펼치고 항목을 선택하세요.</div>
+<div class="wrap">
+  <div class="panel">
+    <h2>관리자 · 실행흐름 편집기 PATCH 15</h2>
+    <p>좌측에서 사용자 페이지/클릭바를 선택하고, 우측에서 구성요소·실행흐름·ON/OFF·신규·수정·삭제를 관리합니다.</p>
+    <div class="grid">
       <div>
-        <button class="accBtn accBlue" onclick="ACCOpenWorkspace()">작업창 열기</button>
-        <button class="accBtn accGray" onclick="ACCDevRequest()">DEV 개선요청</button>
-        <button class="accBtn accOn" onclick="ACCSave()">완료 / USER 반영</button>
+        <div id="left"></div>
+        <button class="btn blue" onclick="addPage()">+ 새 페이지</button>
+      </div>
+      <div>
+        <h2 id="title">선택 없음</h2>
+        <div id="right" class="right">좌측에서 항목을 선택하세요.</div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-let ACC_UI=null;
-let ACC_MAP=null;
-let ACC_SELECTED_PAGE=null;
-let ACC_SELECTED_ITEM=null;
+let CFG={pages:[]}, OPEN=0, SEL_PAGE=null, SEL_ITEM=null;
 
-async function ACCLoad(){
-  const res=await fetch('/api/travel-control-inspector?ts='+Date.now());
-  const data=await res.json();
-  ACC_UI=data.ui||{pages:[]};
-  ACC_MAP=data.function_map||{pages:[]};
-  ACCRender();
+async function load(){
+  const r=await fetch('/api/admin-dynamic-bars?ts='+Date.now());
+  const d=await r.json();
+  CFG=d.config||{version:'dynamic_bar_v1',pages:[]};
+  render();
+  detail();
 }
 
-function ACCFindMap(pageIdx,item){
-  const n=pageIdx+1;
-  const mp=(ACC_MAP.pages||[]).find(p=>Number(p.page)===n);
-  if(!mp)return null;
-  return (mp.items||[]).find(x=>x.id===item.id || x.title===item.title) || null;
-}
-
-function ACCRender(){
-  const left=document.getElementById('accLeft');
+function render(){
+  const left=document.getElementById('left');
   left.innerHTML='';
-  (ACC_UI.pages||[]).forEach((page,pi)=>{
+  (CFG.pages||[]).forEach((p,pi)=>{
     const box=document.createElement('div');
-    box.className='accPage';
-
+    box.className='page';
     const head=document.createElement('div');
-    head.className='accHead '+(ACC_SELECTED_PAGE===pi?'active':'');
-    head.innerHTML=`<span>${page.title||('사용자 UI '+(pi+1))}</span><span>${page.enabled===false?'OFF':'ON'}</span>`;
-    head.onclick=()=>{
-      ACC_SELECTED_PAGE = ACC_SELECTED_PAGE===pi ? null : pi;
-      ACC_SELECTED_ITEM=null;
-      ACCRender();
-      ACCDetail();
-    };
+    head.className='head '+(OPEN===pi?'active':'');
+    head.innerHTML=`<span>${p.title||p.id}</span><button class="btn ${p.enabled!==false?'on':'off'}">${p.enabled!==false?'ON':'OFF'}</button>`;
+    head.onclick=()=>{OPEN=OPEN===pi?null:pi;SEL_PAGE=pi;SEL_ITEM=null;render();detail();};
+    head.querySelector('button').onclick=(e)=>{e.stopPropagation();p.enabled=!(p.enabled!==false);render();detail();};
 
     const items=document.createElement('div');
-    items.className='accItems '+(ACC_SELECTED_PAGE===pi?'open':'');
-    (page.items||[]).forEach((it,ii)=>{
-      const m=ACCFindMap(pi,it);
+    items.className='items '+(OPEN===pi?'open':'');
+    (p.items||[]).forEach((it,ii)=>{
       const row=document.createElement('div');
-      row.className='accItem';
-      row.innerHTML=`${it.title||it.id} <span style="float:right">${it.enabled===false?'OFF':'ON'} · ${(m&&m.status)||'미매핑'}</span>`;
-      row.onclick=(e)=>{
-        e.stopPropagation();
-        ACC_SELECTED_PAGE=pi;
-        ACC_SELECTED_ITEM=ii;
-        ACCRender();
-        ACCDetail();
-      };
+      row.className='item '+(SEL_PAGE===pi&&SEL_ITEM===ii?'active':'');
+      row.innerHTML=`<span>${it.icon||''} ${it.title||it.id}</span><button class="btn ${it.enabled!==false?'on':'off'}">${it.enabled!==false?'ON':'OFF'}</button>`;
+      row.onclick=()=>{SEL_PAGE=pi;SEL_ITEM=ii;render();detail();};
+      row.querySelector('button').onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);render();detail();};
       items.appendChild(row);
     });
-
-    box.appendChild(head);
-    box.appendChild(items);
-    left.appendChild(box);
+    box.appendChild(head); box.appendChild(items); left.appendChild(box);
   });
 }
 
-function ACCDetail(){
-  const title=document.getElementById('accTitle');
-  const box=document.getElementById('accDetail');
-
-  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){
-    title.textContent='구성을 선택하세요';
-    box.textContent='좌측 페이지를 펼치고 항목을 선택하세요.';
-    return;
+function defaultFlow(it){
+  const id=it.id||'';
+  if(['hotel','food','restaurant','tour','shopping'].includes(id)){
+    return {steps:[
+      {id:'default_sites',title:'기본 사이트 등록',enabled:true},
+      {id:'user_links',title:'사용자 등록/삭제',enabled:true},
+      {id:'destination',title:'목적지 입력',enabled:true},
+      {id:'map_route',title:'현재위치 → 목적지 지도연결',enabled:true}
+    ]};
   }
-
-  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
-  const item=page.items[ACC_SELECTED_ITEM];
-  const map=ACCFindMap(ACC_SELECTED_PAGE,item);
-
-  title.textContent=(page.title||'USER')+' · '+(item.title||item.id);
-
-  if(!map){
-    box.textContent=`[사용자 표시]
-${item.title||item.id}
-
-[ON/OFF]
-${item.enabled===false?'OFF':'ON'}
-
-[기능상태]
-미매핑
-
-[다음 조치]
-작업창 또는 DEV 개선요청에서 실제 클릭 함수/API/JSON 연결을 확인해야 합니다.`;
-    return;
+  if(['transport','route'].includes(id)){
+    return {steps:[
+      {id:'destination',title:'목적지 입력',enabled:true},
+      {id:'map_app',title:'지도앱 선택',enabled:true},
+      {id:'route',title:'길찾기',enabled:true}
+    ]};
   }
-
-  box.textContent=`[사용자 표시]
-${map.title}
-
-[ON/OFF]
-${item.enabled===false?'OFF':'ON'}
-
-[기능상태]
-${map.status}
-
-[USER 클릭/작동]
-${map.user_action}
-
-[실행 결과]
-${map.user_result}
-
-[연결 파일]
-${(map.files||[]).join('\n')}
-
-[API]
-${(map.api||[]).join('\n')}
-
-[JSON]
-${(map.json||[]).join('\n')}
-
-[관제 관리 가능 항목]
-${(map.control_manage||[]).join('\n')}
-
-[DEV 개선요청 기준]
-${map.dev_request||''}`;
-}
-
-function ACCOpenWorkspace(){
-  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){alert('항목을 선택하세요.');return;}
-  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
-  const item=page.items[ACC_SELECTED_ITEM];
-  const id=item.id||'';
-
-  if(id.includes('hero')){
-    window.open('/control/travel-hero-workspace?group=baekban','_blank');
-    return;
+  if(id==='hero'){
+    return {steps:[
+      {id:'hero_baekban',title:'허영만 백반기행',enabled:true},
+      {id:'hero_tour',title:'주변 관광지',enabled:true},
+      {id:'place_list',title:'장소 리스트 관리',enabled:true}
+    ]};
   }
-  if(['hotel','food','restaurant','tour','shopping','transport','route'].includes(id)){
-    window.open('/control/travel-map-apps','_blank');
-    return;
-  }
-  if(['m2m','mini_talk','mic'].includes(id)){
-    window.open('/control/travel-context','_blank');
-    return;
-  }
-  window.open('/dev/travel-user-bridge','_blank');
+  return {steps:[{id:'click',title:'사용자 클릭',enabled:true},{id:'action',title:'실행 연결',enabled:true}]};
 }
 
-async function ACCDevRequest(){
-  if(ACC_SELECTED_PAGE===null || ACC_SELECTED_ITEM===null){alert('항목을 선택하세요.');return;}
-  const page=ACC_UI.pages[ACC_SELECTED_PAGE];
-  const item=page.items[ACC_SELECTED_ITEM];
-  const map=ACCFindMap(ACC_SELECTED_PAGE,item);
-  const memo=prompt('DEV 개선요청', map?map.dev_request:'미매핑 항목 연결 확인');
-  if(!memo)return;
-  await fetch('/api/travel-control-inspector/dev-request',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({page:page.title,item:item.title,item_id:item.id,memo,map:map||null})
-  });
-  alert('DEV 개선요청 저장 완료');
-}
+function detail(){
+  const t=document.getElementById('title'), r=document.getElementById('right');
+  if(SEL_PAGE===null){t.textContent='선택 없음';r.textContent='좌측에서 항목을 선택하세요.';return;}
+  const p=CFG.pages[SEL_PAGE];
 
-async function ACCSave(){
-  await fetch('/api/travel-control-inspector/save-ui',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(ACC_UI)
-  });
-  alert('완료 저장 / USER 반영');
-}
-
-ACCLoad();
-</script>
-
-
-<!-- Admin User Screen Manager v1 -->
-<style>
-.ausm{margin:16px;padding:16px;border-radius:18px;background:#fff;border:1px solid #cbd5e1;color:#0f172a;font-family:Arial,sans-serif}
-.ausmLayout{display:grid;grid-template-columns:300px 1fr;gap:16px}
-.ausmPage{border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px;overflow:hidden}
-.ausmHead{display:flex;justify-content:space-between;align-items:center;background:#e2e8f0;padding:12px;font-weight:900;cursor:pointer}
-.ausmHead.active{background:#2563eb;color:white}
-.ausmItems{display:none;background:#f8fafc;padding:8px}
-.ausmItems.open{display:block}
-.ausmItem{display:flex;justify-content:space-between;align-items:center;padding:10px;margin:5px 0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer}
-.ausmItem:hover{background:#dbeafe}
-.ausmToggle{border:0;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
-.ausmOn{background:#16a34a;color:white}
-.ausmOff{background:#dc2626;color:white}
-.ausmBlue{background:#2563eb;color:white}
-.ausmGray{background:#64748b;color:white}
-.ausmRed{background:#dc2626;color:white}
-.ausmRight{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px;min-height:320px}
-.ausmListRow{display:grid;grid-template-columns:1fr 90px 80px 90px;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #e2e8f0}
-</style>
-
-<div class="ausm">
-  <h2>관리자 · 사용자 화면 관리</h2>
-  <p>사용자 UI에 보이는 화면을 그대로 관리합니다. ON/OFF·신규·수정·삭제·완료하면 USER에 반영됩니다.</p>
-
-  <div class="ausmLayout">
-    <div id="ausmLeft"></div>
-
-    <div>
-      <h3 id="ausmTitle">구성을 선택하세요</h3>
-      <div id="ausmRight" class="ausmRight">좌측에서 사용자 화면 구성을 선택하세요.</div>
-      <div style="margin-top:12px">
-        <button class="ausmToggle ausmBlue" onclick="AUSMAdd()">신규</button>
-        <button class="ausmToggle ausmGray" onclick="AUSMEdit()">수정</button>
-        <button class="ausmToggle ausmRed" onclick="AUSMDelete()">삭제</button>
-        <button class="ausmToggle ausmOn" onclick="AUSMSave()">완료 / USER 반영</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let AUSM_CFG=null;
-let AUSM_OPEN=0;
-let AUSM_SELECTED_PAGE=null;
-let AUSM_SELECTED_ITEM=null;
-
-async function AUSMLoad(){
-  const res=await fetch('/api/admin-user-screen-config?ts='+Date.now());
-  const data=await res.json();
-  AUSM_CFG=data.config||{pages:[]};
-  AUSMRender();
-  AUSMRight();
-}
-
-function AUSMRender(){
-  const left=document.getElementById('ausmLeft');
-  left.innerHTML='';
-  (AUSM_CFG.pages||[]).forEach((page,pi)=>{
-    const pageBox=document.createElement('div');
-    pageBox.className='ausmPage';
-
-    const head=document.createElement('div');
-    head.className='ausmHead '+(AUSM_OPEN===pi?'active':'');
-    head.innerHTML=`<span>${page.title}</span><button class="ausmToggle ${page.enabled!==false?'ausmOn':'ausmOff'}">${page.enabled!==false?'ON':'OFF'}</button>`;
-    head.onclick=()=>{AUSM_OPEN=AUSM_OPEN===pi?null:pi;AUSM_SELECTED_PAGE=pi;AUSM_SELECTED_ITEM=null;AUSMRender();AUSMRight();};
-    head.querySelector('button').onclick=(e)=>{e.stopPropagation();page.enabled=!(page.enabled!==false);AUSMRender();AUSMRight();};
-
-    const items=document.createElement('div');
-    items.className='ausmItems '+(AUSM_OPEN===pi?'open':'');
-    (page.items||[]).forEach((it,ii)=>{
-      const row=document.createElement('div');
-      row.className='ausmItem';
-      row.innerHTML=`<span>${it.title}</span><button class="ausmToggle ${it.enabled!==false?'ausmOn':'ausmOff'}">${it.enabled!==false?'ON':'OFF'}</button>`;
-      row.onclick=()=>{AUSM_SELECTED_PAGE=pi;AUSM_SELECTED_ITEM=ii;AUSMRight();};
-      row.querySelector('button').onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);AUSMRender();AUSMRight();};
-      items.appendChild(row);
-    });
-
-    pageBox.appendChild(head);
-    pageBox.appendChild(items);
-    left.appendChild(pageBox);
-  });
-}
-
-function AUSMRight(){
-  const title=document.getElementById('ausmTitle');
-  const box=document.getElementById('ausmRight');
-
-  if(AUSM_SELECTED_PAGE===null){
-    title.textContent='구성을 선택하세요';
-    box.textContent='좌측에서 사용자 화면 구성을 선택하세요.';
-    return;
-  }
-
-  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
-
-  if(AUSM_SELECTED_ITEM===null){
-    title.textContent=page.title;
-    box.innerHTML='<b>페이지 구성</b><br><br>'+(page.items||[]).map(it=>`
-      <div class="ausmListRow">
-        <span>${it.title}</span>
-        <span>${it.enabled!==false?'ON':'OFF'}</span>
-        <button class="ausmToggle ${it.enabled!==false?'ausmOn':'ausmOff'}" onclick="AUSMToggleItem('${it.id}')">${it.enabled!==false?'ON':'OFF'}</button>
-        <button class="ausmToggle ausmGray" onclick="AUSMOpenWorkspace('${it.id}')">작업창</button>
-      </div>
-    `).join('');
-    return;
-  }
-
-  const item=page.items[AUSM_SELECTED_ITEM];
-  title.textContent=page.title+' · '+item.title;
-
-  if(item.id==='hero'){
-    box.innerHTML=`
-      <b>Hero 구성 관리</b><br><br>
-      허영만 백반기행 / 주변 관광지 / 백종원 맛집 / 지역축제 등은 Hero 하위 작업창에서 관리합니다.<br><br>
-      <button class="ausmToggle ausmBlue" onclick="window.open('/control/travel-hero-workspace?group=baekban','_blank')">Hero 작업창 열기</button>
-    `;
-  }else{
-    box.innerHTML=`
-      <b>사용자 표시 항목</b><br>
-      ${item.title}<br><br>
-      <b>현재 상태</b><br>
-      ${item.enabled!==false?'ON':'OFF'}<br><br>
-      <button class="ausmToggle ${item.enabled!==false?'ausmOn':'ausmOff'}" onclick="AUSMToggleSelected()">${item.enabled!==false?'ON':'OFF'}</button>
-      <button class="ausmToggle ausmGray" onclick="AUSMOpenWorkspace('${item.id}')">작업창 열기</button>
-    `;
-  }
-}
-
-function AUSMToggleItem(id){
-  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
-  const it=(page.items||[]).find(x=>x.id===id);
-  if(it){it.enabled=!(it.enabled!==false);}
-  AUSMRender();AUSMRight();
-}
-
-function AUSMToggleSelected(){
-  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
-  const it=page.items[AUSM_SELECTED_ITEM];
-  it.enabled=!(it.enabled!==false);
-  AUSMRender();AUSMRight();
-}
-
-function AUSMOpenWorkspace(id){
-  if(id==='hero'){window.open('/control/travel-hero-workspace?group=baekban','_blank');return;}
-  if(['food','restaurant','hotel','tour','shopping','transport','route'].includes(id)){window.open('/control/travel-map-apps','_blank');return;}
-  if(['m2m','mini_talk','mic'].includes(id)){window.open('/control/travel-context','_blank');return;}
-  window.open('/dev/travel-user-bridge','_blank');
-}
-
-function AUSMAdd(){
-  if(AUSM_SELECTED_PAGE===null){alert('페이지를 선택하세요.');return;}
-  const title=prompt('항목 이름');
-  if(!title)return;
-  const id=prompt('항목 ID', title.toLowerCase().replaceAll(' ','_'))||('item_'+Date.now());
-  AUSM_CFG.pages[AUSM_SELECTED_PAGE].items.push({id,title,enabled:true});
-  AUSMRender();AUSMRight();
-}
-
-function AUSMEdit(){
-  if(AUSM_SELECTED_PAGE===null||AUSM_SELECTED_ITEM===null){alert('수정할 항목을 선택하세요.');return;}
-  const it=AUSM_CFG.pages[AUSM_SELECTED_PAGE].items[AUSM_SELECTED_ITEM];
-  it.title=prompt('이름',it.title)||it.title;
-  it.id=prompt('ID',it.id)||it.id;
-  AUSMRender();AUSMRight();
-}
-
-function AUSMDelete(){
-  if(AUSM_SELECTED_PAGE===null||AUSM_SELECTED_ITEM===null){alert('삭제할 항목을 선택하세요.');return;}
-  if(!confirm('삭제할까요?'))return;
-  AUSM_CFG.pages[AUSM_SELECTED_PAGE].items.splice(AUSM_SELECTED_ITEM,1);
-  AUSM_SELECTED_ITEM=null;
-  AUSMRender();AUSMRight();
-}
-
-async function AUSMSave(){
-  const res=await fetch('/api/admin-user-screen-config/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(AUSM_CFG)
-  });
-  const data=await res.json();
-  AUSM_CFG=data.config;
-  alert('완료 저장 / USER 반영');
-  AUSMRender();AUSMRight();
-}
-
-AUSMLoad();
-</script>
-
-
-<!-- Admin Dynamic Bar Manager v1 -->
-<style>
-.dynMgr{margin:16px;padding:16px;border-radius:18px;background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-.dynGrid{display:grid;grid-template-columns:320px 1fr;gap:16px}
-.dynPage{border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px;overflow:hidden}
-.dynHead{display:flex;justify-content:space-between;align-items:center;background:#e2e8f0;padding:12px;font-weight:900;cursor:pointer}
-.dynHead.active{background:#2563eb;color:white}
-.dynItems{display:none;background:#f8fafc;padding:8px}
-.dynItems.open{display:block}
-.dynItem{display:grid;grid-template-columns:1fr 70px 70px 70px;gap:6px;align-items:center;padding:8px;margin:5px 0;background:white;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer}
-.dynBtn{border:0;border-radius:999px;padding:7px 10px;font-weight:900;cursor:pointer}
-.dynOn{background:#16a34a;color:white}.dynOff{background:#dc2626;color:white}.dynBlue{background:#2563eb;color:white}.dynGray{background:#64748b;color:white}.dynRed{background:#dc2626;color:white}
-.dynRight{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px;min-height:300px}
-.dynInput{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin:4px 0}
-</style>
-
-<div class="dynMgr">
-  <h2>관리자 · 페이지/클릭바 동적 관리</h2>
-  <p>좌측에서 페이지·클릭바를 추가/삭제/ON-OFF 하고, 완료하면 USER 화면에 반영됩니다.</p>
-  <div class="dynGrid">
-    <div>
-      <div id="dynLeft"></div>
-      <button class="dynBtn dynBlue" onclick="DYNAddPage()">+ 새 페이지</button>
-    </div>
-    <div>
-      <h3 id="dynTitle">선택 없음</h3>
-      <div id="dynRight" class="dynRight">좌측에서 페이지 또는 클릭바를 선택하세요.</div>
-      <div style="margin-top:12px">
-        <button class="dynBtn dynBlue" onclick="DYNAddBar()">+ 신규바 추가</button>
-        <button class="dynBtn dynGray" onclick="DYNEdit()">수정</button>
-        <button class="dynBtn dynRed" onclick="DYNDelete()">삭제</button>
-        <button class="dynBtn dynOn" onclick="DYNSave()">완료 / USER 반영</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let DYN_CFG=null;
-let DYN_OPEN=0;
-let DYN_PAGE=null;
-let DYN_ITEM=null;
-
-async function DYNLoad(){
-  const res=await fetch('/api/admin-dynamic-bars?ts='+Date.now());
-  const data=await res.json();
-  DYN_CFG=data.config||{version:'dynamic_bar_v1',pages:[]};
-  DYNRender();
-  DYNRight();
-}
-
-function DYNRender(){
-  const left=document.getElementById('dynLeft');
-  left.innerHTML='';
-
-  (DYN_CFG.pages||[]).forEach((page,pi)=>{
-    const box=document.createElement('div');
-    box.className='dynPage';
-
-    const head=document.createElement('div');
-    head.className='dynHead '+(DYN_OPEN===pi?'active':'');
-    head.innerHTML=`<span>${page.title||page.id}</span><button class="dynBtn ${page.enabled!==false?'dynOn':'dynOff'}">${page.enabled!==false?'ON':'OFF'}</button>`;
-    head.onclick=()=>{DYN_OPEN=DYN_OPEN===pi?null:pi;DYN_PAGE=pi;DYN_ITEM=null;DYNRender();DYNRight();};
-    head.querySelector('button').onclick=(e)=>{e.stopPropagation();page.enabled=!(page.enabled!==false);DYNRender();DYNRight();};
-
-    const items=document.createElement('div');
-    items.className='dynItems '+(DYN_OPEN===pi?'open':'');
-    (page.items||[]).forEach((it,ii)=>{
-      const row=document.createElement('div');
-      row.className='dynItem';
-      row.innerHTML=`
-        <span>${it.icon||''} ${it.title||it.id}</span>
-        <button class="dynBtn ${it.enabled!==false?'dynOn':'dynOff'}">${it.enabled!==false?'ON':'OFF'}</button>
-        <button class="dynBtn dynGray">수정</button>
-        <button class="dynBtn dynRed">삭제</button>
-      `;
-      row.onclick=()=>{DYN_PAGE=pi;DYN_ITEM=ii;DYNRight();};
-      row.children[1].onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);DYNRender();DYNRight();};
-      row.children[2].onclick=(e)=>{e.stopPropagation();DYN_PAGE=pi;DYN_ITEM=ii;DYNEdit();};
-      row.children[3].onclick=(e)=>{e.stopPropagation();DYN_PAGE=pi;DYN_ITEM=ii;DYNDelete();};
-      items.appendChild(row);
-    });
-
-    box.appendChild(head);
-    box.appendChild(items);
-    left.appendChild(box);
-  });
-}
-
-
-function KRXAAdminDetailHTML(it){
-  const id = it.id || "";
-  if(id === "gps"){
-    return `
-      <div class="krxaDetailBox">
-        <h3>GPS 구성 관리</h3>
-        <div class="krxaSubRow"><b>위치</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
-        <div class="krxaSubRow"><b>날짜</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
-        <div class="krxaSubRow"><b>시간</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
-        <div class="krxaSubRow"><b>장소</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
+  if(SEL_ITEM===null){
+    t.textContent=p.title||p.id;
+    r.innerHTML=`
+      <h3>페이지 관리</h3>
+      <div class="row"><b>페이지명</b><input id="p_title" value="${p.title||''}"></div>
+      <div class="row"><b>상태</b><button class="btn ${p.enabled!==false?'on':'off'}" onclick="togglePage()">${p.enabled!==false?'ON':'OFF'}</button></div>
+      <div class="toolbar">
+        <button class="btn blue" onclick="addBar()">+ 신규바 추가</button>
+        <button class="btn gray" onclick="applyPage()">수정 반영</button>
+        <button class="btn red" onclick="deletePage()">페이지 삭제</button>
+        <button class="btn on" onclick="save()">완료 / USER 반영</button>
       </div>`;
+    return;
   }
-  if(id === "hero"){
-    return `
-      <div class="krxaDetailBox">
-        <h3>Hero 구성 관리</h3>
-        <p>Hero 하위 구성은 사용자 좌측에는 보이지 않고, 여기서 관리합니다.</p>
-        <div class="krxaSubRow"><b>허영만 백반기행</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-hero-workspace?group=baekban','_blank')">작업창</button></div>
-        <div class="krxaSubRow"><b>주변 관광지</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-hero-workspace?group=tour','_blank')">작업창</button></div>
-        <div class="krxaSubRow"><b>백종원 맛집</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">작업창</button></div>
-        <div class="krxaSubRow"><b>지역축제</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">작업창</button></div>
-      </div>`;
-  }
-  if(id === "mini_talk" || id === "m2m"){
-    return `
-      <div class="krxaDetailBox">
-        <h3>미니말하기 구성 관리</h3>
-        <div class="krxaSubRow"><b>버튼명</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
-        <div class="krxaSubRow"><b>아이콘</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray">수정</button></div>
-        <div class="krxaSubRow"><b>통역 연결</b><span>ON</span><button class="krxaSmallBtn dynOn">ON</button><button class="krxaSmallBtn dynGray" onclick="window.open('/control/travel-context','_blank')">작업창</button></div>
-      </div>`;
-  }
-  return "";
-}
 
+  const it=p.items[SEL_ITEM];
+  it.action=it.action||{kind:'none'};
+  it.flow=it.flow||defaultFlow(it);
+  t.textContent=(p.title||p.id)+' · '+(it.title||it.id);
 
-function KRXAActionFlowHTML(it){
-  it.action = it.action || {kind:"none"};
-  it.flow = it.flow || defaultFlowForItem(it);
+  r.innerHTML=`
+    <h3>클릭바 관리</h3>
+    <div class="row"><b>ID</b><input id="i_id" value="${it.id||''}"></div>
+    <div class="row"><b>표시명</b><input id="i_title" value="${it.title||''}"></div>
+    <div class="row"><b>아이콘</b><input id="i_icon" value="${it.icon||''}"></div>
+    <div class="row"><b>USER 자동 생성</b><input type="checkbox" id="i_dynamic" ${it.dynamic?'checked':''}></div>
+    <div class="row"><b>ON/OFF</b><input type="checkbox" id="i_enabled" ${it.enabled!==false?'checked':''}></div>
 
-  return `
-    <div class="flowBox">
-      <h3>실행 흐름 편집</h3>
-
-      <div class="flowGrid"><b>실행종류</b>
-        <select class="flowInput" id="flow_kind">
-          ${["none","url","page","map","recommend","workspace","call"].map(k=>`<option value="${k}" ${it.action.kind===k?'selected':''}>${k}</option>`).join("")}
-        </select>
-      </div>
-
-      <div class="flowGrid"><b>실행값</b>
-        <input class="flowInput" id="flow_value" value="${it.action.url || it.action.value || it.action.page || ''}" placeholder="URL / page 번호 / recommend category / 전화번호">
-      </div>
-
-      <h4>구성 요소</h4>
-      <div id="flow_steps">
-        ${(it.flow.steps||[]).map((s,i)=>`
-          <div class="flowStep">
-            <span>${s.title}</span>
-            <button class="flowBtn ${s.enabled!==false?'flowOn':'flowRed'}" onclick="FLOWToggleStep(${i})">${s.enabled!==false?'ON':'OFF'}</button>
-            <button class="flowBtn flowGray" onclick="FLOWEditStep(${i})">수정</button>
-          </div>
-        `).join("")}
-      </div>
-
-      <button class="flowBtn flowBlue" onclick="FLOWAddStep()">+ 단계 추가</button>
-      <button class="flowBtn flowGray" onclick="FLOWApplyToItem()">흐름 반영</button>
+    <h3>실행 설정</h3>
+    <div class="row"><b>실행종류</b>
+      <select id="a_kind">${['none','url','page','map','recommend','workspace','call'].map(k=>`<option value="${k}" ${it.action.kind===k?'selected':''}>${k}</option>`).join('')}</select>
     </div>
-  `;
+    <div class="row"><b>실행값</b><input id="a_value" value="${it.action.url||it.action.value||it.action.page||''}"></div>
+
+    <h3>구성요소 / 중간단계</h3>
+    <div id="steps">${(it.flow.steps||[]).map((s,i)=>`
+      <div class="step">
+        <span>${s.title}</span>
+        <button class="btn ${s.enabled!==false?'on':'off'}" onclick="toggleStep(${i})">${s.enabled!==false?'ON':'OFF'}</button>
+        <button class="btn gray" onclick="editStep(${i})">수정</button>
+      </div>`).join('')}</div>
+
+    <div class="toolbar">
+      <button class="btn blue" onclick="addStep()">+ 단계 추가</button>
+      <button class="btn gray" onclick="applyItem()">수정 반영</button>
+      <button class="btn red" onclick="deleteItem()">삭제</button>
+      <button class="btn on" onclick="save()">완료 / USER 반영</button>
+    </div>`;
 }
 
-function defaultFlowForItem(it){
-  const id = it.id || "";
-  if(["hotel","food","restaurant","tour","shopping"].includes(id)){
-    return {steps:[
-      {id:"default_sites",title:"기본 사이트 등록",enabled:true},
-      {id:"user_links",title:"사용자 등록/삭제",enabled:true},
-      {id:"recommend",title:"추천 리스트",enabled:true},
-      {id:"destination",title:"목적지 입력",enabled:true},
-      {id:"map_route",title:"현재위치 → 목적지 지도연결",enabled:true}
-    ]};
-  }
-  if(["transport","route"].includes(id)){
-    return {steps:[
-      {id:"destination",title:"목적지 입력",enabled:true},
-      {id:"map_app",title:"지도앱 선택",enabled:true},
-      {id:"route",title:"길찾기",enabled:true}
-    ]};
-  }
-  if(id==="hero"){
-    return {steps:[
-      {id:"hero_groups",title:"허영만 백반기행/주변관광지 그룹",enabled:true},
-      {id:"place_list",title:"장소 리스트",enabled:true},
-      {id:"map_route",title:"장소 선택 → 지도연결",enabled:true}
-    ]};
-  }
-  if(["mini_talk","m2m","mic"].includes(id)){
-    return {steps:[
-      {id:"stt",title:"음성입력 STT",enabled:true},
-      {id:"translate",title:"번역",enabled:true},
-      {id:"tts",title:"음성출력 TTS",enabled:true}
-    ]};
-  }
-  return {steps:[
-    {id:"click",title:"사용자 클릭",enabled:true},
-    {id:"action",title:"실행 연결",enabled:true}
-  ]};
+function togglePage(){CFG.pages[SEL_PAGE].enabled=!(CFG.pages[SEL_PAGE].enabled!==false);render();detail();}
+function applyPage(){CFG.pages[SEL_PAGE].title=document.getElementById('p_title').value;render();detail();}
+function deletePage(){if(confirm('페이지 삭제?')){CFG.pages.splice(SEL_PAGE,1);SEL_PAGE=null;SEL_ITEM=null;render();detail();}}
+function addPage(){CFG.pages.push({id:'page_'+Date.now(),title:'새 사용자 UI',enabled:true,items:[]});OPEN=CFG.pages.length-1;SEL_PAGE=OPEN;SEL_ITEM=null;render();detail();}
+function addBar(){if(SEL_PAGE===null)return;CFG.pages[SEL_PAGE].items.push({id:'bar_'+Date.now(),title:'신규바',icon:'🔹',enabled:true,dynamic:true,action:{kind:'none'},flow:{steps:[]}});SEL_ITEM=CFG.pages[SEL_PAGE].items.length-1;render();detail();}
+function applyItem(){
+  const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];
+  it.id=document.getElementById('i_id').value.trim();
+  it.title=document.getElementById('i_title').value.trim();
+  it.icon=document.getElementById('i_icon').value.trim();
+  it.dynamic=document.getElementById('i_dynamic').checked;
+  it.enabled=document.getElementById('i_enabled').checked;
+  const k=document.getElementById('a_kind').value, v=document.getElementById('a_value').value.trim();
+  it.action={kind:k};
+  if(k==='url'||k==='workspace')it.action.url=v;
+  else if(k==='page')it.action.page=v;
+  else it.action.value=v;
+  it.flow=it.flow||defaultFlow(it);
+  render();detail();
 }
-
-function FLOWCurrentItem(){
-  if(DYN_PAGE===null || DYN_ITEM===null)return null;
-  return DYN_CFG.pages[DYN_PAGE].items[DYN_ITEM];
-}
-
-function FLOWToggleStep(i){
-  const it = FLOWCurrentItem(); if(!it)return;
-  it.flow = it.flow || defaultFlowForItem(it);
-  it.flow.steps[i].enabled = !(it.flow.steps[i].enabled !== false);
-  DYNRight();
-}
-
-function FLOWEditStep(i){
-  const it = FLOWCurrentItem(); if(!it)return;
-  it.flow = it.flow || defaultFlowForItem(it);
-  const s = it.flow.steps[i];
-  s.title = prompt("단계명", s.title || "") || s.title;
-  s.id = prompt("단계 ID", s.id || "") || s.id;
-  DYNRight();
-}
-
-function FLOWAddStep(){
-  const it = FLOWCurrentItem(); if(!it)return;
-  it.flow = it.flow || defaultFlowForItem(it);
-  const title = prompt("새 단계명");
-  if(!title)return;
-  it.flow.steps.push({id:"step_"+Date.now(), title, enabled:true});
-  DYNRight();
-}
-
-function FLOWApplyToItem(){
-  const it = FLOWCurrentItem(); if(!it)return;
-  const kind = document.getElementById("flow_kind").value;
-  const value = document.getElementById("flow_value").value.trim();
-  it.action = {kind};
-  if(kind === "url" || kind === "workspace") it.action.url = value;
-  else if(kind === "page") it.action.page = value;
-  else if(kind === "call" || kind === "map" || kind === "recommend") it.action.value = value;
-  alert("실행 흐름이 반영되었습니다. 완료 / USER 반영을 누르세요.");
-}
-
-function DYNRight(){
-  const title=document.getElementById('dynTitle');
-  const box=document.getElementById('dynRight');
-
-  if(DYN_PAGE===null){
-    title.textContent='선택 없음';
-    box.textContent='좌측에서 페이지 또는 클릭바를 선택하세요.';
-    return;
-  }
-
-  const page=DYN_CFG.pages[DYN_PAGE];
-
-  if(DYN_ITEM===null){
-    title.textContent=page.title||page.id;
-    box.innerHTML=`
-      <b>페이지 관리</b><br>
-      페이지명: ${page.title||''}<br>
-      상태: ${page.enabled!==false?'ON':'OFF'}<br>
-      클릭바 수: ${(page.items||[]).length}<br><br>
-      <button class="dynBtn ${page.enabled!==false?'dynOn':'dynOff'}" onclick="DYNTogglePage()">${page.enabled!==false?'ON':'OFF'}</button>
-    `;
-    return;
-  }
-
-  const it=page.items[DYN_ITEM];
-  title.textContent=(page.title||page.id)+' · '+(it.title||it.id);
-  box.innerHTML=`
-    <label>ID</label><input class="dynInput" id="dyn_id" value="${it.id||''}">
-    <label>표시명</label><input class="dynInput" id="dyn_title" value="${it.title||''}">
-    <label>아이콘</label><input class="dynInput" id="dyn_icon" value="${it.icon||''}">
-    <label>실행종류(url/page/map/none)</label><input class="dynInput" id="dyn_kind" value="${(it.action&&it.action.kind)||'none'}">
-    <label>URL 또는 값</label><input class="dynInput" id="dyn_value" value="${(it.action&&(it.action.url||it.action.page||it.action.value))||''}">
-    <label><input type="checkbox" id="dyn_dynamic" ${it.dynamic?'checked':''}> USER 자동 생성 클릭바</label><br>
-    <label><input type="checkbox" id="dyn_enabled" ${it.enabled!==false?'checked':''}> ON</label>
-  `;
-}
-
-function DYNTogglePage(){
-  const page=DYN_CFG.pages[DYN_PAGE];
-  page.enabled=!(page.enabled!==false);
-  DYNRender();DYNRight();
-}
-
-function DYNAddPage(){
-  const title=prompt('새 페이지 이름','사용자 UI '+((DYN_CFG.pages||[]).length+1));
-  if(!title)return;
-  DYN_CFG.pages.push({id:'page'+Date.now(),title,enabled:true,items:[]});
-  DYN_OPEN=DYN_CFG.pages.length-1;
-  DYN_PAGE=DYN_OPEN;
-  DYN_ITEM=null;
-  DYNRender();DYNRight();
-}
-
-function DYNAddBar(){
-  if(DYN_PAGE===null){alert('페이지를 선택하세요.');return;}
-  const title=prompt('신규바 이름');
-  if(!title)return;
-  const id=prompt('ID 영문', title.toLowerCase().replaceAll(' ','_'))||('bar_'+Date.now());
-  DYN_CFG.pages[DYN_PAGE].items.push({
-    id,title,icon:'🔹',enabled:true,dynamic:true,
-    action:{kind:'none'}
-  });
-  DYN_ITEM=DYN_CFG.pages[DYN_PAGE].items.length-1;
-  DYNRender();DYNRight();
-}
-
-function DYNEdit(){
-  if(DYN_PAGE===null||DYN_ITEM===null){alert('수정할 클릭바를 선택하세요.');return;}
-  const it=DYN_CFG.pages[DYN_PAGE].items[DYN_ITEM];
-  const id=document.getElementById('dyn_id');
-  if(id){
-    it.id=id.value.trim()||it.id;
-    it.title=document.getElementById('dyn_title').value.trim()||it.title;
-    it.icon=document.getElementById('dyn_icon').value.trim();
-    it.dynamic=document.getElementById('dyn_dynamic').checked;
-    it.enabled=document.getElementById('dyn_enabled').checked;
-    const kind=document.getElementById('dyn_kind').value.trim()||'none';
-    const value=document.getElementById('dyn_value').value.trim();
-    it.action={kind};
-    if(kind==='url') it.action.url=value;
-    if(kind==='page') it.action.page=value;
-    if(kind==='map') it.action.value=value;
-    alert('수정 반영됨. 완료를 눌러 저장하세요.');
-  }
-  DYNRender();DYNRight();
-}
-
-function DYNDelete(){
-  if(DYN_PAGE===null){alert('선택하세요.');return;}
-  if(DYN_ITEM===null){
-    if(!confirm('페이지를 삭제할까요?'))return;
-    DYN_CFG.pages.splice(DYN_PAGE,1);
-    DYN_PAGE=null;DYN_ITEM=null;DYN_OPEN=0;
-  }else{
-    if(!confirm('클릭바를 삭제할까요?'))return;
-    DYN_CFG.pages[DYN_PAGE].items.splice(DYN_ITEM,1);
-    DYN_ITEM=null;
-  }
-  DYNRender();DYNRight();
-}
-
-async function DYNSave(){
-  if(DYN_PAGE!==null && DYN_ITEM!==null && document.getElementById('dyn_id')){
-    DYNEdit();
-  }
-  const res=await fetch('/api/admin-dynamic-bars/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(DYN_CFG)
-  });
-  const data=await res.json();
-  DYN_CFG=data.config;
-  alert('완료 저장 / USER 반영');
-  DYNRender();DYNRight();
-}
-
-DYNLoad();
+function deleteItem(){if(confirm('클릭바 삭제?')){CFG.pages[SEL_PAGE].items.splice(SEL_ITEM,1);SEL_ITEM=null;render();detail();}}
+function toggleStep(i){const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];it.flow.steps[i].enabled=!(it.flow.steps[i].enabled!==false);detail();}
+function editStep(i){const s=CFG.pages[SEL_PAGE].items[SEL_ITEM].flow.steps[i];s.title=prompt('단계명',s.title)||s.title;s.id=prompt('단계 ID',s.id)||s.id;detail();}
+function addStep(){const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];it.flow=it.flow||{steps:[]};const title=prompt('단계명');if(title){it.flow.steps.push({id:'step_'+Date.now(),title,enabled:true});detail();}}
+async function save(){if(SEL_ITEM!==null && document.getElementById('i_id'))applyItem();if(SEL_ITEM===null && document.getElementById('p_title'))applyPage();const res=await fetch('/api/admin-dynamic-bars/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(CFG)});const d=await res.json();CFG=d.config;alert('저장 완료 / USER 반영');render();detail();}
+load();
 </script>
-
-
-<!-- Admin Compact Detail Binding v1 -->
-<style>
-.dynMgr{margin:10px!important;padding:12px!important;border-radius:14px!important}
-.dynGrid{grid-template-columns:390px 1fr!important;gap:14px!important}
-.dynPage{margin-bottom:6px!important;border-radius:10px!important}
-.dynHead{padding:8px 10px!important;font-size:15px!important}
-.dynItems{padding:6px!important}
-.dynItem{
-  grid-template-columns:1fr 54px 54px 54px!important;
-  gap:4px!important;
-  padding:6px 8px!important;
-  margin:4px 0!important;
-  border-radius:8px!important;
-  font-size:14px!important;
-}
-.dynBtn{
-  padding:5px 8px!important;
-  font-size:12px!important;
-  min-width:auto!important;
-}
-.dynRight{
-  padding:14px!important;
-  min-height:360px!important;
-}
-.dynInput{
-  padding:7px!important;
-  font-size:14px!important;
-}
-.krxaDetailBox{
-  margin-top:10px;
-  padding:12px;
-  border:1px solid #dbe3ee;
-  border-radius:12px;
-  background:#fff;
-}
-.krxaSubRow{
-  display:grid;
-  grid-template-columns:1fr 70px 70px 80px;
-  gap:6px;
-  align-items:center;
-  border-bottom:1px solid #e5e7eb;
-  padding:8px 4px;
-}
-.krxaSmallBtn{
-  border:0;
-  border-radius:999px;
-  padding:5px 8px;
-  font-size:12px;
-  font-weight:900;
-  cursor:pointer;
-}
-</style>
-
-
-<!-- Sync Engine Cleanup v1 Notice -->
-<script>
-console.log("[KRXA] Sync Engine Cleanup v1: USER sync uses only /api/admin-dynamic-bars + admin_dynamic_bar_sync.js");
-</script>
-
-
-<!-- Admin Action Flow Editor v1 -->
-<style>
-.flowBox{margin-top:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;background:#fff}
-.flowGrid{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;margin:6px 0}
-.flowInput{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px}
-.flowStep{display:grid;grid-template-columns:1fr 70px 70px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:7px 0}
-.flowBtn{border:0;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;cursor:pointer}
-.flowOn{background:#16a34a;color:#fff}.flowBlue{background:#2563eb;color:#fff}.flowGray{background:#64748b;color:#fff}.flowRed{background:#dc2626;color:#fff}
-</style>
-
 </body>
 </html>
