@@ -1093,5 +1093,198 @@ async function ACCSave(){
 ACCLoad();
 </script>
 
+
+<!-- Admin User Screen Manager v1 -->
+<style>
+.ausm{margin:16px;padding:16px;border-radius:18px;background:#fff;border:1px solid #cbd5e1;color:#0f172a;font-family:Arial,sans-serif}
+.ausmLayout{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.ausmPage{border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px;overflow:hidden}
+.ausmHead{display:flex;justify-content:space-between;align-items:center;background:#e2e8f0;padding:12px;font-weight:900;cursor:pointer}
+.ausmHead.active{background:#2563eb;color:white}
+.ausmItems{display:none;background:#f8fafc;padding:8px}
+.ausmItems.open{display:block}
+.ausmItem{display:flex;justify-content:space-between;align-items:center;padding:10px;margin:5px 0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer}
+.ausmItem:hover{background:#dbeafe}
+.ausmToggle{border:0;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
+.ausmOn{background:#16a34a;color:white}
+.ausmOff{background:#dc2626;color:white}
+.ausmBlue{background:#2563eb;color:white}
+.ausmGray{background:#64748b;color:white}
+.ausmRed{background:#dc2626;color:white}
+.ausmRight{border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;padding:16px;min-height:320px}
+.ausmListRow{display:grid;grid-template-columns:1fr 90px 80px 90px;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #e2e8f0}
+</style>
+
+<div class="ausm">
+  <h2>관리자 · 사용자 화면 관리</h2>
+  <p>사용자 UI에 보이는 화면을 그대로 관리합니다. ON/OFF·신규·수정·삭제·완료하면 USER에 반영됩니다.</p>
+
+  <div class="ausmLayout">
+    <div id="ausmLeft"></div>
+
+    <div>
+      <h3 id="ausmTitle">구성을 선택하세요</h3>
+      <div id="ausmRight" class="ausmRight">좌측에서 사용자 화면 구성을 선택하세요.</div>
+      <div style="margin-top:12px">
+        <button class="ausmToggle ausmBlue" onclick="AUSMAdd()">신규</button>
+        <button class="ausmToggle ausmGray" onclick="AUSMEdit()">수정</button>
+        <button class="ausmToggle ausmRed" onclick="AUSMDelete()">삭제</button>
+        <button class="ausmToggle ausmOn" onclick="AUSMSave()">완료 / USER 반영</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let AUSM_CFG=null;
+let AUSM_OPEN=0;
+let AUSM_SELECTED_PAGE=null;
+let AUSM_SELECTED_ITEM=null;
+
+async function AUSMLoad(){
+  const res=await fetch('/api/admin-user-screen-config?ts='+Date.now());
+  const data=await res.json();
+  AUSM_CFG=data.config||{pages:[]};
+  AUSMRender();
+  AUSMRight();
+}
+
+function AUSMRender(){
+  const left=document.getElementById('ausmLeft');
+  left.innerHTML='';
+  (AUSM_CFG.pages||[]).forEach((page,pi)=>{
+    const pageBox=document.createElement('div');
+    pageBox.className='ausmPage';
+
+    const head=document.createElement('div');
+    head.className='ausmHead '+(AUSM_OPEN===pi?'active':'');
+    head.innerHTML=`<span>${page.title}</span><button class="ausmToggle ${page.enabled!==false?'ausmOn':'ausmOff'}">${page.enabled!==false?'ON':'OFF'}</button>`;
+    head.onclick=()=>{AUSM_OPEN=AUSM_OPEN===pi?null:pi;AUSM_SELECTED_PAGE=pi;AUSM_SELECTED_ITEM=null;AUSMRender();AUSMRight();};
+    head.querySelector('button').onclick=(e)=>{e.stopPropagation();page.enabled=!(page.enabled!==false);AUSMRender();AUSMRight();};
+
+    const items=document.createElement('div');
+    items.className='ausmItems '+(AUSM_OPEN===pi?'open':'');
+    (page.items||[]).forEach((it,ii)=>{
+      const row=document.createElement('div');
+      row.className='ausmItem';
+      row.innerHTML=`<span>${it.title}</span><button class="ausmToggle ${it.enabled!==false?'ausmOn':'ausmOff'}">${it.enabled!==false?'ON':'OFF'}</button>`;
+      row.onclick=()=>{AUSM_SELECTED_PAGE=pi;AUSM_SELECTED_ITEM=ii;AUSMRight();};
+      row.querySelector('button').onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);AUSMRender();AUSMRight();};
+      items.appendChild(row);
+    });
+
+    pageBox.appendChild(head);
+    pageBox.appendChild(items);
+    left.appendChild(pageBox);
+  });
+}
+
+function AUSMRight(){
+  const title=document.getElementById('ausmTitle');
+  const box=document.getElementById('ausmRight');
+
+  if(AUSM_SELECTED_PAGE===null){
+    title.textContent='구성을 선택하세요';
+    box.textContent='좌측에서 사용자 화면 구성을 선택하세요.';
+    return;
+  }
+
+  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
+
+  if(AUSM_SELECTED_ITEM===null){
+    title.textContent=page.title;
+    box.innerHTML='<b>페이지 구성</b><br><br>'+(page.items||[]).map(it=>`
+      <div class="ausmListRow">
+        <span>${it.title}</span>
+        <span>${it.enabled!==false?'ON':'OFF'}</span>
+        <button class="ausmToggle ${it.enabled!==false?'ausmOn':'ausmOff'}" onclick="AUSMToggleItem('${it.id}')">${it.enabled!==false?'ON':'OFF'}</button>
+        <button class="ausmToggle ausmGray" onclick="AUSMOpenWorkspace('${it.id}')">작업창</button>
+      </div>
+    `).join('');
+    return;
+  }
+
+  const item=page.items[AUSM_SELECTED_ITEM];
+  title.textContent=page.title+' · '+item.title;
+
+  if(item.id==='hero'){
+    box.innerHTML=`
+      <b>Hero 구성 관리</b><br><br>
+      허영만 백반기행 / 주변 관광지 / 백종원 맛집 / 지역축제 등은 Hero 하위 작업창에서 관리합니다.<br><br>
+      <button class="ausmToggle ausmBlue" onclick="window.open('/control/travel-hero-workspace?group=baekban','_blank')">Hero 작업창 열기</button>
+    `;
+  }else{
+    box.innerHTML=`
+      <b>사용자 표시 항목</b><br>
+      ${item.title}<br><br>
+      <b>현재 상태</b><br>
+      ${item.enabled!==false?'ON':'OFF'}<br><br>
+      <button class="ausmToggle ${item.enabled!==false?'ausmOn':'ausmOff'}" onclick="AUSMToggleSelected()">${item.enabled!==false?'ON':'OFF'}</button>
+      <button class="ausmToggle ausmGray" onclick="AUSMOpenWorkspace('${item.id}')">작업창 열기</button>
+    `;
+  }
+}
+
+function AUSMToggleItem(id){
+  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
+  const it=(page.items||[]).find(x=>x.id===id);
+  if(it){it.enabled=!(it.enabled!==false);}
+  AUSMRender();AUSMRight();
+}
+
+function AUSMToggleSelected(){
+  const page=AUSM_CFG.pages[AUSM_SELECTED_PAGE];
+  const it=page.items[AUSM_SELECTED_ITEM];
+  it.enabled=!(it.enabled!==false);
+  AUSMRender();AUSMRight();
+}
+
+function AUSMOpenWorkspace(id){
+  if(id==='hero'){window.open('/control/travel-hero-workspace?group=baekban','_blank');return;}
+  if(['food','restaurant','hotel','tour','shopping','transport','route'].includes(id)){window.open('/control/travel-map-apps','_blank');return;}
+  if(['m2m','mini_talk','mic'].includes(id)){window.open('/control/travel-context','_blank');return;}
+  window.open('/dev/travel-user-bridge','_blank');
+}
+
+function AUSMAdd(){
+  if(AUSM_SELECTED_PAGE===null){alert('페이지를 선택하세요.');return;}
+  const title=prompt('항목 이름');
+  if(!title)return;
+  const id=prompt('항목 ID', title.toLowerCase().replaceAll(' ','_'))||('item_'+Date.now());
+  AUSM_CFG.pages[AUSM_SELECTED_PAGE].items.push({id,title,enabled:true});
+  AUSMRender();AUSMRight();
+}
+
+function AUSMEdit(){
+  if(AUSM_SELECTED_PAGE===null||AUSM_SELECTED_ITEM===null){alert('수정할 항목을 선택하세요.');return;}
+  const it=AUSM_CFG.pages[AUSM_SELECTED_PAGE].items[AUSM_SELECTED_ITEM];
+  it.title=prompt('이름',it.title)||it.title;
+  it.id=prompt('ID',it.id)||it.id;
+  AUSMRender();AUSMRight();
+}
+
+function AUSMDelete(){
+  if(AUSM_SELECTED_PAGE===null||AUSM_SELECTED_ITEM===null){alert('삭제할 항목을 선택하세요.');return;}
+  if(!confirm('삭제할까요?'))return;
+  AUSM_CFG.pages[AUSM_SELECTED_PAGE].items.splice(AUSM_SELECTED_ITEM,1);
+  AUSM_SELECTED_ITEM=null;
+  AUSMRender();AUSMRight();
+}
+
+async function AUSMSave(){
+  const res=await fetch('/api/admin-user-screen-config/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(AUSM_CFG)
+  });
+  const data=await res.json();
+  AUSM_CFG=data.config;
+  alert('완료 저장 / USER 반영');
+  AUSMRender();AUSMRight();
+}
+
+AUSMLoad();
+</script>
+
 </body>
 </html>

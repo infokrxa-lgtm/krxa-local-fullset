@@ -2557,3 +2557,39 @@ async def api_travel_control_inspector_dev_request(payload: dict = _INSP_BODY(..
     _insp_save(_INSP_DEV_REQUESTS, data)
     return {"ok": True, "message": "DEV 개선요청 저장 완료"}
 # ===== End Travel Control Function Inspector API v1 =====
+
+
+# ===== Admin User Screen Manager API v1 =====
+from fastapi import Body as _AUSM_BODY
+import json as _ausm_json
+from pathlib import Path as _AUSM_Path
+from datetime import datetime as _AUSM_datetime
+
+_AUSM_CONFIG = _AUSM_Path("storage") / "travel_ui_config.json"
+
+def _ausm_now():
+    return _AUSM_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _ausm_load():
+    _AUSM_CONFIG.parent.mkdir(exist_ok=True)
+    if not _AUSM_CONFIG.exists():
+        _AUSM_CONFIG.write_text(_ausm_json.dumps({"version":"v1","pages":[]}, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _ausm_json.loads(_AUSM_CONFIG.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version":"v1","pages":[]}
+
+def _ausm_save(data):
+    _AUSM_CONFIG.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _ausm_now()
+    _AUSM_CONFIG.write_text(_ausm_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/admin-user-screen-config")
+async def api_admin_user_screen_config():
+    return {"ok": True, "config": _ausm_load()}
+
+@app.post("/api/admin-user-screen-config/save")
+async def api_admin_user_screen_config_save(payload: dict = _AUSM_BODY(...)):
+    return {"ok": True, "config": _ausm_save(payload)}
+# ===== End Admin User Screen Manager API v1 =====
