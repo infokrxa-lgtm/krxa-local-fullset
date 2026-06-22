@@ -1,6 +1,7 @@
 /* Admin Dynamic Bar Sync v1 - binding reinforced */
 (function(){
   window.SYNC_ENGINE_CLEANUP_V1 = true;
+  window.USER_SCREEN_REALITY_SYNC_V1 = true;
   let last = "";
 
   async function load(){
@@ -18,7 +19,14 @@
   }
 
   function pageEls(){
-    return document.querySelectorAll("#pages > .page");
+    return document.querySelectorAll("#pages > .page, [data-admin-page]");
+  }
+
+  function findPageEl(pages, page, idx){
+    const id = page.id || ("page"+(idx+1));
+    let found = document.querySelector('[data-admin-page="'+id+'"]');
+    if(found) return found;
+    return pages[idx] || null;
   }
 
 
@@ -29,9 +37,11 @@
       "mini_talk":["말대말","말하면 바로 통역"],
       "airport":["공항"],
       "hotel":["호텔"],
-      "restaurant":["식당"],
+      "food":["식당","맛집"],
+      "restaurant":["식당","맛집"],
       "food":["맛집"],
-      "transport":["교통"],
+      "taxi":["교통","택시"],
+      "transport":["교통","택시"],
       "route":["길찾기"],
       "tour":["관광"],
       "shopping":["쇼핑"],
@@ -61,7 +71,7 @@
     const pages = pageEls();
 
     cfg.pages.forEach(function(page, idx){
-      const pageEl = pages[idx];
+      const pageEl = findPageEl(pages, page, idx);
       if(!pageEl) return;
 
       pageEl.setAttribute("data-admin-page", page.id || ("page"+(idx+1)));

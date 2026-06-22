@@ -230,7 +230,7 @@
 <body>
 <div class="app" id="app">
   <div class="pages" id="pages">
-<section class="page">
+<section class="page" data-admin-page="page1">
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
     <div class="discoveryHero" onclick="KRXA_Recommend.openCurrentDiscoveryCard()">
@@ -240,7 +240,7 @@
       <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_Recommend.openCurrentDiscoveryCard();">둘러보기</button>
     </div>
 
-    <div class="homeMicDock" onclick="KRXA_App.goPage(4)">
+    <div class="homeMicDock" data-admin-id="mini_talk" onclick="KRXA_App.goPage(4)">
       <div class="homeMicBtn">🎤</div>
       <div>
         <b>말대말</b>
@@ -249,7 +249,7 @@
     </div>
   </div>
 </section>
-<section class="page">
+<section class="page" data-admin-page="page2">
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
 <div class="travelHero" onclick="KRXA_HeroRecommend.openCurrent()">
@@ -282,7 +282,7 @@
       </div>
     </div>
 
-    <div class="homeMicDock" onclick="KRXA_App.goPage(3)">
+    <div class="homeMicDock" data-admin-id="mini_talk" onclick="KRXA_App.goPage(3)">
       <div class="homeMicBtn">🎤</div>
       <div>
         <b>말대말</b>
@@ -292,7 +292,7 @@
   </div>
 </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page3">
       <div class="screen">
         <div class="hubHero"><h2>지금 무엇이 필요하세요?</h2><p id="hubContextText">위치 기반 여행 실행 허브</p></div>
         <div class="content" style="height:calc(100% - 76px)">
@@ -301,7 +301,7 @@
       </div>
     </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page4">
       <div class="screen">
         <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title" id="detailTitle">식당</div></div>
         <div class="content">
@@ -319,7 +319,7 @@
 
     </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page5">
       <div class="screen">
         <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div data-component="mini_talk" class="title">말대말 통역</div></div>
         <div class="content">
@@ -348,7 +348,7 @@
       </div>
     </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page6">
       <div class="screen">
         <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title">통화 / 메신저</div></div>
         <div class="content">
@@ -363,7 +363,7 @@
       </div>
     </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page7">
       <div class="screen">
         <div class="header"><button class="back" onclick="KRXA_App.goPage(1)">‹</button><div class="title">사용내역</div></div>
         <div class="content">
@@ -377,7 +377,7 @@
       </div>
     </section>
 
-    <section class="page">
+    <section class="page" data-admin-page="page8">
       <div class="screen">
         <div class="sosTop"><h2>SOS</h2><p style="color:white;margin:4px 0">위치 기반 긴급 도움</p></div>
         <div class="content" style="height:calc(100% - 96px)">
@@ -473,22 +473,28 @@ document.addEventListener("keydown", function(e){
       const m=menus[cat];
       const div=document.createElement("div");
       div.className="card";
+    v.setAttribute("data-admin-id","video");
+      div.setAttribute("data-admin-id", cat);
+      div.setAttribute("data-admin-source", "hubGrid");
       div.onclick=()=>openDetail(cat);
       div.innerHTML=`<span>${m.icon}</span>${m.label}<small>${m.subtitle}</small>`;
       box.appendChild(div);
     });
     const t=document.createElement("div");
     t.className="card";
+    t.setAttribute("data-admin-id","tv");
     t.onclick=()=>{window.open('/ui/tv.html','_blank');};
     t.innerHTML="<span>📺</span>TV시청<small>실시간 자막통역</small>";
     box.appendChild(t);
     const c=document.createElement("div");
     c.className="card";
+    c.setAttribute("data-admin-id","call");
     c.onclick=()=>goPage(4);
     c.innerHTML="<span>📞</span>통화<small>전화·메신저</small>";
     box.appendChild(c);
     const p=document.createElement("div");
     p.className="card";
+    p.setAttribute("data-admin-id","photo");
     p.onclick=()=>openMedia("photo");
     p.innerHTML="<span>📷</span>사진<small>기기 저장</small>";
     box.appendChild(p);
