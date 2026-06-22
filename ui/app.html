@@ -233,11 +233,11 @@
 <section class="page" data-admin-page="page1">
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
-    <div class="discoveryHero" onclick="KRXA_Recommend.openCurrentDiscoveryCard()">
+    <div class="discoveryHero" onclick="KRXA_HeroRotation.openCurrent()">
       <div data-component="hero" class="discoveryBadge">LIVE TRAVEL DISCOVERY</div>
       <div class="discoveryTitle" id="discoveryHeroTitle">주변 인기 장소를 찾는 중</div>
       <div class="discoverySub" id="discoveryHeroSub">방송·유튜브·리뷰 기반 추천 준비 중</div>
-      <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_Recommend.openCurrentDiscoveryCard();">둘러보기</button>
+      <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_HeroRotation.openCurrent();">둘러보기</button>
     </div>
 
     <div class="homeMicDock" data-admin-id="mini_talk" onclick="KRXA_App.goPage(4)">
@@ -252,7 +252,7 @@
 <section class="page" data-admin-page="page2">
   <div class="screen home">
 <div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
-<div class="travelHero" onclick="KRXA_HeroRecommend.openCurrent()">
+<div class="travelHero" onclick="KRXA_HeroRotation.openCurrent()">
       <div data-component="gps" class="travelHeroBadge">GPS · MARKET · RECOMMEND</div>
 <div class="travelHeroPlace" id="travelHeroPlace">추천 불러오는 중</div>
 <div class="travelHeroText" id="travelHeroText">현재 위치 기준 추천을 준비합니다</div>

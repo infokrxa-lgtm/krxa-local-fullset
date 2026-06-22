@@ -2649,3 +2649,57 @@ def ai_gate_page():
 def project_inspector_page():
     return FileResponse("ui/project_inspector.html")
 # ===== End KRXA PROJECT INSPECTOR V1 PAGE =====
+
+
+# ===== Travel Result Manager API v1 =====
+from fastapi import Body as _TRM_BODY
+from fastapi.responses import JSONResponse as _TRM_JSONResponse
+import json as _trm_json
+from pathlib import Path as _TRM_Path
+from datetime import datetime as _TRM_datetime
+
+_TRM_STORAGE = _TRM_Path("storage")
+_TRM_RESULT = _TRM_STORAGE / "travel_result_manager.json"
+_TRM_HERO_GROUPS = _TRM_STORAGE / "travel_hero_groups.json"
+_TRM_HERO_PLACES = _TRM_STORAGE / "travel_hero_places.json"
+
+def _trm_now():
+    return _TRM_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _trm_load(path, default):
+    path.parent.mkdir(exist_ok=True)
+    if not path.exists():
+        path.write_text(_trm_json.dumps(default, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _trm_json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+def _trm_save(path, data):
+    path.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _trm_now()
+    path.write_text(_trm_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/travel-result-manager")
+async def api_travel_result_manager():
+    return {"ok": True, "data": _trm_load(_TRM_RESULT, {"pages": [], "results": {}})}
+
+@app.post("/api/travel-result-manager/save")
+async def api_travel_result_manager_save(payload: dict = _TRM_BODY(...)):
+    return {"ok": True, "data": _trm_save(_TRM_RESULT, payload)}
+
+@app.get("/api/travel-hero-rotation")
+async def api_travel_hero_rotation():
+    groups = _trm_load(_TRM_HERO_GROUPS, {"groups": []})
+    places = _trm_load(_TRM_HERO_PLACES, {"places": []})
+    return {"ok": True, "groups": groups, "places": places}
+
+@app.post("/api/travel-hero-rotation/groups/save")
+async def api_travel_hero_groups_save(payload: dict = _TRM_BODY(...)):
+    return {"ok": True, "groups": _trm_save(_TRM_HERO_GROUPS, payload)}
+
+@app.post("/api/travel-hero-rotation/places/save")
+async def api_travel_hero_places_save(payload: dict = _TRM_BODY(...)):
+    return {"ok": True, "places": _trm_save(_TRM_HERO_PLACES, payload)}
+# ===== End Travel Result Manager API v1 =====

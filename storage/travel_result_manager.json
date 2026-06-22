@@ -1,0 +1,508 @@
+{
+  "version": "travel_result_manager_full_v1",
+  "updatedAt": "20260622_114803",
+  "principle": "관제는 사용자에게 보여지는 결과 데이터를 관리한다.",
+  "pages": [
+    {
+      "page": 1,
+      "title": "DISCOVERY HOME",
+      "items": [
+        {
+          "id": "gps",
+          "title": "GPS/날짜/시간/장소",
+          "enabled": true,
+          "type": "context"
+        },
+        {
+          "id": "hero",
+          "title": "Hero 회전",
+          "enabled": true,
+          "type": "hero_rotation"
+        },
+        {
+          "id": "mini_talk",
+          "title": "미니 말대말",
+          "enabled": true,
+          "type": "m2m_link"
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "title": "QUICK ACTION",
+      "items": [
+        {
+          "id": "food",
+          "title": "맛집/식당",
+          "enabled": true,
+          "type": "result_list"
+        },
+        {
+          "id": "taxi",
+          "title": "교통",
+          "enabled": true,
+          "type": "map_result"
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "enabled": true,
+          "type": "route"
+        },
+        {
+          "id": "sos",
+          "title": "SOS",
+          "enabled": true,
+          "type": "sos"
+        },
+        {
+          "id": "mini_talk",
+          "title": "미니 말대말",
+          "enabled": true,
+          "type": "m2m_link"
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "title": "TRAVEL HUB",
+      "items": [
+        {
+          "id": "airport",
+          "title": "공항",
+          "enabled": true,
+          "type": "site_result"
+        },
+        {
+          "id": "hotel",
+          "title": "호텔",
+          "enabled": true,
+          "type": "site_result"
+        },
+        {
+          "id": "food",
+          "title": "식당/맛집",
+          "enabled": true,
+          "type": "result_list"
+        },
+        {
+          "id": "taxi",
+          "title": "교통",
+          "enabled": true,
+          "type": "map_result"
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "enabled": true,
+          "type": "route"
+        },
+        {
+          "id": "tour",
+          "title": "관광",
+          "enabled": true,
+          "type": "result_list"
+        },
+        {
+          "id": "shopping",
+          "title": "쇼핑",
+          "enabled": true,
+          "type": "site_result"
+        },
+        {
+          "id": "music",
+          "title": "음악",
+          "enabled": true,
+          "type": "media"
+        },
+        {
+          "id": "tv",
+          "title": "TV시청",
+          "enabled": true,
+          "type": "media"
+        },
+        {
+          "id": "call",
+          "title": "통화",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "photo",
+          "title": "사진",
+          "enabled": true,
+          "type": "device"
+        },
+        {
+          "id": "video",
+          "title": "동영상",
+          "enabled": true,
+          "type": "device"
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "title": "DETAIL RESULT",
+      "items": [
+        {
+          "id": "detail_list",
+          "title": "선택 결과 리스트",
+          "enabled": true,
+          "type": "result_list"
+        },
+        {
+          "id": "user_links",
+          "title": "추천앱/사용자 사이트",
+          "enabled": true,
+          "type": "site_result"
+        },
+        {
+          "id": "photo",
+          "title": "사진",
+          "enabled": true,
+          "type": "device"
+        },
+        {
+          "id": "video",
+          "title": "동영상",
+          "enabled": true,
+          "type": "device"
+        },
+        {
+          "id": "mini_talk",
+          "title": "말하기",
+          "enabled": true,
+          "type": "m2m_link"
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "title": "M2M",
+      "items": [
+        {
+          "id": "m2m",
+          "title": "말대말 통역",
+          "enabled": true,
+          "type": "m2m"
+        },
+        {
+          "id": "auto",
+          "title": "자동",
+          "enabled": true,
+          "type": "m2m_option"
+        },
+        {
+          "id": "mic",
+          "title": "마이크",
+          "enabled": true,
+          "type": "m2m_option"
+        },
+        {
+          "id": "text_input",
+          "title": "텍스트 입력",
+          "enabled": true,
+          "type": "m2m_option"
+        },
+        {
+          "id": "replay",
+          "title": "다시듣기",
+          "enabled": true,
+          "type": "m2m_option"
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "title": "CALL / MESSAGE",
+      "items": [
+        {
+          "id": "phone",
+          "title": "전화",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "whatsapp",
+          "title": "WhatsApp",
+          "enabled": true,
+          "type": "external_link"
+        },
+        {
+          "id": "wechat",
+          "title": "WeChat",
+          "enabled": true,
+          "type": "external_link"
+        },
+        {
+          "id": "hotel_call",
+          "title": "호텔 전화",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "restaurant_call",
+          "title": "식당 전화",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "taxi_call",
+          "title": "택시 전화",
+          "enabled": true,
+          "type": "call"
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "title": "MEMORY",
+      "items": [
+        {
+          "id": "recent_translate",
+          "title": "최근 통역",
+          "enabled": true,
+          "type": "memory"
+        },
+        {
+          "id": "recent_travel",
+          "title": "최근 여행",
+          "enabled": true,
+          "type": "memory"
+        },
+        {
+          "id": "memory_loop",
+          "title": "KRXA 기억 루프",
+          "enabled": true,
+          "type": "memory"
+        },
+        {
+          "id": "continue_translate",
+          "title": "통역 계속",
+          "enabled": true,
+          "type": "action"
+        },
+        {
+          "id": "travel_menu",
+          "title": "여행 메뉴",
+          "enabled": true,
+          "type": "action"
+        },
+        {
+          "id": "clear_history",
+          "title": "초기화",
+          "enabled": true,
+          "type": "action"
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "title": "SOS",
+      "items": [
+        {
+          "id": "sos",
+          "title": "SOS",
+          "enabled": true,
+          "type": "sos"
+        },
+        {
+          "id": "police",
+          "title": "경찰",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "emergency",
+          "title": "구급",
+          "enabled": true,
+          "type": "call"
+        },
+        {
+          "id": "hospital",
+          "title": "병원",
+          "enabled": true,
+          "type": "map_result"
+        },
+        {
+          "id": "embassy",
+          "title": "대사관",
+          "enabled": true,
+          "type": "map_result"
+        },
+        {
+          "id": "offline_phrase",
+          "title": "오프라인 생존문장",
+          "enabled": true,
+          "type": "phrase"
+        }
+      ]
+    }
+  ],
+  "results": {
+    "hero": {
+      "title": "Hero 회전 결과",
+      "groups": [
+        "baekban",
+        "near_tour",
+        "festival",
+        "course"
+      ]
+    },
+    "hotel": {
+      "title": "호텔 결과 관리",
+      "sections": [
+        {
+          "id": "recommend",
+          "title": "추천리스트",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "default_sites",
+          "title": "기본사이트",
+          "enabled": true,
+          "items": [
+            {
+              "name": "Google Hotels",
+              "url": "https://www.google.com/travel/hotels",
+              "enabled": true
+            },
+            {
+              "name": "Agoda",
+              "url": "https://www.agoda.com",
+              "enabled": true
+            },
+            {
+              "name": "Booking",
+              "url": "https://www.booking.com",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "id": "user_sites",
+          "title": "사용자 등록",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "destination",
+          "title": "목적지 입력",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map_route",
+          "title": "지도 연결",
+          "enabled": true,
+          "items": [
+            {
+              "name": "Google Maps",
+              "url": "https://www.google.com/maps",
+              "enabled": true
+            }
+          ]
+        }
+      ]
+    },
+    "food": {
+      "title": "식당/맛집 결과 관리",
+      "sections": [
+        {
+          "id": "recommend",
+          "title": "맛집 추천리스트",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "baekban",
+          "title": "허영만 백반기행",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "user_places",
+          "title": "사용자 등록",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map_route",
+          "title": "지도 연결",
+          "enabled": true,
+          "items": []
+        }
+      ]
+    },
+    "taxi": {
+      "title": "교통 결과 관리",
+      "sections": [
+        {
+          "id": "taxi",
+          "title": "택시",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "bus",
+          "title": "버스",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "subway",
+          "title": "지하철",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map",
+          "title": "지도앱",
+          "enabled": true,
+          "items": []
+        }
+      ]
+    },
+    "route": {
+      "title": "길찾기 결과 관리",
+      "sections": [
+        {
+          "id": "current_location",
+          "title": "현재위치",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "destination",
+          "title": "목적지 입력",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map_provider",
+          "title": "지도 선택",
+          "enabled": true,
+          "items": [
+            {
+              "name": "Google Maps",
+              "url": "https://www.google.com/maps",
+              "enabled": true
+            },
+            {
+              "name": "Naver Map",
+              "url": "https://map.naver.com",
+              "enabled": true
+            },
+            {
+              "name": "Kakao Map",
+              "url": "https://map.kakao.com",
+              "enabled": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

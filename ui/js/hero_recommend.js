@@ -12,3 +12,70 @@
   window.KRXA_HeroRecommend.openList=function(){const card=cards[index];const branchId=card&&card.branch_id?card.branch_id:'branch-heo-baekban';recordEvent('list_open',card);window.open('/travel-list?branch='+encodeURIComponent(branchId),'_blank')};
   document.addEventListener('DOMContentLoaded',loadCards);
 })();
+
+
+/* Hero Rotation Result Manager v1 */
+window.KRXA_HeroRotation = (function(){
+  let groups = [];
+  let places = [];
+  let idx = 0;
+  let timer = null;
+  let current = null;
+
+  async function load(){
+    try{
+      const res = await fetch("/api/travel-hero-rotation?ts="+Date.now(), {cache:"no-store"});
+      const data = await res.json();
+      groups = ((data.groups && data.groups.groups) || []).filter(g => g.enabled !== false).sort((a,b)=>(a.order||0)-(b.order||0));
+      places = (data.places && data.places.places) || [];
+      if(groups.length) render(groups[0]);
+      start();
+    }catch(e){
+      console.log("[HeroRotation]", e);
+    }
+  }
+
+  function render(group){
+    current = group;
+    const title = document.getElementById("discoveryHeroTitle") || document.getElementById("travelHeroPlace");
+    const sub = document.getElementById("discoveryHeroSub") || document.getElementById("travelHeroText");
+    if(title) title.textContent = group.title || "추천";
+    if(sub) sub.textContent = group.subtitle || "현재 위치 기준 추천";
+  }
+
+  function start(){
+    if(timer) clearInterval(timer);
+    if(!groups.length) return;
+    timer = setInterval(()=>{
+      idx = (idx + 1) % groups.length;
+      render(groups[idx]);
+    }, 5000);
+  }
+
+  function openCurrent(){
+    if(!current){
+      alert("추천 준비 중입니다.");
+      return;
+    }
+    const list = places.filter(p => p.group_id === current.id && p.enabled !== false);
+    if(!list.length){
+      alert(current.title + " 목록이 없습니다.");
+      return;
+    }
+    const html = list.map(p => `
+      <div style="border-bottom:1px solid #e5e7eb;padding:10px 0">
+        <b>${p.name}</b><br>
+        <small>${p.area || ""} · ${p.category || ""}</small><br>
+        <button onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(p.address || p.name)}','_blank')">지도 열기</button>
+      </div>
+    `).join("");
+    if(window.KRXA_App && KRXA_App.openModal){
+      KRXA_App.openModal(current.title, html);
+    }else{
+      alert(list.map(p=>p.name).join("\\n"));
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", load);
+  return {load, openCurrent};
+})();

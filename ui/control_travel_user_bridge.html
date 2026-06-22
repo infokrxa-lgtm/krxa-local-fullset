@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA Travel Admin Role-Based Detail Manager v1</title>
+<title>KRXA Travel Result Manager Full V1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
@@ -14,228 +14,193 @@ body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
 .head.active{background:#2563eb;color:white}
 .items{display:none;padding:8px;background:#f8fafc}
 .items.open{display:block}
-.item{display:flex;justify-content:space-between;align-items:center;padding:9px;margin:5px 0;border:1px solid #e2e8f0;border-radius:10px;background:white;cursor:pointer}
+.item{padding:9px;margin:5px 0;border:1px solid #e2e8f0;border-radius:10px;background:white;cursor:pointer}
 .item.active{background:#dbeafe}
-.btn{border:0;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;cursor:pointer}
-.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
 .right{background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;min-height:650px}
-.row{display:grid;grid-template-columns:1fr 80px 80px 90px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:9px 0}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-input,select{padding:9px;border:1px solid #cbd5e1;border-radius:9px;width:100%;box-sizing:border-box}
-.small{font-size:13px;color:#64748b}
+.btn{border:0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;margin:3px}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
+.row{display:grid;grid-template-columns:1fr 80px 80px 80px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
+input{padding:8px;border:1px solid #cbd5e1;border-radius:8px;width:100%}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="panel">
-    <h2>관리자 · Role-Based Detail Manager PATCH16</h2>
-    <p>사용자 기능별 실행흐름을 관리합니다. Hero/호텔/식당/교통/길찾기별 우측 관리창이 다르게 열립니다.</p>
-    <div class="grid">
-      <div>
-        <div id="left"></div>
-        <button class="btn blue" onclick="addPage()">+ 새 페이지</button>
-      </div>
-      <div>
-        <h2 id="title">선택 없음</h2>
-        <div id="right" class="right">좌측에서 항목을 선택하세요.</div>
-      </div>
-    </div>
-  </div>
+<div class="panel">
+<h2>관제 · 사용자 결과 관리 FULL V1</h2>
+<p>좌측은 사용자 1~8페이지 구조, 우측은 선택 항목의 사용자 결과 데이터 관리입니다.</p>
+<div class="grid">
+<div id="left"></div>
+<div>
+<h2 id="title">선택 없음</h2>
+<div id="right" class="right">좌측 항목을 선택하세요.</div>
 </div>
-
+</div>
+</div>
+</div>
 <script>
-let CFG={pages:[]}, OPEN=0, SEL_PAGE=null, SEL_ITEM=null;
-
-const ROLE_TEMPLATES={
-  hero:[
-    {id:"baekban",title:"허영만 백반기행",kind:"workspace",value:"/control/travel-hero-workspace?group=baekban",enabled:true},
-    {id:"near_tour",title:"주변 관광지",kind:"workspace",value:"/control/travel-hero-workspace?group=tour",enabled:true},
-    {id:"baekjong",title:"백종원 맛집",kind:"workspace",value:"/control/travel-hero-workspace?group=baekjong",enabled:true},
-    {id:"festival",title:"지역축제",kind:"workspace",value:"/control/travel-hero-workspace?group=festival",enabled:true}
-  ],
-  hotel:[
-    {id:"recommend",title:"추천리스트",kind:"recommend",value:"hotel",enabled:true},
-    {id:"default_sites",title:"기본사이트 등록",kind:"workspace",value:"/control/travel-map-apps",enabled:true},
-    {id:"user_links",title:"사용자 등록/삭제",kind:"workspace",value:"/control/travel-map-apps",enabled:true},
-    {id:"destination",title:"목적지 입력",kind:"map",value:"hotel",enabled:true},
-    {id:"map_route",title:"현재위치 → 목적지 지도연결",kind:"map",value:"hotel",enabled:true}
-  ],
-  restaurant:[
-    {id:"recommend",title:"맛집 추천리스트",kind:"recommend",value:"food",enabled:true},
-    {id:"baekban",title:"허영만 백반기행",kind:"workspace",value:"/control/travel-hero-workspace?group=baekban",enabled:true},
-    {id:"default_sites",title:"기본사이트 등록",kind:"workspace",value:"/control/travel-map-apps",enabled:true},
-    {id:"user_links",title:"사용자 등록/삭제",kind:"workspace",value:"/control/travel-map-apps",enabled:true},
-    {id:"map_route",title:"현재위치 → 식당 지도연결",kind:"map",value:"restaurant",enabled:true}
-  ],
-  transport:[
-    {id:"taxi",title:"택시",kind:"map",value:"taxi",enabled:true},
-    {id:"bus",title:"버스",kind:"map",value:"bus station",enabled:true},
-    {id:"subway",title:"지하철",kind:"map",value:"subway station",enabled:true},
-    {id:"map_app",title:"지도앱 선택",kind:"workspace",value:"/control/travel-map-apps",enabled:true},
-    {id:"route",title:"길찾기 연결",kind:"map",value:"transport",enabled:true}
-  ],
-  route:[
-    {id:"current_location",title:"현재위치",kind:"context",value:"gps",enabled:true},
-    {id:"destination",title:"목적지 입력",kind:"map",value:"destination",enabled:true},
-    {id:"google",title:"Google Maps",kind:"url",value:"https://www.google.com/maps",enabled:true},
-    {id:"naver",title:"Naver Map",kind:"url",value:"https://map.naver.com",enabled:true},
-    {id:"kakao",title:"Kakao Map",kind:"url",value:"https://map.kakao.com",enabled:true}
-  ],
-  default:[
-    {id:"click",title:"사용자 클릭",kind:"none",value:"",enabled:true},
-    {id:"action",title:"실행 연결",kind:"none",value:"",enabled:true}
-  ]
-};
-
-function roleOf(item){
-  const id=(item.id||"").toLowerCase();
-  if(id.includes("hero")) return "hero";
-  if(id==="hotel") return "hotel";
-  if(id==="restaurant"||id==="food") return "restaurant";
-  if(id==="transport") return "transport";
-  if(id==="route") return "route";
-  return "default";
-}
+let DATA=null, OPEN=0, SEL_PAGE=null, SEL_ITEM=null;
 
 async function load(){
-  const r=await fetch('/api/admin-dynamic-bars?ts='+Date.now());
+  const r=await fetch('/api/travel-result-manager?ts='+Date.now());
   const d=await r.json();
-  CFG=d.config||{pages:[]};
+  DATA=d.data;
   render(); detail();
 }
 
 function render(){
-  const left=document.getElementById("left");
-  left.innerHTML="";
-  (CFG.pages||[]).forEach((p,pi)=>{
-    const box=document.createElement("div"); box.className="page";
-    const head=document.createElement("div"); head.className="head "+(OPEN===pi?"active":"");
-    head.innerHTML=`<span>${p.title||p.id}</span><button class="btn ${p.enabled!==false?'on':'off'}">${p.enabled!==false?'ON':'OFF'}</button>`;
+  const left=document.getElementById('left');
+  left.innerHTML='';
+  (DATA.pages||[]).forEach((p,pi)=>{
+    const box=document.createElement('div');
+    box.className='page';
+    const head=document.createElement('div');
+    head.className='head '+(OPEN===pi?'active':'');
+    head.innerHTML=`<span>${p.page}. ${p.title}</span><span>${p.enabled===false?'OFF':'ON'}</span>`;
     head.onclick=()=>{OPEN=OPEN===pi?null:pi;SEL_PAGE=pi;SEL_ITEM=null;render();detail();};
-    head.querySelector("button").onclick=(e)=>{e.stopPropagation();p.enabled=!(p.enabled!==false);render();detail();};
-
-    const items=document.createElement("div"); items.className="items "+(OPEN===pi?"open":"");
+    const items=document.createElement('div');
+    items.className='items '+(OPEN===pi?'open':'');
     (p.items||[]).forEach((it,ii)=>{
-      const row=document.createElement("div"); row.className="item "+(SEL_PAGE===pi&&SEL_ITEM===ii?"active":"");
-      row.innerHTML=`<span>${it.icon||""} ${it.title||it.id}</span><button class="btn ${it.enabled!==false?'on':'off'}">${it.enabled!==false?'ON':'OFF'}</button>`;
+      const row=document.createElement('div');
+      row.className='item '+(SEL_PAGE===pi&&SEL_ITEM===ii?'active':'');
+      row.innerHTML=`${it.title} <span style="float:right">${it.enabled===false?'OFF':'ON'}</span>`;
       row.onclick=()=>{SEL_PAGE=pi;SEL_ITEM=ii;render();detail();};
-      row.querySelector("button").onclick=(e)=>{e.stopPropagation();it.enabled=!(it.enabled!==false);render();detail();};
       items.appendChild(row);
     });
-    box.appendChild(head); box.appendChild(items); left.appendChild(box);
+    box.appendChild(head);box.appendChild(items);left.appendChild(box);
   });
 }
 
-function ensureRoleFlow(it){
-  it.role=it.role||roleOf(it);
-  it.role_flow=it.role_flow||JSON.parse(JSON.stringify(ROLE_TEMPLATES[it.role]||ROLE_TEMPLATES.default));
+function resultKey(id){
+  if(id==='hero') return 'hero';
+  if(id==='hotel') return 'hotel';
+  if(id==='food') return 'food';
+  if(id==='taxi') return 'taxi';
+  if(id==='route') return 'route';
+  return id;
 }
 
 function detail(){
-  const title=document.getElementById("title"), right=document.getElementById("right");
-  if(SEL_PAGE===null){title.textContent="선택 없음";right.textContent="좌측에서 항목을 선택하세요.";return;}
-  const p=CFG.pages[SEL_PAGE];
+  const title=document.getElementById('title');
+  const right=document.getElementById('right');
 
-  if(SEL_ITEM===null){
-    title.textContent=p.title||p.id;
-    right.innerHTML=`
-      <h3>페이지 관리</h3>
-      <p class="small">페이지 단위 ON/OFF와 클릭바 추가를 관리합니다.</p>
-      <label>페이지명</label><input id="p_title" value="${p.title||""}">
-      <div class="toolbar">
-        <button class="btn blue" onclick="addBar()">+ 신규바 추가</button>
-        <button class="btn gray" onclick="applyPage()">수정 반영</button>
-        <button class="btn red" onclick="deletePage()">페이지 삭제</button>
-        <button class="btn on" onclick="save()">완료 / USER 반영</button>
-      </div>`;
+  if(SEL_PAGE===null || SEL_ITEM===null){
+    title.textContent='선택 없음';
+    right.textContent='좌측 항목을 선택하세요.';
     return;
   }
 
-  const it=p.items[SEL_ITEM]; ensureRoleFlow(it);
-  title.textContent=(p.title||p.id)+" · "+(it.title||it.id);
+  const item=DATA.pages[SEL_PAGE].items[SEL_ITEM];
+  const key=resultKey(item.id);
+  const result=DATA.results[key];
+
+  title.textContent=item.title + ' 결과 관리';
+
+  if(item.id==='hero'){
+    right.innerHTML=`
+      <h3>Hero 회전 그룹 관리</h3>
+      <p>Hero에서 회전될 그룹을 관리합니다.</p>
+      <button class="btn blue" onclick="openHeroWorkspace()">Hero 작업창</button>
+      <button class="btn on" onclick="save()">완료 / USER 반영</button>
+      <div id="heroBox">불러오는 중...</div>
+    `;
+    loadHeroBox();
+    return;
+  }
+
+  if(!result){
+    right.innerHTML=`
+      <h3>${item.title}</h3>
+      <p>아직 결과 관리 템플릿이 없습니다.</p>
+      <button class="btn blue" onclick="createResult('${key}')">결과 템플릿 생성</button>
+      <button class="btn on" onclick="save()">완료 / USER 반영</button>
+    `;
+    return;
+  }
 
   right.innerHTML=`
-    <h3>${it.title||it.id} 실행흐름 관리</h3>
-    <p class="small">관리자는 기능 구성과 실행흐름을 관리하고, 개발자는 연결 코드/API를 보완합니다.</p>
-
-    <label>ID</label><input id="i_id" value="${it.id||""}">
-    <label>표시명</label><input id="i_title" value="${it.title||""}">
-    <label>아이콘</label><input id="i_icon" value="${it.icon||""}">
-    <label>역할</label>
-    <select id="i_role" onchange="changeRole()">
-      ${["hero","hotel","restaurant","transport","route","default"].map(r=>`<option value="${r}" ${it.role===r?'selected':''}>${r}</option>`).join("")}
-    </select>
-    <label><input type="checkbox" id="i_dynamic" ${it.dynamic?'checked':''}> USER 자동 생성 클릭바</label><br>
-    <label><input type="checkbox" id="i_enabled" ${it.enabled!==false?'checked':''}> ON</label>
-
-    <h3>구성요소 / 실행단계</h3>
-    <div id="flowRows">
-      ${(it.role_flow||[]).map((s,i)=>`
-        <div class="row">
-          <span>${s.title}</span>
-          <button class="btn ${s.enabled!==false?'on':'off'}" onclick="toggleFlow(${i})">${s.enabled!==false?'ON':'OFF'}</button>
-          <button class="btn gray" onclick="editFlow(${i})">수정</button>
-          <button class="btn blue" onclick="openFlow(${i})">작업창</button>
-        </div>`).join("")}
+    <h3>${result.title}</h3>
+    <div id="sections">
+      ${(result.sections||[]).map((s,si)=>`
+        <div style="background:white;border:1px solid #dbe3ee;border-radius:12px;padding:12px;margin:10px 0">
+          <h4>${s.title} <button class="btn ${s.enabled!==false?'on':'off'}" onclick="toggleSection('${key}',${si})">${s.enabled!==false?'ON':'OFF'}</button></h4>
+          ${(s.items||[]).map((x,xi)=>`
+            <div class="row">
+              <span>${x.name||x.title||'-'}</span>
+              <span>${x.enabled!==false?'ON':'OFF'}</span>
+              <button class="btn gray" onclick="editResultItem('${key}',${si},${xi})">수정</button>
+              <button class="btn red" onclick="deleteResultItem('${key}',${si},${xi})">삭제</button>
+            </div>
+          `).join('')}
+          <button class="btn blue" onclick="addResultItem('${key}',${si})">+ 신규</button>
+        </div>
+      `).join('')}
     </div>
-
-    <div class="toolbar">
-      <button class="btn blue" onclick="addFlow()">+ 단계 추가</button>
-      <button class="btn gray" onclick="applyItem()">수정 반영</button>
-      <button class="btn red" onclick="deleteItem()">삭제</button>
-      <button class="btn on" onclick="save()">완료 / USER 반영</button>
-    </div>`;
+    <button class="btn blue" onclick="addSection('${key}')">+ 섹션 추가</button>
+    <button class="btn on" onclick="save()">완료 / USER 반영</button>
+  `;
 }
 
-function changeRole(){
-  const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];
-  it.role=document.getElementById("i_role").value;
-  it.role_flow=JSON.parse(JSON.stringify(ROLE_TEMPLATES[it.role]||ROLE_TEMPLATES.default));
+async function loadHeroBox(){
+  const r=await fetch('/api/travel-hero-rotation?ts='+Date.now());
+  const d=await r.json();
+  const groups=(d.groups&&d.groups.groups)||[];
+  document.getElementById('heroBox').innerHTML=groups.map((g,i)=>`
+    <div class="row">
+      <span>${g.title}</span>
+      <span>${g.enabled!==false?'ON':'OFF'}</span>
+      <button class="btn gray" onclick="editHeroGroup(${i})">수정</button>
+      <button class="btn blue" onclick="openHeroWorkspace()">작업창</button>
+    </div>
+  `).join('');
+}
+
+function openHeroWorkspace(){
+  window.open('/control/travel-hero-workspace','_blank');
+}
+
+function createResult(key){
+  DATA.results[key]={title:key+' 결과 관리',sections:[]};
   detail();
 }
-
-function applyPage(){CFG.pages[SEL_PAGE].title=document.getElementById("p_title").value;render();detail();}
-function deletePage(){if(confirm("페이지 삭제?")){CFG.pages.splice(SEL_PAGE,1);SEL_PAGE=null;SEL_ITEM=null;render();detail();}}
-function addPage(){CFG.pages.push({id:"page_"+Date.now(),title:"새 사용자 UI",enabled:true,items:[]});OPEN=CFG.pages.length-1;SEL_PAGE=OPEN;SEL_ITEM=null;render();detail();}
-function addBar(){CFG.pages[SEL_PAGE].items.push({id:"bar_"+Date.now(),title:"신규바",icon:"🔹",enabled:true,dynamic:true,role:"default",role_flow:JSON.parse(JSON.stringify(ROLE_TEMPLATES.default))});SEL_ITEM=CFG.pages[SEL_PAGE].items.length-1;render();detail();}
-
-function applyItem(){
-  const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];
-  it.id=document.getElementById("i_id").value.trim();
-  it.title=document.getElementById("i_title").value.trim();
-  it.icon=document.getElementById("i_icon").value.trim();
-  it.role=document.getElementById("i_role").value;
-  it.dynamic=document.getElementById("i_dynamic").checked;
-  it.enabled=document.getElementById("i_enabled").checked;
-  render();detail();
-}
-function deleteItem(){if(confirm("클릭바 삭제?")){CFG.pages[SEL_PAGE].items.splice(SEL_ITEM,1);SEL_ITEM=null;render();detail();}}
-function toggleFlow(i){const it=CFG.pages[SEL_PAGE].items[SEL_ITEM];it.role_flow[i].enabled=!(it.role_flow[i].enabled!==false);detail();}
-function editFlow(i){
-  const s=CFG.pages[SEL_PAGE].items[SEL_ITEM].role_flow[i];
-  s.title=prompt("단계명",s.title)||s.title;
-  s.kind=prompt("실행종류(url/map/recommend/workspace/call/none)",s.kind||"none")||s.kind;
-  s.value=prompt("실행값",s.value||"")||s.value;
+function toggleSection(key,si){
+  const s=DATA.results[key].sections[si];
+  s.enabled=!(s.enabled!==false);
   detail();
 }
-function addFlow(){
-  const title=prompt("새 단계명"); if(!title)return;
-  CFG.pages[SEL_PAGE].items[SEL_ITEM].role_flow.push({id:"step_"+Date.now(),title,kind:"none",value:"",enabled:true});
+function addSection(key){
+  const title=prompt('섹션명');
+  if(!title)return;
+  DATA.results[key].sections.push({id:'section_'+Date.now(),title,enabled:true,items:[]});
   detail();
 }
-function openFlow(i){
-  const s=CFG.pages[SEL_PAGE].items[SEL_ITEM].role_flow[i];
-  if(s.kind==="workspace" && s.value){window.open(s.value,"_blank");return;}
-  if(s.kind==="url" && s.value){window.open(s.value,"_blank");return;}
-  if(s.kind==="map" && s.value){window.open("https://www.google.com/maps/search/"+encodeURIComponent(s.value),"_blank");return;}
-  alert("작업창/실행값을 설정하세요.");
+function addResultItem(key,si){
+  const name=prompt('이름');
+  if(!name)return;
+  const url=prompt('URL/주소/값','')||'';
+  DATA.results[key].sections[si].items.push({name,url,enabled:true});
+  detail();
+}
+function editResultItem(key,si,xi){
+  const x=DATA.results[key].sections[si].items[xi];
+  x.name=prompt('이름',x.name||'')||x.name;
+  x.url=prompt('URL/주소/값',x.url||'')||x.url;
+  detail();
+}
+function deleteResultItem(key,si,xi){
+  if(confirm('삭제할까요?')){
+    DATA.results[key].sections[si].items.splice(xi,1);
+    detail();
+  }
 }
 async function save(){
-  if(SEL_ITEM!==null && document.getElementById("i_id")) applyItem();
-  if(SEL_ITEM===null && document.getElementById("p_title")) applyPage();
-  const r=await fetch("/api/admin-dynamic-bars/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(CFG)});
-  const d=await r.json(); CFG=d.config;
-  alert("저장 완료 / USER 반영");
+  const r=await fetch('/api/travel-result-manager/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(DATA)
+  });
+  const d=await r.json();
+  DATA=d.data;
+  alert('저장 완료 / USER 반영');
   render();detail();
 }
 load();

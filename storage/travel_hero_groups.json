@@ -1,36 +1,38 @@
 {
-  "version": "v1",
-  "updatedAt": "20260619_190753",
+  "version": "hero_rotation_result_manager_v1",
+  "updatedAt": "20260622_114803",
+  "rotation": {
+    "enabled": true,
+    "interval_ms": 5000
+  },
   "groups": [
     {
       "id": "baekban",
       "title": "허영만 백반기행",
+      "subtitle": "방송 맛집 리스트",
       "enabled": true,
-      "type": "hero"
+      "order": 1
     },
     {
-      "id": "baekjong",
-      "title": "백종원 추천맛집",
+      "id": "near_tour",
+      "title": "주변 관광지",
+      "subtitle": "현재 위치 주변 추천",
       "enabled": true,
-      "type": "hero"
-    },
-    {
-      "id": "nearby_food",
-      "title": "주변맛집",
-      "enabled": true,
-      "type": "hero"
+      "order": 2
     },
     {
       "id": "festival",
       "title": "지역축제",
+      "subtitle": "오늘 갈 만한 축제",
       "enabled": true,
-      "type": "hero"
+      "order": 3
     },
     {
-      "id": "tour_news",
-      "title": "뉴스관광지",
+      "id": "course",
+      "title": "추천코스",
+      "subtitle": "하루 여행 동선",
       "enabled": true,
-      "type": "hero"
+      "order": 4
     }
   ]
 }
