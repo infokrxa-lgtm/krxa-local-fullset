@@ -2703,3 +2703,52 @@ async def api_travel_hero_groups_save(payload: dict = _TRM_BODY(...)):
 async def api_travel_hero_places_save(payload: dict = _TRM_BODY(...)):
     return {"ok": True, "places": _trm_save(_TRM_HERO_PLACES, payload)}
 # ===== End Travel Result Manager API v1 =====
+
+
+# ===== Hero Rotation Control Manager API v1 =====
+from fastapi import Body as _HRC_BODY
+import json as _hrc_json
+from pathlib import Path as _HRC_Path
+from datetime import datetime as _HRC_datetime
+
+_HRC_FILE = _HRC_Path("storage") / "travel_hero_groups.json"
+
+def _hrc_now():
+    return _HRC_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _hrc_default():
+    return {
+        "version": "hero_rotation_control_manager_v1",
+        "updatedAt": _hrc_now(),
+        "rotation": {"enabled": True, "interval_ms": 5000},
+        "groups": [
+            {"id": "baekban", "title": "허영만 백반기행", "subtitle": "방송 맛집 리스트", "enabled": True, "order": 1},
+            {"id": "near_tour", "title": "주변 관광지", "subtitle": "현재 위치 주변 추천", "enabled": True, "order": 2},
+            {"id": "festival", "title": "지역축제", "subtitle": "오늘 갈 만한 축제", "enabled": True, "order": 3},
+            {"id": "course", "title": "추천코스", "subtitle": "하루 여행 동선", "enabled": True, "order": 4}
+        ]
+    }
+
+def _hrc_load():
+    _HRC_FILE.parent.mkdir(exist_ok=True)
+    if not _HRC_FILE.exists():
+        _HRC_FILE.write_text(_hrc_json.dumps(_hrc_default(), ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        return _hrc_json.loads(_HRC_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return _hrc_default()
+
+def _hrc_save(data):
+    _HRC_FILE.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _hrc_now()
+    _HRC_FILE.write_text(_hrc_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/hero-rotation-control")
+async def api_hero_rotation_control():
+    return {"ok": True, "data": _hrc_load()}
+
+@app.post("/api/hero-rotation-control/save")
+async def api_hero_rotation_control_save(payload: dict = _HRC_BODY(...)):
+    return {"ok": True, "data": _hrc_save(payload)}
+# ===== End Hero Rotation Control Manager API v1 =====

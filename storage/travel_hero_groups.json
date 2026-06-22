@@ -1,6 +1,6 @@
 {
   "version": "hero_rotation_result_manager_v1",
-  "updatedAt": "20260622_114803",
+  "updatedAt": "20260622_121637",
   "rotation": {
     "enabled": true,
     "interval_ms": 5000
