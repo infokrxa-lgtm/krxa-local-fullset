@@ -2752,3 +2752,38 @@ async def api_hero_rotation_control():
 async def api_hero_rotation_control_save(payload: dict = _HRC_BODY(...)):
     return {"ok": True, "data": _hrc_save(payload)}
 # ===== End Hero Rotation Control Manager API v1 =====
+
+
+# ===== User UI Based Control Flow Manager API v1 =====
+from fastapi import Body as _UCF_BODY
+import json as _ucf_json
+from pathlib import Path as _UCF_Path
+from datetime import datetime as _UCF_datetime
+
+_UCF_FILE = _UCF_Path("storage") / "travel_control_flow_config.json"
+
+def _ucf_now():
+    return _UCF_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _ucf_load():
+    if not _UCF_FILE.exists():
+        return {"version": "empty", "pages": [], "flows": {}}
+    try:
+        return _ucf_json.loads(_UCF_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version": "error", "pages": [], "flows": {}}
+
+def _ucf_save(data):
+    _UCF_FILE.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _ucf_now()
+    _UCF_FILE.write_text(_ucf_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/user-ui-control-flow")
+async def api_user_ui_control_flow():
+    return {"ok": True, "data": _ucf_load()}
+
+@app.post("/api/user-ui-control-flow/save")
+async def api_user_ui_control_flow_save(payload: dict = _UCF_BODY(...)):
+    return {"ok": True, "data": _ucf_save(payload)}
+# ===== End User UI Based Control Flow Manager API v1 =====

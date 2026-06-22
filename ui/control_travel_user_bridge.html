@@ -2,202 +2,218 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA Hero Rotation Control</title>
+<title>KRXA User UI Based Control Flow Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
 .wrap{padding:18px}
 .panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
-.grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
-.left{background:#f8fafc;border:1px solid #dbe3ee;border-radius:14px;padding:12px}
-.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:14px;padding:16px;min-height:620px}
-.pageTitle{font-weight:900;margin:8px 0 10px}
-.item{padding:10px;border:1px solid #e2e8f0;border-radius:10px;background:white;margin:6px 0;cursor:pointer}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+.left,.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:16px;padding:14px}
+.page{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden}
+.head{padding:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
+.head.active{background:#2563eb;color:white}
+.items{display:none;padding:8px}
+.items.open{display:block}
+.item{padding:9px;border:1px solid #e5e7eb;border-radius:10px;background:white;margin:5px 0;cursor:pointer}
 .item.active{background:#dbeafe}
 .btn{border:0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;margin:3px}
 .on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
-.row{display:grid;grid-template-columns:1fr 70px 70px 70px 80px;gap:7px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
+.row{display:grid;grid-template-columns:44px 1fr 70px 70px 70px 70px;gap:7px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
 input{padding:8px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box}
-.setting{display:grid;grid-template-columns:160px 1fr;gap:10px;margin:8px 0;align-items:center}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="panel">
-    <h2>관제 · Hero 회전 관리</h2>
-    <p>한 페이지 관제에서 Hero 회전 그룹을 신규/수정/삭제/ON-OFF/순서변경/작업창 연결까지 관리합니다.</p>
-    <div class="grid">
-      <div class="left">
-        <div class="pageTitle">사용자 UI 1</div>
-        <div class="item">GPS</div>
-        <div class="item active">Hero 회전</div>
-        <div class="item">미니 말대말</div>
-
-        <div class="pageTitle">Hero 기능</div>
-        <button class="btn blue" onclick="addGroup()">+ 신규 그룹</button>
-        <button class="btn gray" onclick="downloadJson()">다운로드</button>
-        <label class="btn gray">
-          업로드 <input type="file" accept=".json" onchange="uploadJson(event)" style="display:none">
-        </label>
-      </div>
-
-      <div class="right">
-        <h3>Hero 회전 설정</h3>
-        <div class="setting">
-          <b>회전 사용</b>
-          <button id="rotationEnabled" class="btn on" onclick="toggleRotation()">ON</button>
-        </div>
-        <div class="setting">
-          <b>회전 시간(ms)</b>
-          <input id="intervalMs" type="number" value="5000" onchange="applyInterval()">
-        </div>
-
-        <h3>회전 그룹</h3>
-        <div id="groupRows">불러오는 중...</div>
-
-        <div style="margin-top:14px">
-          <button class="btn blue" onclick="addGroup()">+ 신규 그룹</button>
-          <button class="btn on" onclick="save()">완료 / USER 반영</button>
-          <button class="btn gray" onclick="reload()">새로고침</button>
-        </div>
-      </div>
-    </div>
+<div class="panel">
+<h2>관제 · 사용자 UI 1~8 실행순서 관리</h2>
+<p>좌측은 사용자 UI 기준, 우측은 선택 항목의 실행순서·결과데이터·ON/OFF·신규·수정·삭제·업로드·다운로드·완료입니다.</p>
+<div class="grid">
+  <div class="left">
+    <div id="left"></div>
+    <button class="btn gray" onclick="downloadJson()">다운로드</button>
+    <label class="btn gray">업로드<input type="file" accept=".json" onchange="uploadJson(event)" style="display:none"></label>
   </div>
+  <div class="right">
+    <h2 id="title">선택 없음</h2>
+    <div id="right">좌측 항목을 선택하세요.</div>
+  </div>
+</div>
+</div>
 </div>
 
 <script>
-let DATA=null;
+let DATA=null, OPEN=0, SP=null, SI=null;
 
-async function api(path, opt={}){
+async function api(path,opt={}){
   const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
   if(!r.ok) throw new Error(await r.text());
   return await r.json();
 }
 
-async function reload(){
-  const d=await api('/api/hero-rotation-control?ts='+Date.now());
+async function load(){
+  const d=await api('/api/user-ui-control-flow?ts='+Date.now());
   DATA=d.data;
-  render();
+  renderLeft();
+  renderRight();
 }
 
-function render(){
-  if(!DATA) return;
-  DATA.rotation = DATA.rotation || {enabled:true, interval_ms:5000};
-  DATA.groups = DATA.groups || [];
+function renderLeft(){
+  const box=document.getElementById('left');
+  box.innerHTML='';
+  (DATA.pages||[]).forEach((p,pi)=>{
+    const page=document.createElement('div');
+    page.className='page';
 
-  const rot=document.getElementById('rotationEnabled');
-  rot.textContent = DATA.rotation.enabled!==false ? 'ON' : 'OFF';
-  rot.className = 'btn ' + (DATA.rotation.enabled!==false ? 'on' : 'off');
-  document.getElementById('intervalMs').value = DATA.rotation.interval_ms || 5000;
+    const head=document.createElement('div');
+    head.className='head '+(OPEN===pi?'active':'');
+    head.textContent='PAGE '+p.page+' · '+p.title;
+    head.onclick=()=>{OPEN=OPEN===pi?null:pi;SP=pi;SI=null;renderLeft();renderRight();};
 
-  DATA.groups.sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+    const items=document.createElement('div');
+    items.className='items '+(OPEN===pi?'open':'');
+    (p.items||[]).forEach((it,ii)=>{
+      const row=document.createElement('div');
+      row.className='item '+(SP===pi&&SI===ii?'active':'');
+      row.innerHTML=`${it.title}<span style="float:right">${it.enabled===false?'OFF':'ON'}</span>`;
+      row.onclick=()=>{SP=pi;SI=ii;renderLeft();renderRight();};
+      items.appendChild(row);
+    });
 
-  document.getElementById('groupRows').innerHTML = DATA.groups.map((g,i)=>`
-    <div class="row">
-      <div>
-        <b>${g.title||g.id}</b><br>
-        <small>${g.subtitle||''}</small>
-      </div>
-      <button class="btn ${g.enabled!==false?'on':'off'}" onclick="toggleGroup(${i})">${g.enabled!==false?'ON':'OFF'}</button>
-      <button class="btn gray" onclick="editGroup(${i})">수정</button>
-      <button class="btn blue" onclick="openWorkspace('${g.id}')">작업창</button>
-      <button class="btn red" onclick="deleteGroup(${i})">삭제</button>
-    </div>
-    <div class="setting">
-      <span>순서</span>
-      <input type="number" value="${g.order||i+1}" onchange="setOrder(${i},this.value)">
-    </div>
-  `).join('');
-}
-
-function toggleRotation(){
-  DATA.rotation.enabled = !(DATA.rotation.enabled !== false);
-  render();
-}
-
-function applyInterval(){
-  DATA.rotation.interval_ms = Number(document.getElementById('intervalMs').value || 5000);
-}
-
-function toggleGroup(i){
-  DATA.groups[i].enabled = !(DATA.groups[i].enabled !== false);
-  render();
-}
-
-function setOrder(i,v){
-  DATA.groups[i].order = Number(v || i+1);
-  render();
-}
-
-function editGroup(i){
-  const g=DATA.groups[i];
-  g.id = prompt('그룹 ID', g.id || '') || g.id;
-  g.title = prompt('표시명', g.title || '') || g.title;
-  g.subtitle = prompt('설명', g.subtitle || '') || g.subtitle;
-  g.order = Number(prompt('순서', g.order || i+1) || g.order || i+1);
-  render();
-}
-
-function addGroup(){
-  const title=prompt('새 Hero 그룹명');
-  if(!title)return;
-  const id=prompt('그룹 ID 영문', title.toLowerCase().replaceAll(' ','_')) || ('group_'+Date.now());
-  DATA.groups.push({
-    id,
-    title,
-    subtitle:'새 Hero 회전 그룹',
-    enabled:true,
-    order:DATA.groups.length+1
+    page.appendChild(head);
+    page.appendChild(items);
+    box.appendChild(page);
   });
-  render();
 }
 
-function deleteGroup(i){
-  if(!confirm('삭제할까요?'))return;
-  DATA.groups.splice(i,1);
-  render();
+function flowKey(id){
+  if(id==='mini_talk') return 'm2m';
+  if(id==='lang_more') return 'm2m';
+  if(id==='transport') return 'taxi';
+  return id;
 }
 
-function openWorkspace(groupId){
-  window.open('/control/travel-hero-workspace?group='+encodeURIComponent(groupId),'_blank');
+function ensureFlow(key){
+  DATA.flows = DATA.flows || {};
+  if(!DATA.flows[key]){
+    DATA.flows[key]=[
+      {id:'step1',title:'사용자 클릭',enabled:true},
+      {id:'step2',title:'실행 연결',enabled:true}
+    ];
+  }
+}
+
+function renderRight(){
+  const title=document.getElementById('title');
+  const right=document.getElementById('right');
+
+  if(SP===null||SI===null){
+    title.textContent='선택 없음';
+    right.textContent='좌측 항목을 선택하세요.';
+    return;
+  }
+
+  const item=DATA.pages[SP].items[SI];
+  const key=flowKey(item.id);
+  ensureFlow(key);
+  const flow=DATA.flows[key];
+
+  title.textContent='PAGE '+DATA.pages[SP].page+' · '+item.title;
+
+  right.innerHTML=`
+    <h3>${item.title} 실행순서</h3>
+    <p>관리자가 순서를 바꾸면 사용자 실행 흐름도 이 순서를 기준으로 적용됩니다.</p>
+    <button class="btn ${item.enabled!==false?'on':'off'}" onclick="toggleItem()">${item.enabled!==false?'ON':'OFF'}</button>
+    <div style="margin-top:12px">
+      ${flow.map((s,i)=>`
+        <div class="row">
+          <span>${i+1}</span>
+          <span>${s.title}</span>
+          <button class="btn ${s.enabled!==false?'on':'off'}" onclick="toggleStep('${key}',${i})">${s.enabled!==false?'ON':'OFF'}</button>
+          <button class="btn gray" onclick="moveStep('${key}',${i},-1)">위로</button>
+          <button class="btn gray" onclick="moveStep('${key}',${i},1)">아래</button>
+          <button class="btn red" onclick="deleteStep('${key}',${i})">삭제</button>
+        </div>
+      `).join('')}
+    </div>
+    <button class="btn blue" onclick="addStep('${key}')">+ 신규 단계</button>
+    <button class="btn gray" onclick="editSelected('${key}')">선택 항목 수정</button>
+    <button class="btn on" onclick="save()">완료 / USER 반영</button>
+  `;
+}
+
+function toggleItem(){
+  const item=DATA.pages[SP].items[SI];
+  item.enabled=!(item.enabled!==false);
+  renderLeft();renderRight();
+}
+
+function toggleStep(key,i){
+  DATA.flows[key][i].enabled=!(DATA.flows[key][i].enabled!==false);
+  renderRight();
+}
+
+function moveStep(key,i,dir){
+  const arr=DATA.flows[key];
+  const ni=i+dir;
+  if(ni<0||ni>=arr.length)return;
+  const t=arr[i]; arr[i]=arr[ni]; arr[ni]=t;
+  renderRight();
+}
+
+function deleteStep(key,i){
+  if(confirm('삭제할까요?')){
+    DATA.flows[key].splice(i,1);
+    renderRight();
+  }
+}
+
+function addStep(key){
+  const title=prompt('새 실행 단계명');
+  if(!title)return;
+  DATA.flows[key].push({id:'step_'+Date.now(),title,enabled:true});
+  renderRight();
+}
+
+function editSelected(key){
+  const item=DATA.pages[SP].items[SI];
+  item.title=prompt('표시명',item.title)||item.title;
+  renderLeft();renderRight();
 }
 
 async function save(){
-  applyInterval();
-  const d=await api('/api/hero-rotation-control/save',{
+  const d=await api('/api/user-ui-control-flow/save',{
     method:'POST',
     body:JSON.stringify(DATA)
   });
   DATA=d.data;
-  alert('Hero 회전 설정 저장 완료 / USER 반영');
-  render();
+  alert('저장 완료 / USER 반영');
+  renderLeft();renderRight();
 }
 
 function downloadJson(){
   const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='travel_hero_groups.json';
+  a.download='travel_control_flow_config.json';
   a.click();
 }
 
 function uploadJson(e){
   const f=e.target.files[0];
   if(!f)return;
-  const reader=new FileReader();
-  reader.onload=()=>{
+  const r=new FileReader();
+  r.onload=()=>{
     try{
-      DATA=JSON.parse(reader.result);
-      alert('업로드 완료. 완료 / USER 반영을 눌러 저장하세요.');
-      render();
-    }catch(err){
-      alert('JSON 오류: '+err.message);
-    }
+      DATA=JSON.parse(r.result);
+      alert('업로드 완료. 완료 / USER 반영을 누르세요.');
+      renderLeft();renderRight();
+    }catch(err){alert('JSON 오류: '+err.message);}
   };
-  reader.readAsText(f);
+  r.readAsText(f);
 }
 
-reload();
+load();
 </script>
 </body>
 </html>
