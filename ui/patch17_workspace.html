@@ -126,17 +126,17 @@ function move(i,dir){const a=group().items,ni=i+dir;if(ni<0||ni>=a.length)return
 
 function dest(x){return x.address||x.map_query||x.name;}
 function mapDir(){
-  const x=cur(); if(!x)return;
-  const d=dest(x); if(!d){alert('실주소/지도검색어가 없습니다.');return;}
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const origin=pos.coords.latitude+','+pos.coords.longitude;
-      window.open('https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin)+'&destination='+encodeURIComponent(d)+'&travelmode=driving','_blank');
-    },()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode=driving','_blank'),{enableHighAccuracy:true,timeout:8000});
-  }else window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode=driving','_blank');
+  const x = cur();
+  if(!x) return;
+  if(window.KRXA_MapEngine){
+    KRXA_MapEngine.openDir(x);
+  }else{
+    const d = x.address || x.map_query || x.name;
+    window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(d)+"&travelmode=driving","_blank");
+  }
 }
-function openUrl(){const x=cur(); if(!x)return; if(!x.url){alert('URL 없음');return;} window.open(x.url,'_blank');}
-function callPhone(){const x=cur(); if(!x)return; if(!x.phone){alert('전화번호 없음');return;} location.href='tel:'+x.phone;}
+function openUrl(){const x=cur(); if(!x)return; if(window.KRXA_MapEngine) KRXA_MapEngine.openUrl(x.url); else window.open(x.url,'_blank');}
+function callPhone(){const x=cur(); if(!x)return; if(window.KRXA_MapEngine) KRXA_MapEngine.call(x.phone); else location.href='tel:'+x.phone;}
 function runSelected(){
   const x=cur(); if(!x)return;
   if(x.url) return openUrl();
@@ -214,5 +214,6 @@ function parseCsv(text){
 }
 load();
 </script>
+<script src="/ui/js/patch17_common_map_engine.js"></script>
 </body>
 </html>
