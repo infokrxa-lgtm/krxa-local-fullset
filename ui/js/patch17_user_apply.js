@@ -45,3 +45,60 @@ function openHero(){
 window.KRXA_HeroRotation={load,openCurrent:openHero};
 document.addEventListener('DOMContentLoaded',()=>{load();setInterval(load,3000);});
 })();
+
+/* PATCH17-6 User Execution Rules Helper */
+(function(){
+  async function getCurrentPositionText(){
+    return new Promise((resolve,reject)=>{
+      if(!navigator.geolocation) return reject(new Error("geolocation not supported"));
+      navigator.geolocation.getCurrentPosition(
+        p=>resolve(p.coords.latitude+","+p.coords.longitude),
+        reject,
+        {enableHighAccuracy:true,timeout:8000,maximumAge:60000}
+      );
+    });
+  }
+
+  function destinationOf(x){
+    if(!x) return "";
+    if(x.destination_type==="manual") return x.destination_value || x.address || x.map_query || x.name || "";
+    if(x.destination_type==="address") return x.address || x.map_query || x.name || "";
+    if(x.destination_type==="map_query") return x.map_query || x.address || x.name || "";
+    return x.name || x.address || x.map_query || "";
+  }
+
+  async function runItem(x){
+    if(!x || x.enabled===false) return;
+
+    const action = x.action_type || (x.url ? "url" : x.phone ? "phone" : "map_dir");
+
+    if(action==="url"){
+      if(x.url) window.open(x.url,"_blank");
+      return;
+    }
+    if(action==="phone"){
+      if(x.phone) location.href="tel:"+x.phone;
+      return;
+    }
+    if(action==="map_search"){
+      const q=x.map_query||x.address||x.name;
+      if(q) window.open("https://www.google.com/maps/search/"+encodeURIComponent(q),"_blank");
+      return;
+    }
+    if(action==="map_dir"){
+      const dest=destinationOf(x);
+      if(!dest) return;
+      let url="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(dest)+"&travelmode="+encodeURIComponent(x.travel_mode||"driving");
+      if((x.origin_type||"current_location")==="current_location"){
+        try{
+          const origin=await getCurrentPositionText();
+          url="https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(origin)+"&destination="+encodeURIComponent(dest)+"&travelmode="+encodeURIComponent(x.travel_mode||"driving");
+        }catch(e){}
+      }
+      window.open(url,"_blank");
+      return;
+    }
+  }
+
+  window.KRXA_Patch17_RunItem = runItem;
+})();
