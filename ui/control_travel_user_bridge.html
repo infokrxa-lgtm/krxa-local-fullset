@@ -104,7 +104,7 @@ function renderRight(){
   <div class="row">
    <span><b>${i+1}. ${g.title}</b><br><small>${(g.items||[]).length}개</small></span>
    <button class="btn ${g.enabled!==false?'on':'off'}" onclick="toggleGroup('${key}',${i})">${g.enabled!==false?'ON':'OFF'}</button>
-   <button class="btn blue" onclick="openWorkspace('${key}','${g.id}')">작업창</button>
+   <button class="btn gray" onclick="moveGroup(\'${key}\',${i},-1)">위로</button><button class="btn gray" onclick="moveGroup(\'${key}\',${i},1)">아래</button><button class="btn blue" onclick="openWorkspace(\'${key}\',\'${g.id}\')">작업창</button>
    <button class="btn red" onclick="deleteGroup('${key}',${i})">삭제</button>
   </div>`).join('')}
  <button class="btn blue" onclick="addGroup('${key}')">+ 신규 그룹</button>
@@ -117,6 +117,13 @@ function toggleRotation(key){DATA.components[key].rotation.enabled=!(DATA.compon
 function setRotation(key,v){DATA.components[key].rotation.interval_ms=Number(v||5000);}
 function toggleGroup(key,i){DATA.components[key].groups[i].enabled=!(DATA.components[key].groups[i].enabled!==false);renderRight();}
 function addGroup(key){const title=prompt('신규 그룹명'); if(!title)return; const id=prompt('그룹 ID', title.replaceAll(' ','_'))||('group_'+Date.now()); DATA.components[key].groups.push({id,title,enabled:true,items:[]});renderRight();}
+function moveGroup(key,i,dir){
+ const arr=DATA.components[key].groups;
+ const ni=i+dir;
+ if(ni<0||ni>=arr.length)return;
+ const t=arr[i]; arr[i]=arr[ni]; arr[ni]=t;
+ renderRight();
+}
 function deleteGroup(key,i){if(confirm('삭제할까요?')){DATA.components[key].groups.splice(i,1);renderRight();}}
 function openWorkspace(key,gid){window.open('/control/patch17-workspace?component='+encodeURIComponent(key)+'&group='+encodeURIComponent(gid),'_blank');}
 function preview(key){window.open('/travel-v1','_blank');}
