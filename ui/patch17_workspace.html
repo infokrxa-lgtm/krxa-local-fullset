@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PATCH17 작업창</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
+.wrap{padding:18px}.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
+.btn{border:0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;margin:3px}
+.on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
+.row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 80px 80px 80px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
+input{padding:8px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="panel">
+<h2 id="title">작업창</h2>
+<div id="rows"></div>
+<button class="btn blue" onclick="addItem()">+ 신규</button>
+<span id="updown"></span>
+<button class="btn on" onclick="save()">완료 / USER 반영</button>
+<button class="btn blue" onclick="window.open('/travel-v1','_blank')">사용자 실행 확인</button>
+</div></div>
+<script>
+let DATA=null,C='',G='';
+const qs=new URLSearchParams(location.search); C=qs.get('component')||'hero'; G=qs.get('group')||'baekban';
+async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});if(!r.ok)throw new Error(await r.text());return await r.json();}
+async function load(){const d=await api('/api/patch17/control-first?ts='+Date.now());DATA=d.data;render();}
+function comp(){return DATA.components[C];}
+function group(){return comp().groups.find(x=>x.id===G);}
+function render(){
+ const g=group(); document.getElementById('title').textContent=comp().title+' · '+g.title;
+ document.getElementById('rows').innerHTML=(g.items||[]).map((x,i)=>`
+ <div class="row">
+ <span>${i+1}</span>
+ <input value="${x.name||''}" onchange="item(${i}).name=this.value" placeholder="이름">
+ <input value="${x.area||x.url||''}" onchange="setArea(${i},this.value)" placeholder="지역/URL">
+ <input value="${x.category||x.address||''}" onchange="setCat(${i},this.value)" placeholder="분류/주소">
+ <button class="btn ${x.enabled!==false?'on':'off'}" onclick="toggle(${i})">${x.enabled!==false?'ON':'OFF'}</button>
+ <button class="btn blue" onclick="mapOpen(${i})">지도</button>
+ <button class="btn red" onclick="del(${i})">삭제</button>
+ </div>`).join('');
+ document.getElementById('updown').innerHTML = g.upload_download ? 
+ `<button class="btn gray" onclick="downloadItems()">다운로드</button><label class="btn gray">업로드<input type="file" accept=".json" onchange="uploadItems(event)" style="display:none"></label>` : '';
+}
+function item(i){return group().items[i];}
+function setArea(i,v){const x=item(i); if(v.startsWith('http'))x.url=v; else x.area=v;}
+function setCat(i,v){const x=item(i); if(v.startsWith('http'))x.url=v; else {x.category=v; x.address=x.address||v;}}
+function addItem(){group().items=group().items||[];group().items.push({name:'신규',area:'',category:'',address:'',enabled:true});render();}
+function toggle(i){item(i).enabled=!(item(i).enabled!==false);render();}
+function del(i){if(confirm('삭제?')){group().items.splice(i,1);render();}}
+function mapOpen(i){const x=item(i);window.open('https://www.google.com/maps/search/'+encodeURIComponent(x.address||x.name),'_blank');}
+async function save(){const d=await api('/api/patch17/control-first/save',{method:'POST',body:JSON.stringify(DATA)});DATA=d.data;alert('저장 완료 / USER 반영');render();}
+function downloadItems(){const b=new Blob([JSON.stringify(group().items||[],null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=C+'_'+G+'_items.json';a.click();}
+function uploadItems(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{group().items=JSON.parse(r.result);render();alert('업로드 완료. 완료를 눌러 저장하세요.')}catch(err){alert(err.message)}};r.readAsText(f);}
+load();
+</script>
+</body></html>

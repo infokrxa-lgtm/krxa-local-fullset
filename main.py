@@ -2787,3 +2787,81 @@ async def api_user_ui_control_flow():
 async def api_user_ui_control_flow_save(payload: dict = _UCF_BODY(...)):
     return {"ok": True, "data": _ucf_save(payload)}
 # ===== End User UI Based Control Flow Manager API v1 =====
+
+
+# ===== Travel Control Total Final API v1 =====
+from fastapi import Body as _TCT_BODY
+import json as _tct_json
+from pathlib import Path as _TCT_Path
+from datetime import datetime as _TCT_datetime
+
+_TCT_FILE = _TCT_Path("storage") / "travel_control_total_structure_map.json"
+
+def _tct_now():
+    return _TCT_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _tct_load():
+    if not _TCT_FILE.exists():
+        return {"version":"empty","pages":[],"components":{}}
+    try:
+        return _tct_json.loads(_TCT_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version":"error","pages":[],"components":{}}
+
+def _tct_save(data):
+    _TCT_FILE.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _tct_now()
+    _TCT_FILE.write_text(_tct_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/travel-control-total")
+async def api_travel_control_total():
+    return {"ok": True, "data": _tct_load()}
+
+@app.post("/api/travel-control-total/save")
+async def api_travel_control_total_save(payload: dict = _TCT_BODY(...)):
+    return {"ok": True, "data": _tct_save(payload)}
+
+@app.get("/control/travel-control-workspace")
+async def control_travel_control_workspace():
+    return FileResponse("ui/travel_control_workspace.html")
+# ===== End Travel Control Total Final API v1 =====
+
+
+# ===== PATCH17 Control First API =====
+from fastapi import Body as _P17_BODY
+import json as _p17_json
+from pathlib import Path as _P17_Path
+from datetime import datetime as _P17_datetime
+
+_P17_FILE = _P17_Path("storage") / "patch17_control_first.json"
+
+def _p17_now():
+    return _P17_datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def _p17_load():
+    if not _P17_FILE.exists():
+        return {"version":"empty","pages":[],"components":{}}
+    try:
+        return _p17_json.loads(_P17_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {"version":"error","pages":[],"components":{}}
+
+def _p17_save(data):
+    _P17_FILE.parent.mkdir(exist_ok=True)
+    data["updatedAt"] = _p17_now()
+    _P17_FILE.write_text(_p17_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+@app.get("/api/patch17/control-first")
+async def api_patch17_control_first():
+    return {"ok": True, "data": _p17_load()}
+
+@app.post("/api/patch17/control-first/save")
+async def api_patch17_control_first_save(payload: dict = _P17_BODY(...)):
+    return {"ok": True, "data": _p17_save(payload)}
+
+@app.get("/control/patch17-workspace")
+async def control_patch17_workspace():
+    return FileResponse("ui/patch17_workspace.html")
+# ===== End PATCH17 Control First API =====

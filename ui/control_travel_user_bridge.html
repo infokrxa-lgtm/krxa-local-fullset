@@ -2,10 +2,10 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>KRXA User UI Based Control Flow Manager</title>
+<title>PATCH17 Control First</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
+body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
 .wrap{padding:18px}
 .panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
 .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
@@ -13,207 +13,116 @@ body{margin:0;background:#eef4fb;color:#0f172a;font-family:Arial,sans-serif}
 .page{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden}
 .head{padding:10px;background:#e2e8f0;font-weight:900;cursor:pointer}
 .head.active{background:#2563eb;color:white}
-.items{display:none;padding:8px}
-.items.open{display:block}
+.items{display:none;padding:8px}.items.open{display:block}
 .item{padding:9px;border:1px solid #e5e7eb;border-radius:10px;background:white;margin:5px 0;cursor:pointer}
 .item.active{background:#dbeafe}
 .btn{border:0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;margin:3px}
 .on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
-.row{display:grid;grid-template-columns:44px 1fr 70px 70px 70px 70px;gap:7px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
-input{padding:8px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box}
+.row{display:grid;grid-template-columns:1fr 80px 90px 80px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:9px 0}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="panel">
-<h2>관제 · 사용자 UI 1~8 실행순서 관리</h2>
-<p>좌측은 사용자 UI 기준, 우측은 선택 항목의 실행순서·결과데이터·ON/OFF·신규·수정·삭제·업로드·다운로드·완료입니다.</p>
+<div class="wrap"><div class="panel">
+<h2>PATCH17 · Control First Architecture</h2>
+<p>관제가 원본입니다. DEV/USER는 이 값을 읽어 실행합니다.</p>
 <div class="grid">
-  <div class="left">
-    <div id="left"></div>
-    <button class="btn gray" onclick="downloadJson()">다운로드</button>
-    <label class="btn gray">업로드<input type="file" accept=".json" onchange="uploadJson(event)" style="display:none"></label>
-  </div>
-  <div class="right">
-    <h2 id="title">선택 없음</h2>
-    <div id="right">좌측 항목을 선택하세요.</div>
-  </div>
+<div class="left">
+<div id="left"></div>
+<button class="btn gray" onclick="downloadJson()">전체 다운로드</button>
+<label class="btn gray">전체 업로드<input type="file" accept=".json" onchange="uploadJson(event)" style="display:none"></label>
 </div>
+<div class="right">
+<h2 id="title">선택 없음</h2>
+<div id="right">좌측 항목을 선택하세요.</div>
 </div>
-</div>
+</div></div></div>
 
 <script>
 let DATA=null, OPEN=0, SP=null, SI=null;
 
 async function api(path,opt={}){
-  const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
-  if(!r.ok) throw new Error(await r.text());
-  return await r.json();
+ const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+ if(!r.ok) throw new Error(await r.text());
+ return await r.json();
 }
-
 async function load(){
-  const d=await api('/api/user-ui-control-flow?ts='+Date.now());
-  DATA=d.data;
-  renderLeft();
-  renderRight();
+ const d=await api('/api/patch17/control-first?ts='+Date.now());
+ DATA=d.data; renderLeft(); renderRight();
 }
-
+function keyOf(id){
+ if(id==='m2m_link'||id==='mini_talk'||id==='mic'||id==='lang_more') return 'm2m_link';
+ return id;
+}
 function renderLeft(){
-  const box=document.getElementById('left');
-  box.innerHTML='';
-  (DATA.pages||[]).forEach((p,pi)=>{
-    const page=document.createElement('div');
-    page.className='page';
-
-    const head=document.createElement('div');
-    head.className='head '+(OPEN===pi?'active':'');
-    head.textContent='PAGE '+p.page+' · '+p.title;
-    head.onclick=()=>{OPEN=OPEN===pi?null:pi;SP=pi;SI=null;renderLeft();renderRight();};
-
-    const items=document.createElement('div');
-    items.className='items '+(OPEN===pi?'open':'');
-    (p.items||[]).forEach((it,ii)=>{
-      const row=document.createElement('div');
-      row.className='item '+(SP===pi&&SI===ii?'active':'');
-      row.innerHTML=`${it.title}<span style="float:right">${it.enabled===false?'OFF':'ON'}</span>`;
-      row.onclick=()=>{SP=pi;SI=ii;renderLeft();renderRight();};
-      items.appendChild(row);
-    });
-
-    page.appendChild(head);
-    page.appendChild(items);
-    box.appendChild(page);
+ const box=document.getElementById('left'); box.innerHTML='';
+ (DATA.pages||[]).forEach((p,pi)=>{
+  const pg=document.createElement('div'); pg.className='page';
+  const h=document.createElement('div'); h.className='head '+(OPEN===pi?'active':'');
+  h.textContent='PAGE '+p.page+' · '+p.title;
+  h.onclick=()=>{OPEN=OPEN===pi?null:pi;SP=pi;SI=null;renderLeft();renderRight();};
+  const items=document.createElement('div'); items.className='items '+(OPEN===pi?'open':'');
+  (p.items||[]).forEach((it,ii)=>{
+   const row=document.createElement('div'); row.className='item '+(SP===pi&&SI===ii?'active':'');
+   row.innerHTML=`${it.title}<span style="float:right">${it.enabled===false?'OFF':'ON'}</span>`;
+   row.onclick=()=>{SP=pi;SI=ii;renderLeft();renderRight();};
+   items.appendChild(row);
   });
+  pg.appendChild(h); pg.appendChild(items); box.appendChild(pg);
+ });
 }
-
-function flowKey(id){
-  if(id==='mini_talk') return 'm2m';
-  if(id==='lang_more') return 'm2m';
-  if(id==='transport') return 'taxi';
-  return id;
-}
-
-function ensureFlow(key){
-  DATA.flows = DATA.flows || {};
-  if(!DATA.flows[key]){
-    DATA.flows[key]=[
-      {id:'step1',title:'사용자 클릭',enabled:true},
-      {id:'step2',title:'실행 연결',enabled:true}
-    ];
-  }
-}
-
 function renderRight(){
-  const title=document.getElementById('title');
-  const right=document.getElementById('right');
+ const title=document.getElementById('title'), right=document.getElementById('right');
+ if(SP===null||SI===null){title.textContent='선택 없음';right.textContent='좌측 항목을 선택하세요.';return;}
+ const item=DATA.pages[SP].items[SI]; const key=keyOf(item.id);
+ const comp=DATA.components && DATA.components[key];
+ title.textContent='PAGE '+DATA.pages[SP].page+' · '+item.title;
 
-  if(SP===null||SI===null){
-    title.textContent='선택 없음';
-    right.textContent='좌측 항목을 선택하세요.';
-    return;
-  }
+ if(key==='m2m_link'){
+  right.innerHTML=`<h3>말대말 연결</h3>
+  <p>말대말은 별도 구축된 통역엔진입니다. Travel V1은 연결만 담당합니다.</p>
+  <button class="btn ${item.enabled!==false?'on':'off'}" onclick="toggleItem()">${item.enabled!==false?'ON':'OFF'}</button>
+  <button class="btn blue" onclick="window.open('/travel-v1','_blank')">사용자처럼 실행</button>
+  <button class="btn on" onclick="save()">완료 / USER 반영</button>`;
+  return;
+ }
 
-  const item=DATA.pages[SP].items[SI];
-  const key=flowKey(item.id);
-  ensureFlow(key);
-  const flow=DATA.flows[key];
+ if(!comp){
+  right.innerHTML=`<h3>${item.title}</h3>
+  <button class="btn ${item.enabled!==false?'on':'off'}" onclick="toggleItem()">${item.enabled!==false?'ON':'OFF'}</button>
+  <button class="btn blue" onclick="createComponent('${key}','${item.title}')">관리구조 생성</button>
+  <button class="btn blue" onclick="preview('${key}')">사용자처럼 실행</button>
+  <button class="btn on" onclick="save()">완료 / USER 반영</button>`;
+  return;
+ }
 
-  title.textContent='PAGE '+DATA.pages[SP].page+' · '+item.title;
-
-  right.innerHTML=`
-    <h3>${item.title} 실행순서</h3>
-    <p>관리자가 순서를 바꾸면 사용자 실행 흐름도 이 순서를 기준으로 적용됩니다.</p>
-    <button class="btn ${item.enabled!==false?'on':'off'}" onclick="toggleItem()">${item.enabled!==false?'ON':'OFF'}</button>
-    <div style="margin-top:12px">
-      ${flow.map((s,i)=>`
-        <div class="row">
-          <span>${i+1}</span>
-          <span>${s.title}</span>
-          <button class="btn ${s.enabled!==false?'on':'off'}" onclick="toggleStep('${key}',${i})">${s.enabled!==false?'ON':'OFF'}</button>
-          <button class="btn gray" onclick="moveStep('${key}',${i},-1)">위로</button>
-          <button class="btn gray" onclick="moveStep('${key}',${i},1)">아래</button>
-          <button class="btn red" onclick="deleteStep('${key}',${i})">삭제</button>
-        </div>
-      `).join('')}
-    </div>
-    <button class="btn blue" onclick="addStep('${key}')">+ 신규 단계</button>
-    <button class="btn gray" onclick="editSelected('${key}')">선택 항목 수정</button>
-    <button class="btn on" onclick="save()">완료 / USER 반영</button>
-  `;
+ right.innerHTML=`<h3>${comp.title}</h3>
+ <button class="btn ${item.enabled!==false?'on':'off'}" onclick="toggleItem()">화면 ${item.enabled!==false?'ON':'OFF'}</button>
+ ${comp.rotation?`<div><b>회전</b> <button class="btn ${comp.rotation.enabled!==false?'on':'off'}" onclick="toggleRotation('${key}')">${comp.rotation.enabled!==false?'ON':'OFF'}</button>
+ <input style="width:100px" type="number" value="${comp.rotation.interval_ms||5000}" onchange="setRotation('${key}',this.value)"> ms</div>`:''}
+ <h3>관리 그룹</h3>
+ ${(comp.groups||[]).map((g,i)=>`
+  <div class="row">
+   <span><b>${i+1}. ${g.title}</b><br><small>${(g.items||[]).length}개</small></span>
+   <button class="btn ${g.enabled!==false?'on':'off'}" onclick="toggleGroup('${key}',${i})">${g.enabled!==false?'ON':'OFF'}</button>
+   <button class="btn blue" onclick="openWorkspace('${key}','${g.id}')">작업창</button>
+   <button class="btn red" onclick="deleteGroup('${key}',${i})">삭제</button>
+  </div>`).join('')}
+ <button class="btn blue" onclick="addGroup('${key}')">+ 신규 그룹</button>
+ <button class="btn blue" onclick="preview('${key}')">사용자처럼 실행</button>
+ <button class="btn on" onclick="save()">완료 / USER 반영</button>`;
 }
-
-function toggleItem(){
-  const item=DATA.pages[SP].items[SI];
-  item.enabled=!(item.enabled!==false);
-  renderLeft();renderRight();
-}
-
-function toggleStep(key,i){
-  DATA.flows[key][i].enabled=!(DATA.flows[key][i].enabled!==false);
-  renderRight();
-}
-
-function moveStep(key,i,dir){
-  const arr=DATA.flows[key];
-  const ni=i+dir;
-  if(ni<0||ni>=arr.length)return;
-  const t=arr[i]; arr[i]=arr[ni]; arr[ni]=t;
-  renderRight();
-}
-
-function deleteStep(key,i){
-  if(confirm('삭제할까요?')){
-    DATA.flows[key].splice(i,1);
-    renderRight();
-  }
-}
-
-function addStep(key){
-  const title=prompt('새 실행 단계명');
-  if(!title)return;
-  DATA.flows[key].push({id:'step_'+Date.now(),title,enabled:true});
-  renderRight();
-}
-
-function editSelected(key){
-  const item=DATA.pages[SP].items[SI];
-  item.title=prompt('표시명',item.title)||item.title;
-  renderLeft();renderRight();
-}
-
-async function save(){
-  const d=await api('/api/user-ui-control-flow/save',{
-    method:'POST',
-    body:JSON.stringify(DATA)
-  });
-  DATA=d.data;
-  alert('저장 완료 / USER 반영');
-  renderLeft();renderRight();
-}
-
-function downloadJson(){
-  const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='travel_control_flow_config.json';
-  a.click();
-}
-
-function uploadJson(e){
-  const f=e.target.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      DATA=JSON.parse(r.result);
-      alert('업로드 완료. 완료 / USER 반영을 누르세요.');
-      renderLeft();renderRight();
-    }catch(err){alert('JSON 오류: '+err.message);}
-  };
-  r.readAsText(f);
-}
-
+function toggleItem(){const it=DATA.pages[SP].items[SI];it.enabled=!(it.enabled!==false);renderLeft();renderRight();}
+function createComponent(key,title){DATA.components=DATA.components||{};DATA.components[key]={title,groups:[]};renderRight();}
+function toggleRotation(key){DATA.components[key].rotation.enabled=!(DATA.components[key].rotation.enabled!==false);renderRight();}
+function setRotation(key,v){DATA.components[key].rotation.interval_ms=Number(v||5000);}
+function toggleGroup(key,i){DATA.components[key].groups[i].enabled=!(DATA.components[key].groups[i].enabled!==false);renderRight();}
+function addGroup(key){const title=prompt('신규 그룹명'); if(!title)return; const id=prompt('그룹 ID', title.replaceAll(' ','_'))||('group_'+Date.now()); DATA.components[key].groups.push({id,title,enabled:true,items:[]});renderRight();}
+function deleteGroup(key,i){if(confirm('삭제할까요?')){DATA.components[key].groups.splice(i,1);renderRight();}}
+function openWorkspace(key,gid){window.open('/control/patch17-workspace?component='+encodeURIComponent(key)+'&group='+encodeURIComponent(gid),'_blank');}
+function preview(key){window.open('/travel-v1','_blank');}
+async function save(){const d=await api('/api/patch17/control-first/save',{method:'POST',body:JSON.stringify(DATA)});DATA=d.data;alert('저장 완료 / USER 반영');renderLeft();renderRight();}
+function downloadJson(){const b=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='patch17_control_first.json';a.click();}
+function uploadJson(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{DATA=JSON.parse(r.result);renderLeft();renderRight();alert('업로드 완료. 완료를 눌러 저장하세요.')}catch(err){alert(err.message)}};r.readAsText(f);}
 load();
 </script>
-</body>
-</html>
+</body></html>

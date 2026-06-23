@@ -1,0 +1,358 @@
+{
+  "version": "PATCH17_Control_First_Architecture_v1",
+  "updatedAt": "20260623_115848",
+  "principle": "관제가 원본, DEV는 실행엔진, USER는 표시화면",
+  "pages": [
+    {
+      "page": 1,
+      "title": "Discovery Home",
+      "items": [
+        {
+          "id": "gps",
+          "title": "GPS/위치시간바",
+          "enabled": true
+        },
+        {
+          "id": "hero",
+          "title": "Hero",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "title": "Quick Action",
+      "items": [
+        {
+          "id": "food",
+          "title": "맛집",
+          "enabled": true
+        },
+        {
+          "id": "taxi",
+          "title": "교통",
+          "enabled": true
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "enabled": true
+        },
+        {
+          "id": "sos",
+          "title": "SOS",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 3,
+      "title": "Travel Hub",
+      "items": [
+        {
+          "id": "airport",
+          "title": "공항",
+          "enabled": true
+        },
+        {
+          "id": "hotel",
+          "title": "호텔",
+          "enabled": true
+        },
+        {
+          "id": "food",
+          "title": "식당/맛집",
+          "enabled": true
+        },
+        {
+          "id": "taxi",
+          "title": "교통",
+          "enabled": true
+        },
+        {
+          "id": "route",
+          "title": "길찾기",
+          "enabled": true
+        },
+        {
+          "id": "tour",
+          "title": "관광",
+          "enabled": true
+        },
+        {
+          "id": "shopping",
+          "title": "쇼핑",
+          "enabled": true
+        },
+        {
+          "id": "music",
+          "title": "음악",
+          "enabled": true
+        },
+        {
+          "id": "tv",
+          "title": "TV시청",
+          "enabled": true
+        },
+        {
+          "id": "call",
+          "title": "통화",
+          "enabled": true
+        },
+        {
+          "id": "photo",
+          "title": "사진",
+          "enabled": true
+        },
+        {
+          "id": "video",
+          "title": "동영상",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 4,
+      "title": "Detail Result",
+      "items": [
+        {
+          "id": "detail_list",
+          "title": "상세 리스트",
+          "enabled": true
+        },
+        {
+          "id": "user_links",
+          "title": "추천앱/사용자 사이트",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "title": "말대말 연결",
+      "items": [
+        {
+          "id": "m2m_link",
+          "title": "말대말 연결",
+          "enabled": true
+        },
+        {
+          "id": "lang_more",
+          "title": "기타 언어 선택",
+          "enabled": true
+        },
+        {
+          "id": "mic",
+          "title": "마이크",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "title": "통화/메신저",
+      "items": [
+        {
+          "id": "phone",
+          "title": "전화",
+          "enabled": true
+        },
+        {
+          "id": "whatsapp",
+          "title": "WhatsApp",
+          "enabled": true
+        },
+        {
+          "id": "wechat",
+          "title": "WeChat",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "title": "사용내역/기억",
+      "items": [
+        {
+          "id": "recent_translate",
+          "title": "최근 통역",
+          "enabled": true
+        },
+        {
+          "id": "recent_travel",
+          "title": "최근 여행",
+          "enabled": true
+        },
+        {
+          "id": "memory_loop",
+          "title": "KRXA 기억 루프",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "title": "SOS",
+      "items": [
+        {
+          "id": "police",
+          "title": "경찰",
+          "enabled": true
+        },
+        {
+          "id": "emergency",
+          "title": "구급",
+          "enabled": true
+        },
+        {
+          "id": "hospital",
+          "title": "병원",
+          "enabled": true
+        },
+        {
+          "id": "embassy",
+          "title": "대사관",
+          "enabled": true
+        },
+        {
+          "id": "offline_phrase",
+          "title": "오프라인 생존문장",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "components": {
+    "hero": {
+      "title": "Hero",
+      "rotation": {
+        "enabled": true,
+        "interval_ms": 5000
+      },
+      "groups": [
+        {
+          "id": "baekban",
+          "title": "허영만 백반기행",
+          "enabled": true,
+          "order": 1,
+          "upload_download": true,
+          "items": [
+            {
+              "name": "늘봄집 수서본점",
+              "area": "서울 강남",
+              "category": "복어요리",
+              "address": "늘봄집 수서본점",
+              "enabled": true
+            },
+            {
+              "name": "최가네",
+              "area": "부천",
+              "category": "한식",
+              "address": "최가네 부천",
+              "enabled": true
+            },
+            {
+              "name": "허영만백반기행맛집",
+              "area": "주변",
+              "category": "맛집",
+              "address": "허영만 백반기행 맛집",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "id": "near_food",
+          "title": "주변맛집",
+          "enabled": true,
+          "order": 2,
+          "upload_download": true,
+          "items": [
+            {
+              "name": "주변 맛집 검색",
+              "area": "현재 위치",
+              "category": "맛집",
+              "address": "맛집",
+              "enabled": true
+            }
+          ]
+        }
+      ]
+    },
+    "food": {
+      "title": "맛집",
+      "groups": [
+        {
+          "id": "recommend",
+          "title": "추천리스트",
+          "enabled": true,
+          "upload_download": true,
+          "items": []
+        },
+        {
+          "id": "user_places",
+          "title": "사용자 등록/삭제",
+          "enabled": true,
+          "upload_download": true,
+          "items": []
+        },
+        {
+          "id": "map",
+          "title": "지도 연결",
+          "enabled": true,
+          "items": [
+            {
+              "name": "Google Maps",
+              "url": "https://www.google.com/maps",
+              "enabled": true
+            }
+          ]
+        }
+      ]
+    },
+    "hotel": {
+      "title": "호텔",
+      "groups": [
+        {
+          "id": "default_sites",
+          "title": "기본사이트",
+          "enabled": true,
+          "items": [
+            {
+              "name": "Google Hotels",
+              "url": "https://www.google.com/travel/hotels",
+              "enabled": true
+            },
+            {
+              "name": "Agoda",
+              "url": "https://www.agoda.com",
+              "enabled": true
+            },
+            {
+              "name": "Booking",
+              "url": "https://www.booking.com",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "id": "user_register",
+          "title": "사용자 등록/삭제",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "destination",
+          "title": "목적지 입력",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map",
+          "title": "지도 연결",
+          "enabled": true,
+          "items": []
+        }
+      ]
+    }
+  }
+}
