@@ -2,31 +2,45 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>PATCH17-1 실행 정확도 작업창</title>
+<title>PATCH17-2 공통 실행바 작업창</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
 .wrap{padding:18px}.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
 .btn{border:0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;margin:3px}
 .on{background:#16a34a;color:white}.off{background:#dc2626;color:white}.blue{background:#2563eb;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
-.row{display:grid;grid-template-columns:34px 1fr 1fr 1fr 1.4fr 1.2fr 1.2fr 1fr 70px 60px 60px 60px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
+.actionbar{position:sticky;top:0;background:white;border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:10px 0;z-index:5}
+.row{display:grid;grid-template-columns:34px 34px 1fr 1fr 1fr 1.4fr 1.2fr 1.2fr 1fr 70px 60px 60px 70px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px 0}
 input{padding:7px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box}
-small{color:#64748b}
+.header{font-size:12px;font-weight:900;color:#64748b}
+.selected{background:#eff6ff}
 </style>
 </head>
 <body>
 <div class="wrap"><div class="panel">
-<h2 id="title">PATCH17-1 작업창</h2>
-<p>이름/지역/분류/실주소/지도검색어/URL/전화 수정 후 저장하면 USER에 반영됩니다. 지도는 현재위치 → 목적지 DIR로 실행합니다.</p>
+<h2 id="title">PATCH17-2 작업창</h2>
+<p>중복 실행 버튼은 제거하고, 선택한 항목을 공통 실행바에서 실행합니다.</p>
+
+<div class="actionbar">
+  <b>선택 항목 실행</b>
+  <button class="btn blue" onclick="selectedMapDir()">현재위치 → 지도 DIR</button>
+  <button class="btn gray" onclick="selectedUrl()">URL 열기</button>
+  <button class="btn gray" onclick="selectedPhone()">전화</button>
+  <button class="btn blue" onclick="addItem()">+ 신규</button>
+  <span id="updown"></span>
+  <button class="btn on" onclick="save()">완료 / USER 반영</button>
+  <button class="btn blue" onclick="window.open('/travel-v1','_blank')">사용자 실행 확인</button>
+</div>
+
+<div class="row header">
+  <span>No</span><span>선택</span><span>이름</span><span>지역</span><span>분류</span><span>실주소</span><span>지도검색어</span><span>URL</span><span>전화</span><span>ON</span><span>↑</span><span>↓</span><span>삭제</span>
+</div>
 <div id="rows"></div>
-<button class="btn blue" onclick="addItem()">+ 신규</button>
-<span id="updown"></span>
-<button class="btn on" onclick="save()">완료 / USER 반영</button>
-<button class="btn blue" onclick="window.open('/travel-v1','_blank')">사용자 실행 확인</button>
+
 </div></div>
 
 <script>
-let DATA=null,C='',G='';
+let DATA=null,C='',G='',SELECTED=0;
 const qs=new URLSearchParams(location.search);
 C=qs.get('component')||'hero';
 G=qs.get('group')||'baekban';
@@ -36,14 +50,18 @@ async function api(path,opt={}){
   if(!r.ok) throw new Error(await r.text());
   return await r.json();
 }
+
 async function load(){
   const d=await api('/api/patch17/control-first?ts='+Date.now());
   DATA=d.data;
   normalize();
   render();
 }
+
 function comp(){return DATA.components[C];}
 function group(){return comp().groups.find(x=>x.id===G);}
+function item(i){return group().items[i];}
+
 function normalize(){
   const g=group();
   g.items = g.items || [];
@@ -57,16 +75,19 @@ function normalize(){
     x.phone = x.phone || '';
     x.enabled = x.enabled !== false;
   });
+  if(SELECTED >= g.items.length) SELECTED = 0;
 }
-function item(i){return group().items[i];}
+
+function esc(s){return String(s||'').replaceAll('"','&quot;');}
 
 function render(){
   const g=group();
   document.getElementById('title').textContent=comp().title+' · '+g.title;
 
   document.getElementById('rows').innerHTML=(g.items||[]).map((x,i)=>`
-  <div class="row">
+  <div class="row ${SELECTED===i?'selected':''}">
     <span>${i+1}</span>
+    <input type="radio" name="sel" ${SELECTED===i?'checked':''} onchange="selectRow(${i})">
     <input value="${esc(x.name)}" onchange="item(${i}).name=this.value" placeholder="이름">
     <input value="${esc(x.area)}" onchange="item(${i}).area=this.value" placeholder="지역">
     <input value="${esc(x.category)}" onchange="item(${i}).category=this.value" placeholder="분류">
@@ -79,36 +100,47 @@ function render(){
     <button class="btn gray" onclick="move(${i},1)">↓</button>
     <button class="btn red" onclick="del(${i})">삭제</button>
   </div>
-  <div style="padding:4px 0 8px 34px">
-    <button class="btn blue" onclick="mapDir(${i})">현재위치 → 지도 DIR</button>
-    <button class="btn gray" onclick="openUrl(${i})">URL</button>
-    <button class="btn gray" onclick="callPhone(${i})">전화</button>
-  </div>
   `).join('');
 
   document.getElementById('updown').innerHTML = g.upload_download ? 
   `<button class="btn gray" onclick="downloadItems()">다운로드</button>
    <label class="btn gray">업로드<input type="file" accept=".json" onchange="uploadItems(event)" style="display:none"></label>` : '';
 }
-function esc(s){return String(s||'').replaceAll('"','&quot;');}
+
+function selectRow(i){SELECTED=i;render();}
+function current(){
+  const g=group();
+  if(!g.items.length){alert('선택할 항목이 없습니다.');return null;}
+  return g.items[SELECTED] || g.items[0];
+}
 
 function addItem(){
   group().items.push({name:'신규',area:'',category:'',address:'',map_query:'',url:'',phone:'',enabled:true});
+  SELECTED=group().items.length-1;
   render();
 }
+
 function toggle(i){item(i).enabled=!(item(i).enabled!==false);render();}
-function del(i){if(confirm('삭제할까요?')){group().items.splice(i,1);render();}}
+function del(i){
+  if(confirm('삭제할까요?')){
+    group().items.splice(i,1);
+    if(SELECTED >= group().items.length) SELECTED = Math.max(0, group().items.length-1);
+    render();
+  }
+}
 function move(i,dir){
   const arr=group().items;
   const ni=i+dir;
   if(ni<0||ni>=arr.length)return;
   const t=arr[i]; arr[i]=arr[ni]; arr[ni]=t;
+  SELECTED=ni;
   render();
 }
+
 function destinationOf(x){return x.address || x.map_query || x.name;}
 
-function mapDir(i){
-  const x=item(i);
+function selectedMapDir(){
+  const x=current(); if(!x)return;
   const dest=destinationOf(x);
   if(!dest){alert('실주소 또는 지도검색어를 입력하세요.');return;}
 
@@ -126,23 +158,27 @@ function mapDir(i){
     window.open(url,'_blank');
   }
 }
-function openUrl(i){
-  const u=item(i).url;
-  if(!u){alert('URL이 없습니다.');return;}
-  window.open(u,'_blank');
+
+function selectedUrl(){
+  const x=current(); if(!x)return;
+  if(!x.url){alert('URL이 없습니다.');return;}
+  window.open(x.url,'_blank');
 }
-function callPhone(i){
-  const p=item(i).phone;
-  if(!p){alert('전화번호가 없습니다.');return;}
-  location.href='tel:'+p;
+
+function selectedPhone(){
+  const x=current(); if(!x)return;
+  if(!x.phone){alert('전화번호가 없습니다.');return;}
+  location.href='tel:'+x.phone;
 }
 
 async function save(){
   const d=await api('/api/patch17/control-first/save',{method:'POST',body:JSON.stringify(DATA)});
   DATA=d.data;
   alert('저장 완료 / USER 반영');
+  normalize();
   render();
 }
+
 function downloadItems(){
   const b=new Blob([JSON.stringify(group().items||[],null,2)],{type:'application/json'});
   const a=document.createElement('a');
@@ -150,6 +186,7 @@ function downloadItems(){
   a.download=C+'_'+G+'_items.json';
   a.click();
 }
+
 function uploadItems(e){
   const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
@@ -163,6 +200,7 @@ function uploadItems(e){
   };
   r.readAsText(f);
 }
+
 load();
 </script>
 </body>
