@@ -1,574 +1,283 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes" />
-  <title>말대말 Travel V1</title>
-<link rel="manifest" href="/ui/manifest.json" />
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a;overflow:hidden}
-    .app{width:100vw;max-width:430px;height:100dvh;margin:auto;background:#fff;overflow:hidden;position:relative}
-    .pages{display:flex;width:800%;height:100%;transition:transform .25s ease}
-    .page{width:100vw;max-width:430px;height:100dvh;flex:0 0 100vw;padding:10px;overflow:hidden}
-    .screen{width:100%;height:100%;border-radius:24px;background:white;box-shadow:0 6px 18px rgba(15,23,42,.12);overflow:hidden;position:relative}
-    .dots{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:10}
-    .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
-    .dot.active{background:#2563eb;width:20px;border-radius:99px}
-
-    .home{background:linear-gradient(rgba(5,35,90,.12),rgba(5,35,90,.42)),none;background-size:cover;background-position:center;color:white}
-    .deviceBar{position:absolute;top:12px;left:12px;right:12px;background:rgba(255,255,255,.9);color:#0f172a;border-radius:999px;padding:7px 10px;font-size:11px;text-align:center;z-index:2}
-    .homeTitle{text-align:center;margin-top:72px}
-    .homeTitle h1{font-size:48px;margin:0 0 10px}
-    .homeTitle p{font-size:18px;line-height:1.38;margin:0}
-    .homeCard{position:absolute;left:18px;right:18px;bottom:82px;background:white;color:#0f172a;border-radius:24px;padding:20px 16px;text-align:center}
-    .micCircle{width:92px;height:92px;border-radius:50%;background:#2563eb;color:white;border:13px solid #dbeafe;margin:-62px auto 10px;font-size:38px;display:flex;align-items:center;justify-content:center}
-    .startBtn{border:0;background:#2563eb;color:white;border-radius:16px;padding:12px 26px;font-size:17px;font-weight:bold;width:100%;margin-top:8px}
-    .homeNav{position:absolute;left:16px;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;background:white;border-radius:16px;padding:8px;color:#64748b;text-align:center;font-size:11px}
-    .homeNav b{display:block;color:#0f172a;font-size:17px}
-
-    .header{height:52px;padding:10px 12px;display:flex;align-items:center;gap:8px}
-    .back{border:0;background:#f1f5f9;border-radius:10px;width:34px;height:34px;font-size:20px}
-    .title{flex:1;text-align:center;font-size:18px;font-weight:bold}
-    .content{padding:0 12px 12px;height:calc(100% - 52px);overflow:hidden}
-.hubHero{
-  height:76px;
-  padding:18px 18px 8px;
-  text-align:left;
-}
-.hubHero h2{
-  margin:0;
-  font-size:22px;
-  line-height:1.15;
-}
-.hubHero p{
-  margin:7px 0 0;
-  color:#64748b;
-  font-size:12px;
-}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:15px;padding:10px 6px;text-align:center;font-weight:bold;min-height:68px}
-    .card span{display:block;font-size:25px;margin-bottom:4px}
-    .card small{display:block;color:#64748b;font-size:10.5px;margin-top:3px}
-
-    .detailList{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-    .detailBtn{border:1px solid #e5e7eb;background:#f8fafc;border-radius:14px;padding:10px 6px;font-weight:bold;font-size:13px}
-    .miniBar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:8px 0}
-    .miniBar button{border:0;border-radius:12px;padding:10px 4px;font-weight:bold;color:white;font-size:12px}
-   .linkBox{
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:9px;
-  margin-top:7px;
-  font-size:12px;
-  text-align:center;
-  background:#f8fafc;
-}
-.linkBox b{display:block;margin-bottom:5px}
-.linkBox button{
-  width:100%;
-  border:0;
-  border-radius:10px;
-  background:#2563eb;
-  color:white;
-  padding:9px;
-  margin-top:4px;
-  font-weight:bold;
-}
-
-    .lang{display:flex;gap:6px;margin-bottom:6px}
-    .lang button{flex:1;border:0;background:#e5e7eb;border-radius:10px;padding:8px 2px;font-weight:bold;font-size:12px}
-    .lang button.active{background:#2563eb;color:white}
-    select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:8px;font-size:13px;margin:4px 0}
-    .autoBar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e5e7eb;border-radius:13px;padding:8px 10px;margin:6px 0;font-size:13px}
-    .toggle{width:52px;height:28px;border-radius:999px;background:#cbd5e1;position:relative}
-    .toggle.on{background:#2563eb}
-    .knob{width:22px;height:22px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.2s}
-    .toggle.on .knob{left:27px}
-    .micWrap{position:relative;width:112px;height:112px;margin:7px auto 3px}
-    .listenCircle{width:112px;height:112px;border-radius:50%;background:#2563eb;color:white;border:17px solid #dbeafe;font-size:42px;display:flex;align-items:center;justify-content:center}
-    .flowDot{position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#94a3b8;border:3px solid white}
-    .flowDot.listen{background:#2563eb;animation:heartbeat 1s infinite}
-    .flowDot.translate{background:#f59e0b;animation:heartbeat .75s infinite}
-    .flowDot.speak{background:#16a34a;animation:heartbeat .65s infinite}
-    .flowDot.error{background:#dc2626}
-    @keyframes heartbeat{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
-    .status{text-align:center;font-weight:bold;font-size:16px;margin:4px 0}
-    .sub{text-align:center;color:#64748b;font-size:11px;margin-bottom:5px}
-    .msg{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:8px;margin:5px 0;text-align:left;font-size:13px;min-height:41px}
-    .msg b{display:block;margin-bottom:3px}
-    .actionRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}
-    .btn{border:0;border-radius:12px;padding:10px;font-size:14px;font-weight:bold;color:white}
-    .green{background:#16a34a}.blue{background:#2563eb}.red{background:#dc2626}
-
-    .tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:3px;margin-bottom:8px}
-    .tabs button{flex:1;border:0;border-radius:9px;background:transparent;padding:8px;font-weight:bold;font-size:12px}
-    .tabs button.active{background:white;color:#2563eb}
-    .contact{display:flex;align-items:center;gap:10px;border-bottom:1px solid #e5e7eb;padding:9px 0;text-align:left}
-    .contactIcon{font-size:22px}.contactInfo{flex:1}.contactInfo b{display:block;font-size:14px}.contactInfo small{color:#64748b;font-size:11px}
-    .callBtn{border:0;background:#16a34a;color:white;border-radius:50%;width:38px;height:38px;font-size:18px}
-    .sosTop{height:96px;background:#dc2626;color:white;padding:24px 18px;text-align:center;border-radius:0 0 24px 24px}
-    .sosTop h2{font-size:30px;margin:0}
-    .offline{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:10px;margin-top:10px;font-size:13px}
-    .phrase{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px;margin:6px 0;text-align:left;font-size:12px}
-    .modal{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
-    .modalBox{width:100%;max-height:88%;overflow:auto;background:white;border-radius:20px;padding:16px}
-    .modalHead{display:flex;justify-content:space-between;align-items:center}
-    .closeBtn{border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px}
-    .linkItem{display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:8px 0}
-    .linkItem span{font-size:13px}
-    ul{padding-left:18px;font-size:13px}
-.travelHero{
-  margin:58px 16px 12px;
-  min-height:150px;
-  border-radius:24px;
-  padding:18px;
-  color:white;
-  background:
-    linear-gradient(135deg,rgba(14,165,233,.92),rgba(59,130,246,.65)),
-    radial-gradient(circle at top right,rgba(255,255,255,.45),transparent 34%),
-    linear-gradient(160deg,#38bdf8,#2563eb);
-  box-shadow:0 14px 34px rgba(37,99,235,.28);
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-.travelHeroBadge{font-size:11px;font-weight:800;letter-spacing:.8px;opacity:.9}
-.travelHeroPlace{font-size:25px;font-weight:900;line-height:1.1;margin-top:10px}
-.travelHeroText{font-size:14px;opacity:.95;margin-top:4px}
-.travelHeroBtn{
-  align-self:flex-start;
-  margin-top:10px;
-  border:0;
-  border-radius:999px;
-  padding:8px 14px;
-  background:rgba(255,255,255,.92);
-  color:#0369a1;
-  font-weight:900;
-}
-.quickGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  padding:0 16px;
-}
-.quickCard{
-  min-height:82px;
-  border-radius:18px;
-  background:rgba(255,255,255,.94);
-  box-shadow:0 8px 20px rgba(15,23,42,.08);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-.quickCard b{font-size:26px}
-.quickCard strong{font-size:15px;margin-top:3px}
-.quickCard small{font-size:11px;color:#64748b;margin-top:3px}
-.quickCard.sos{background:#fff1f2}
-.homeMicDock{
-  position:absolute;
-  left:22px;
-  right:22px;
-  bottom:22px;
-  height:64px;
-  border-radius:999px;
-  background:#111827;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  box-shadow:0 12px 30px rgba(15,23,42,.25);
-}
-.homeMicBtn{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  background:#22c55e;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:23px;
-}
-.homeMicDock small{display:block;color:#cbd5e1;font-size:11px;margin-top:2px}
-.discoveryHero{
-  margin:96px 22px 0;
-  min-height:360px;
-  border-radius:30px;
-  padding:26px;
-  color:white;
-  background:linear-gradient(135deg,#0ea5e9,#2563eb);
-  box-shadow:0 18px 40px rgba(37,99,235,.32);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-.discoveryBadge{
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:1px;
-  opacity:.9;
-  margin-bottom:24px;
-}
-.discoveryTitle{
-  font-size:34px;
-  line-height:1.15;
-  font-weight:900;
-}
-.discoverySub{
-  font-size:16px;
-  margin-top:14px;
-  opacity:.95;
-}
-.discoveryHero .travelHeroBtn{
-  margin-top:28px;
-  width:120px;
-}
-  </style>
+<meta charset="utf-8">
+<title>KRXA Travel V1 · Control Driven App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eaf2fb;font-family:Arial,sans-serif;color:#0f172a}
+.phone{max-width:430px;margin:0 auto;min-height:100vh;background:#f8fafc;position:relative;overflow:hidden}
+.page{display:none;min-height:100vh;padding:16px 14px 92px}
+.page.active{display:block}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.back{border:0;background:#e2e8f0;border-radius:12px;padding:9px 12px;font-weight:900}
+.title{font-size:20px;font-weight:900}
+.gps{background:#0f172a;color:white;border-radius:18px;padding:12px;margin-bottom:12px;font-size:13px}
+.hero{background:linear-gradient(135deg,#2563eb,#0f766e);color:white;border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 8px 18px rgba(0,0,0,.16);cursor:pointer}
+.hero small{opacity:.85}
+.hero h2{margin:8px 0 4px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{border:1px solid #dbe3ee;background:white;border-radius:18px;padding:16px;min-height:86px;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}
+.card b{display:block;font-size:16px;margin-bottom:5px}
+.card small{color:#64748b}
+.bottom{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:430px;background:white;border-top:1px solid #dbe3ee;display:flex;justify-content:space-around;padding:8px}
+.dot{border:0;background:#e2e8f0;border-radius:999px;padding:8px 10px;font-weight:900}
+.dot.active{background:#2563eb;color:white}
+.modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:20;padding:20px}
+.modalBox{max-width:430px;margin:30px auto;background:white;border-radius:20px;padding:16px;max-height:82vh;overflow:auto}
+.modalHead{display:flex;justify-content:space-between;align-items:center}
+.btn{border:0;border-radius:999px;padding:9px 12px;margin:4px;font-weight:900;cursor:pointer}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
+input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:12px;margin:5px 0}
+.lang{display:flex;gap:6px;margin:8px 0}.lang button{flex:1}
+</style>
 </head>
 <body>
-<div class="app" id="app">
-  <div class="pages" id="pages">
-<section class="page" data-admin-page="page1">
-  <div class="screen home">
-<div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
-    <div class="discoveryHero" onclick="KRXA_HeroRotation.openCurrent()">
-      <div data-component="hero" class="discoveryBadge">LIVE TRAVEL DISCOVERY</div>
-      <div class="discoveryTitle" id="discoveryHeroTitle">주변 인기 장소를 찾는 중</div>
-      <div class="discoverySub" id="discoveryHeroSub">방송·유튜브·리뷰 기반 추천 준비 중</div>
-      <button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); KRXA_HeroRotation.openCurrent();">둘러보기</button>
-    </div>
+<div class="phone" id="app"></div>
+<div class="bottom" id="nav"></div>
 
-    <div class="homeMicDock" data-admin-id="mini_talk" onclick="KRXA_App.goUserPage(5)">
-      <div class="homeMicBtn">🎤</div>
-      <div>
-        <b>말대말</b>
-        <small>말하면 바로 통역</small>
-      </div>
+<div class="modal" id="modal">
+  <div class="modalBox">
+    <div class="modalHead">
+      <h3 id="modalTitle">안내</h3>
+      <button class="btn red" onclick="KRXA_App.closeModal()">닫기</button>
     </div>
+    <div id="modalBody"></div>
   </div>
-</section>
-<section class="page" data-admin-page="page2">
-  <div class="screen home">
-<div class="deviceBar deviceContextBar">📍 위치 확인 중 · 시간 확인 중 · ko</div>
-<div class="travelHero" onclick="KRXA_HeroRotation.openCurrent()">
-      <div data-component="gps" class="travelHeroBadge">GPS · MARKET · RECOMMEND</div>
-<div class="travelHeroPlace" id="travelHeroPlace">추천 불러오는 중</div>
-<div class="travelHeroText" id="travelHeroText">현재 위치 기준 추천을 준비합니다</div>
-<button type="button" class="travelHeroBtn" onclick="event.preventDefault(); event.stopPropagation(); window.KRXA_Recommend.openMarketResearchV1();">둘러보기</button>
-    </div>
-
-    <div class="quickGrid">
-      <div class="quickCard" onclick="KRXA_Recommend.openNearby('food')">
-        <b>🍜</b>
-        <strong>식당</strong>
-        <small>식당</small>
-      </div>
-      <div class="quickCard" onclick="KRXA_Recommend.openTransportHub()">
-        <b>🚕</b>
-        <strong>교통</strong>
-        <small>교통</small>
-      </div>
-      <div class="quickCard" onclick="KRXA_DeviceContext.openMyLocationMap()">
-     <b>🧭</b>
-        <strong>길찾기</strong>
-        <small>길찾기</small>
-      </div>
-      <div class="quickCard sos" onclick="KRXA_App.goUserPage(8)">
-        <b>🚨</b>
-        <strong>SOS</strong>
-        <small>긴급 도움</small>
-      </div>
-    </div>
-
-    <div class="homeMicDock" data-admin-id="mini_talk" onclick="KRXA_App.goUserPage(5)">
-      <div class="homeMicBtn">🎤</div>
-      <div>
-        <b>말대말</b>
-        <small>말하면 바로 통역</small>
-      </div>
-    </div>
-  </div>
-</section>
-
-    <section class="page" data-admin-page="page3">
-      <div class="screen">
-        <div class="hubHero"><h2>지금 무엇이 필요하세요?</h2><p id="hubContextText">위치 기반 여행 실행 허브</p></div>
-        <div class="content" style="height:calc(100% - 76px)">
-          <div class="grid" id="hubGrid"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" data-admin-page="page4">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goUserPage(2)">‹</button><div class="title" id="detailTitle">식당</div></div>
-        <div class="content">
-          <div class="detailList" id="detailList"></div>
-          <div class="miniBar">
-            <button class="blue" onclick="KRXA_App.openMedia('photo')">📷 사진</button>
-            <button class="blue" onclick="KRXA_App.openMedia('video')">🎥 동영상</button>
-            <button class="green" onclick="KRXA_Translate.openQuickInput()">🎙 말하기</button>
-          </div>
-<div class="linkBox">
-  <b>추천앱 / 사용자 사이트</b>
-  <button onclick="KRXA_App.openLinkManager()">추천앱 보기 / 등록·삭제</button>
 </div>
-<div id="detailLinks" style="display:none"></div>
-
-    </section>
-
-    <section class="page" data-admin-page="page5">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goUserPage(2)">‹</button><div data-component="mini_talk" class="title">말대말 통역</div></div>
-        <div class="content">
-          <div class="lang">
-            <button id="l_auto" onclick="KRXA_Translate.setLang('auto')">자동</button>
-            <button id="l_en" onclick="KRXA_Translate.setLang('en')">영어</button>
-            <button id="l_ja" onclick="KRXA_Translate.setLang('ja')">일본어</button>
-            <button id="l_zh" onclick="KRXA_Translate.setLang('zh')">중국어</button>
-          </div>
-          <select id="langMore" onchange="KRXA_Translate.setLang(this.value)"><option value="">기타 언어 선택</option></select>
-          <div class="autoBar"><b>자동대화</b><div id="autoToggle" class="toggle" onclick="KRXA_Translate.toggleAuto()"><div class="knob"></div></div></div>
-          <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" onclick="KRXA_Translate.requestMicAndStart()">🎙️</div></div>
-          <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
-          <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
-          <div class="msg"><b>번역</b><span id="resultText">-</span></div>
-          <div class="actionRow">
-  <button class="btn blue" onclick="KRXA_Translate.openQuickInput()">⌨️ 텍스트 입력</button>
-  <button class="btn blue" onclick="KRXA_Translate.replayTTS()">🔊 다시듣기</button>
-</div>
-
-<div class="actionRow">
-  <button class="btn green" onclick="KRXA_Translate.requestMicAndStart()">🎙 말하기</button>
-  <button class="btn red" onclick="KRXA_Translate.stopAuto()">종료</button>
-</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" data-admin-page="page6">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goUserPage(2)">‹</button><div class="title">통화 / 메신저</div></div>
-        <div class="content">
-          <div class="tabs"><button class="active">전화</button><button onclick="window.open('https://wa.me/','_blank')">WhatsApp</button><button onclick="window.open('https://www.wechat.com','_blank')">WeChat</button></div>
-          <div class="contact"><div class="contactIcon">🏨</div><div class="contactInfo"><b>호텔 전화</b><small>등록 가능</small></div><button class="callBtn" onclick="location.href='tel:'">☎</button></div>
-          <div class="contact"><div class="contactIcon">🍜</div><div class="contactInfo"><b>식당 전화</b><small>예약·문의</small></div><button class="callBtn" onclick="location.href='tel:'">☎</button></div>
-          <div class="contact"><div class="contactIcon">🚕</div><div class="contactInfo"><b>택시 전화</b><small>위치 확인</small></div><button class="callBtn" onclick="location.href='tel:'">☎</button></div>
-          <input id="phoneInput" placeholder="전화번호 입력">
-          <button class="btn green" style="width:100%" onclick="location.href='tel:'+document.getElementById('phoneInput').value">📞 전화 걸기</button>
-          <button class="btn blue" style="width:100%;margin-top:6px" onclick="KRXA_App.openLinkManager('call')">연락처/메신저 등록·삭제</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" data-admin-page="page7">
-      <div class="screen">
-        <div class="header"><button class="back" onclick="KRXA_App.goUserPage(2)">‹</button><div class="title">사용내역</div></div>
-        <div class="content">
-          <div class="msg"><b>최근 통역</b><span>아직 저장된 통역 내역이 없습니다.</span></div>
-          <div class="msg"><b>최근 여행 이용</b><span>식당 / 공항 / 호텔 / 길찾기 이용 기록이 여기에 표시됩니다.</span></div>
-          <div class="msg"><b>KRXA 기억 루프</b><span>사용자가 종료하지 않은 흐름은 다음 접속 시 이어갈 수 있게 복원합니다.</span></div>
-          <button class="btn blue" style="width:100%;margin-top:8px" onclick="KRXA_App.goUserPage(5)">통역 계속하기</button>
-          <button class="btn green" style="width:100%;margin-top:8px" onclick="KRXA_App.goUserPage(2)">여행 메뉴로 이동</button>
-          <button class="btn red" style="width:100%;margin-top:8px" onclick="localStorage.clear();alert('사용내역 초기화 완료')">사용내역 초기화</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" data-admin-page="page8">
-      <div class="screen">
-        <div class="sosTop"><h2>SOS</h2><p style="color:white;margin:4px 0">위치 기반 긴급 도움</p></div>
-        <div class="content" style="height:calc(100% - 96px)">
-          <div class="grid">
-            <div class="card" onclick="window.open('tel:112')"><span>👮</span>경찰<small>112</small></div>
-            <div class="card" onclick="window.open('tel:119')"><span>🚑</span>구급<small>119</small></div>
-            <div class="card" onclick="KRXA_DeviceContext.openLocationSearch('hospital')"><span>🏥</span>병원<small>주변 검색</small></div>
-            <div class="card" onclick="KRXA_DeviceContext.openLocationSearch('embassy')"><span>🏛️</span>대사관<small>주변 검색</small></div>
-          </div>
-          <div class="offline">
-            <b>OFFLINE 생존 문장</b>
-            <div class="phrase">도와주세요 → Help me.</div>
-            <div class="phrase">병원이 어디인가요? → Where is the hospital?</div>
-            <div class="phrase">경찰을 불러주세요. → Please call the police.</div>
-            <div class="phrase">인터넷이 안 됩니다. → I have no internet connection.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div class="modal" id="modal">
-    <div class="modalBox">
-      <div class="modalHead"><h3 id="modalTitle">안내</h3><button class="closeBtn" onclick="KRXA_App.closeModal()">닫기</button></div>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
-  <input id="cameraPhoto" type="file" accept="image/*" capture="environment" style="display:none">
-  <input id="cameraVideo" type="file" accept="video/*" capture="environment" style="display:none">
-  <div class="dots" id="dots"></div>
-</div>
-
-<script src="/ui/js/travel_context.js"></script>
-<script src="/ui/js/travel_engine.js"></script>
-<script src="/ui/js/hero_recommend.js"></script>
-<script src="/ui/js/user_links.js"></script>
-<script src="/ui/js/travel_engine.js"></script>
-<script src="/ui/js/travel_map_apps.js"></script>
-<script src="/ui/js/travel_recommend.js"></script>
-<script src="/ui/js/hero_recommend.js"></script>
-<script src="/ui/js/user_links.js"></script>
-<script src="/ui/js/m2m_translate.js"></script>
 
 <script>
-(function(){
-  let currentPage=0,totalPages=8,startX=0,currentCategory="airport";
-  const order=["airport","hotel","food","taxi","route","tour","shopping","music"];
+const API="/api/patch17/control-first";
+let DATA=null;
+let CURRENT=1;
+let HERO_INDEX=0;
+let HERO_TIMER=null;
 
-  function render(){
-    document.getElementById("pages").style.transform=`translateX(-${currentPage*(100/totalPages)}%)`;
-    const dots=document.getElementById("dots"); dots.innerHTML="";
-    for(let i=0;i<totalPages;i++){
-      const d=document.createElement("div");
-      d.className="dot"+(i===currentPage?" active":"");
-      d.onclick=()=>goPage(i);
-      dots.appendChild(d);
-    }
-  }
+async function loadConfig(){
+  const r=await fetch(API+"?ts="+Date.now(),{cache:"no-store"});
+  const d=await r.json();
+  DATA=d.data||{pages:[],components:{}};
+}
 
-  function goPage(i){currentPage=(i+totalPages)%totalPages;render()}
-  function goUserPage(pageNo){ goPage(Number(pageNo)-1); }
-  window.KRXA_SET_TOTAL_PAGES=function(n){
-    totalPages=Number(n||8);
-    if(currentPage>=totalPages) currentPage=totalPages-1;
-    render();
-  }
-  function nextPage(){goPage(currentPage+1)}
-  function prevPage(){goPage(currentPage-1)}
+function enabled(x){return x && x.enabled!==false}
+function pageByNo(n){return (DATA.pages||[]).find(p=>Number(p.page)===Number(n))}
+function comp(id){return (DATA.components||{})[id]}
+function groupsOf(id){const c=comp(id); return c && c.groups ? c.groups.filter(enabled) : []}
 
+function icon(id){
+  return {
+    gps:"📍",hero:"⭐",food_hero:"🍜",food:"🍽️",taxi:"🚕",route:"🧭",sos:"🆘",
+    airport:"✈️",hotel:"🏨",tour:"🏞️",shopping:"🛍️",music:"🎵",tv:"📺",
+    call:"📞",photo:"📷",video:"🎥",m2m_link:"🎙️",mini_talk:"🎙️",
+    hospital:"🏥",embassy:"🏛️",police:"🚓",emergency:"🚑"
+  }[id]||"🔹";
+}
+
+function render(){
   const app=document.getElementById("app");
-  app.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
-  app.addEventListener("touchend",e=>{
-    const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)<70)return;
-    dx<0?nextPage():prevPage();
+  app.innerHTML="";
+  (DATA.pages||[]).forEach(p=>{
+    const sec=document.createElement("section");
+    sec.className="page "+(p.page===CURRENT?"active":"");
+    sec.dataset.adminPage="page"+p.page;
+
+    sec.innerHTML=`
+      <div class="header">
+        ${p.page>1?`<button class="back" onclick="KRXA_App.goUserPage(2)">‹</button>`:""}
+        <div class="title">PAGE ${p.page} · ${p.title}</div>
+      </div>
+      <div id="pageBody${p.page}"></div>
+    `;
+    app.appendChild(sec);
+    renderPageBody(p);
   });
+  renderNav();
+}
 
-document.addEventListener("keydown", function(e){
-  if(e.key === "ArrowRight"){
-    nextPage();
-  }
+function renderPageBody(p){
+  const body=document.getElementById("pageBody"+p.page);
+  if(!body)return;
+  body.innerHTML="";
 
-  if(e.key === "ArrowLeft"){
-    prevPage();
-  }
-});
+  const items=(p.items||[]).filter(enabled);
 
-  function buildHub(){
-    const menus=KRXA_TravelEngine.getAllMenus();
-    const box=document.getElementById("hubGrid");
-    box.innerHTML="";
-    order.forEach(cat=>{
-      const m=menus[cat];
-      const div=document.createElement("div");
-      div.className="card";
-    v.setAttribute("data-admin-id","video");
-      div.setAttribute("data-admin-id", cat);
-      div.setAttribute("data-admin-source", "hubGrid");
-      div.onclick=()=>openDetail(cat);
-      div.innerHTML=`<span>${m.icon}</span>${m.label}<small>${m.subtitle}</small>`;
-      box.appendChild(div);
-    });
-    const t=document.createElement("div");
-    t.className="card";
-    t.setAttribute("data-admin-id","tv");
-    t.onclick=()=>{window.open('/ui/tv.html','_blank');};
-    t.innerHTML="<span>📺</span>TV시청<small>실시간 자막통역</small>";
-    box.appendChild(t);
+  if(items.some(x=>x.id==="gps")) body.appendChild(gpsBlock());
+
+  if(p.page===1 && items.some(x=>x.id==="hero")) body.appendChild(heroBlock("hero"));
+  if(p.page===2 && items.some(x=>x.id==="food_hero")) body.appendChild(heroBlock("food_hero"));
+
+  const grid=document.createElement("div");
+  grid.className="grid";
+
+  items.forEach(it=>{
+    if(["gps","hero","food_hero"].includes(it.id))return;
     const c=document.createElement("div");
     c.className="card";
-    c.setAttribute("data-admin-id","call");
-    c.onclick=()=>goUserPage(6);
-    c.innerHTML="<span>📞</span>통화<small>전화·메신저</small>";
-    box.appendChild(c);
-    const p=document.createElement("div");
-    p.className="card";
-    p.setAttribute("data-admin-id","photo");
-    p.onclick=()=>openMedia("photo");
-    p.innerHTML="<span>📷</span>사진<small>기기 저장</small>";
-    box.appendChild(p);
-    const v=document.createElement("div");
-    v.className="card";
-    v.onclick=()=>openMedia("video");
-    v.innerHTML="<span>🎥</span>동영상<small>기기 저장</small>";
-    box.appendChild(v);
+    c.dataset.adminId=it.id;
+    c.innerHTML=`<b>${icon(it.id)} ${it.title}</b><small>${it.id}</small>`;
+    c.onclick=()=>runComponent(it.id,it.title);
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+}
+
+function gpsBlock(){
+  const d=document.createElement("div");
+  d.className="gps";
+  d.dataset.adminId="gps";
+  d.innerHTML=`📍 위치 확인 중 · ${new Date().toLocaleString()}`;
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      d.innerHTML=`📍 현재위치 ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} · ${new Date().toLocaleString()}`;
+    },()=>{d.innerHTML=`📍 위치 권한 필요 · ${new Date().toLocaleString()}`;});
+  }
+  return d;
+}
+
+function heroBlock(id){
+  const h=document.createElement("div");
+  h.className="hero";
+  h.dataset.adminId=id;
+  const gs=groupsOf(id);
+  const g=gs[HERO_INDEX%Math.max(1,gs.length)];
+  h.innerHTML=`<small>${id==="hero"?"LIVE TRAVEL DISCOVERY":"MARKET · FOOD RECOMMEND"}</small>
+  <h2>${g?g.title:"추천 준비 중"}</h2>
+  <p>${g?(g.items||[]).filter(enabled).length+"개 추천 · 클릭해서 보기":"관제에서 데이터를 등록하세요"}</p>`;
+  h.onclick=()=>openGroupList(id,g&&g.id);
+  return h;
+}
+
+function renderNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML="";
+  (DATA.pages||[]).forEach(p=>{
+    const b=document.createElement("button");
+    b.className="dot "+(p.page===CURRENT?"active":"");
+    b.textContent=p.page;
+    b.onclick=()=>goUserPage(p.page);
+    nav.appendChild(b);
+  });
+}
+
+function goUserPage(n){CURRENT=Number(n);render();}
+
+function openGroupList(componentId, groupId){
+  const gs=groupsOf(componentId);
+  const g=gs.find(x=>x.id===groupId)||gs[0];
+  if(!g){openModal("안내","표시할 그룹이 없습니다.");return;}
+  const list=(g.items||[]).filter(enabled);
+  const html=list.length?list.map((x,i)=>`
+    <div style="border-bottom:1px solid #e5e7eb;padding:10px 0">
+      <b>${x.name||x.title||"-"}</b><br>
+      <small>${x.area||""} ${x.category||""}</small><br>
+      <button class="btn blue" onclick='KRXA_RunItem(${JSON.stringify(x).replaceAll("'","&#39;")})'>실행</button>
+    </div>
+  `).join(""):"표시할 항목이 없습니다.";
+  openModal(g.title,html);
+}
+
+function runComponent(id,title){
+  if(id==="m2m_link"||id==="mini_talk"){goUserPage(5);return;}
+  if(id==="sos"){goUserPage(8);return;}
+  const gs=groupsOf(id);
+  if(gs.length){openComponentManager(id,title);return;}
+
+  if(id==="route"){
+    openDestinationInput("길찾기");
+    return;
   }
 
-  function openDetail(cat, noMove){
-    currentCategory=cat;
-    const menu=KRXA_TravelEngine.getMenu(cat);
-    document.getElementById("detailTitle").innerText=menu.label;
-    const list=document.getElementById("detailList");
-    list.innerHTML="";
-    menu.items.forEach(item=>{
-      const b=document.createElement("button");
-      b.className="detailBtn";
-      b.innerText=item.label;
-      b.onclick=()=>openGuide(item.label);
-      list.appendChild(b);
-    });
-        if(!noMove) goUserPage(4);
+  openModal(title,`<p>관제에 실행 데이터가 없습니다.</p>`);
+}
+
+function openComponentManager(id,title){
+  const gs=groupsOf(id);
+  const html=gs.map(g=>`
+    <div style="border-bottom:1px solid #e5e7eb;padding:10px 0">
+      <b>${g.title}</b><br><small>${(g.items||[]).filter(enabled).length}개</small><br>
+      <button class="btn blue" onclick="KRXA_App.openGroupList('${id}','${g.id}')">보기</button>
+    </div>
+  `).join("");
+  openModal(title,html||"표시할 그룹이 없습니다.");
+}
+
+function openDestinationInput(title){
+  openModal(title,`
+    <input id="destInput" placeholder="목적지를 입력하세요. 예: 부산 해운대">
+    <button class="btn blue" onclick="KRXA_App.openDirFromInput()">현재위치 ↔ 목적지 추천경로</button>
+  `);
+}
+
+async function getOrigin(){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation)return reject();
+    navigator.geolocation.getCurrentPosition(
+      p=>resolve(p.coords.latitude+","+p.coords.longitude),
+      reject,
+      {enableHighAccuracy:true,timeout:8000,maximumAge:60000}
+    );
+  });
+}
+
+function destinationOf(x){
+  if(!x)return"";
+  if(typeof x==="string")return x;
+  if(x.destination_type==="manual")return x.destination_value||x.address||x.map_query||x.name||"";
+  if(x.destination_type==="address")return x.address||x.map_query||x.name||"";
+  if(x.destination_type==="map_query")return x.map_query||x.address||x.name||"";
+  return x.address||x.map_query||x.name||x.title||"";
+}
+
+async function runItem(x){
+  if(!x||x.enabled===false)return;
+  const action=x.action_type||(x.url?"url":x.phone?"phone":"map_dir");
+  if(action==="url"&&x.url){window.open(x.url,"_blank");return;}
+  if(action==="phone"&&x.phone){location.href="tel:"+x.phone;return;}
+  if(action==="map_search"){
+    const q=x.map_query||x.address||x.name;
+    if(q)window.open("https://www.google.com/maps/search/"+encodeURIComponent(q),"_blank");
+    return;
   }
+  if(action==="m2m"){goUserPage(5);return;}
 
-  function openGuide(label){
-    openModal(label+" 안내", KRXA_TravelEngine.buildGuideHtml(currentCategory,label));
+  const dest=destinationOf(x);
+  if(!dest){alert("목적지가 없습니다.");return;}
+  try{
+    const origin=await getOrigin();
+    window.open("https://www.google.com/maps/dir/"+encodeURIComponent(origin)+"/"+encodeURIComponent(dest),"_blank");
+  }catch(e){
+    window.open("https://www.google.com/maps/dir//"+encodeURIComponent(dest),"_blank");
   }
+}
 
-  function openLinkManager(cat){
-    if(cat) currentCategory=cat;
-    openModal("사이트 등록/삭제", KRXA_UserLinks.buildManagerHtml(currentCategory));
-  }
+async function openDirFromInput(){
+  const v=document.getElementById("destInput")?.value||"";
+  if(!v.trim()){alert("목적지를 입력하세요.");return;}
+  await runItem({name:v,address:v,action_type:"map_dir",travel_mode:"recommend",origin_type:"current_location",destination_type:"manual",destination_value:v,enabled:true});
+}
 
-  function refreshLinkManager(cat){
-    openLinkManager(cat);
-    if(cat===currentCategory){
-      document.getElementById("detailLinks").innerHTML=KRXA_UserLinks.buildLinksHtml(cat);
-    }
-  }
+function openModal(title,html){
+  document.getElementById("modalTitle").textContent=title;
+  document.getElementById("modalBody").innerHTML=html;
+  document.getElementById("modal").style.display="block";
+}
+function closeModal(){document.getElementById("modal").style.display="none";}
 
-  function openModal(title,body){
-    document.getElementById("modalTitle").innerText=title;
-    document.getElementById("modalBody").innerHTML=body;
-    document.getElementById("modal").style.display="flex";
-  }
+function startHeroTimer(){
+  if(HERO_TIMER)clearInterval(HERO_TIMER);
+  HERO_TIMER=setInterval(()=>{HERO_INDEX++;render();},5000);
+}
 
-  function closeModal(){document.getElementById("modal").style.display="none"}
+window.KRXA_App={goUserPage,openGroupList,openModal,closeModal,openDirFromInput};
+window.KRXA_RunItem=runItem;
 
-  function openMedia(type){
-    document.getElementById(type==="photo"?"cameraPhoto":"cameraVideo").click();
-  }
-
-  window.KRXA_App={
-    goPage,goUserPage,openDetail,openGuide,openLinkManager,refreshLinkManager,openModal,closeModal,openMedia
-  };
-
-  buildHub();
-  openDetail('food', true);
+(async function(){
+  await loadConfig();
   render();
-  if(window.KRXA_DeviceContext) KRXA_DeviceContext.init();
-  if(window.KRXA_Translate) KRXA_Translate.init();
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("/ui/service-worker.js").catch(()=>{});
-  }
+  startHeroTimer();
+  setInterval(async()=>{await loadConfig();render();},5000);
 })();
 </script>
-<script src="/ui/js/travel_page_layout.js?v=3"></script>
-<script src="/ui/js/travel_ui_components.js?v=1"></script>
-<script src="/ui/js/travel_hub_control.js"></script>
-<script src="/ui/js/admin_dynamic_bar_sync.js"></script>
-<script src="/ui/js/patch17_user_apply.js"></script>
-<script src="/ui/js/patch17_common_map_engine.js"></script>
 </body>
 </html>
