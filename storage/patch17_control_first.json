@@ -1,6 +1,6 @@
 {
   "version": "PATCH17_3_Travel_Control_Real_Structure_Build_v1",
-  "updatedAt": "20260624_161217",
+  "updatedAt": "20260624_163419",
   "principle": "관제 원본 기준 / DEV 실행 / USER 표시 / 관리자DB와 사용자기기DB 분리",
   "pages": [
     {
@@ -359,7 +359,9 @@
               "map_query": "늘봄집 수서본점",
               "url": "",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "최가네",
@@ -369,7 +371,9 @@
               "map_query": "최가네 부천",
               "url": "",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "허영만백반기행맛집",
@@ -379,7 +383,9 @@
               "map_query": "허영만 백반기행 맛집",
               "url": "",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },
@@ -397,7 +403,9 @@
               "map_query": "맛집",
               "url": "",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         }
@@ -441,7 +449,9 @@
               "map_query": "Google Maps",
               "url": "https://www.google.com/maps",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         }
@@ -468,7 +478,9 @@
               "map_query": "Google Hotels",
               "url": "https://www.google.com/travel/hotels",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "Agoda",
@@ -478,7 +490,9 @@
               "map_query": "Agoda",
               "url": "https://www.agoda.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "Booking",
@@ -488,7 +502,9 @@
               "map_query": "Booking",
               "url": "https://www.booking.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },
@@ -520,7 +536,9 @@
               "map_query": "Google Maps",
               "url": "https://www.google.com/maps",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         }
@@ -674,7 +692,9 @@
               "map_query": "Google Maps",
               "url": "https://www.google.com/maps",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "Naver Map",
@@ -684,7 +704,9 @@
               "map_query": "Naver Map",
               "url": "https://map.naver.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             },
             {
               "name": "Kakao Map",
@@ -694,7 +716,9 @@
               "map_query": "Kakao Map",
               "url": "https://map.kakao.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         }
@@ -798,7 +822,9 @@
               "map_query": "YouTube",
               "url": "https://www.youtube.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },
@@ -816,7 +842,9 @@
               "map_query": "Spotify",
               "url": "https://open.spotify.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },
@@ -850,7 +878,9 @@
               "map_query": "YouTube",
               "url": "https://www.youtube.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },
@@ -868,7 +898,9 @@
               "map_query": "Netflix",
               "url": "https://www.netflix.com",
               "phone": "",
-              "enabled": true
+              "enabled": true,
+              "action_type": "map_dir",
+              "travel_mode": "recommend"
             }
           ]
         },

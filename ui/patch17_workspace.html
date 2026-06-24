@@ -97,9 +97,9 @@ function defaultActionForComponent(){
 }
 function defaultTravelMode(){
   if(C==='taxi'||G==='bus'||G==='subway'||G==='map_provider') return 'transit';
-  if(C==='route') return 'driving';
+  if(C==='route') return 'recommend';
   if(C==='tour'||C==='shopping'||C==='food') return 'walking';
-  return 'driving';
+  return 'recommend';
 }
 
 function normalize(){
@@ -162,6 +162,7 @@ function render(){
     </select>
 
     <select onchange="item(${i}).travel_mode=this.value">
+      ${opt('recommend','추천',x.travel_mode)}
       ${opt('driving','자동차',x.travel_mode)}
       ${opt('transit','대중교통',x.travel_mode)}
       ${opt('walking','도보',x.travel_mode)}
