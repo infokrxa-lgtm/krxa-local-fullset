@@ -474,7 +474,6 @@ document.addEventListener("keydown", function(e){
       const m=menus[cat];
       const div=document.createElement("div");
       div.className="card";
-    v.setAttribute("data-admin-id","video");
       div.setAttribute("data-admin-id", cat);
       div.setAttribute("data-admin-source", "hubGrid");
       div.onclick=()=>openDetail(cat);
@@ -501,6 +500,7 @@ document.addEventListener("keydown", function(e){
     box.appendChild(p);
     const v=document.createElement("div");
     v.className="card";
+    v.setAttribute("data-admin-id","video");
     v.onclick=()=>openMedia("video");
     v.innerHTML="<span>🎥</span>동영상<small>기기 저장</small>";
     box.appendChild(v);
