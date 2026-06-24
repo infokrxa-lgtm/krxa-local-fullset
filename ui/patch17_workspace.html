@@ -357,5 +357,133 @@ function parseCsv(text){
 }
 load();
 </script>
+<script src="/ui/js/patch17_common_map_engine.js"></script>
+
+<script>
+/* PATCH17-7 Map App Manager UI */
+(function(){
+  const oldLoad = window.load;
+
+  async function api17(path,opt={}){
+    const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  }
+
+  window.openMapAppManager = async function(){
+    const d = await api17('/api/patch17/control-first?ts='+Date.now());
+    const data = d.data;
+    data.map_apps = data.map_apps || {default_app:"google_maps", apps:[]};
+
+    const html = `
+      <div style="position:fixed;inset:20px;background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px;z-index:9999;overflow:auto">
+        <h2>지도앱 관리</h2>
+        <p>기본맵은 Google Maps DIR 추천방식입니다. 추가 지도앱은 URL 템플릿을 수정해 적용합니다.</p>
+        <div id="mapAppRows"></div>
+        <button class="btn blue" onclick="addMapApp()">+ 지도앱 추가</button>
+        <button class="btn on" onclick="saveMapApps()">저장 / USER 반영</button>
+        <button class="btn red" onclick="document.getElementById('mapAppModal').remove()">닫기</button>
+      </div>
+    `;
+    const box=document.createElement('div');
+    box.id='mapAppModal';
+    box.innerHTML=html;
+    document.body.appendChild(box);
+
+    window.__MAP_APP_DATA = data;
+    renderMapApps();
+  };
+
+  window.renderMapApps = function(){
+    const data = window.__MAP_APP_DATA;
+    const rows = document.getElementById('mapAppRows');
+    const apps = (data.map_apps.apps || []);
+    rows.innerHTML = apps.map((a,i)=>`
+      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin:8px 0">
+        <b>${i+1}. ${a.name||a.id}</b>
+        <button class="btn ${a.enabled!==false?'on':'off'}" onclick="toggleMapApp(${i})">${a.enabled!==false?'ON':'OFF'}</button>
+        <button class="btn gray" onclick="setDefaultMapApp(${i})">${data.map_apps.default_app===a.id?'기본맵':'기본설정'}</button>
+        <button class="btn blue" onclick="testMapApp(${i})">테스트</button>
+        <button class="btn red" onclick="deleteMapApp(${i})">삭제</button>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;margin-top:8px">
+          <span>ID</span><input value="${a.id||''}" onchange="__MAP_APP_DATA.map_apps.apps[${i}].id=this.value">
+          <span>이름</span><input value="${a.name||''}" onchange="__MAP_APP_DATA.map_apps.apps[${i}].name=this.value">
+          <span>실행방식</span><input value="${a.mode||''}" onchange="__MAP_APP_DATA.map_apps.apps[${i}].mode=this.value">
+          <span>URL 템플릿</span><input value="${a.url_template||''}" onchange="__MAP_APP_DATA.map_apps.apps[${i}].url_template=this.value">
+          <span>설명</span><input value="${a.note||''}" onchange="__MAP_APP_DATA.map_apps.apps[${i}].note=this.value">
+        </div>
+        <small>템플릿 변수: {origin}, {destination}, {name}, {address}, {map_query}, {travelmode}</small>
+      </div>
+    `).join('');
+  };
+
+  window.toggleMapApp = function(i){
+    const a=__MAP_APP_DATA.map_apps.apps[i];
+    a.enabled=!(a.enabled!==false);
+    renderMapApps();
+  };
+
+  window.setDefaultMapApp = function(i){
+    __MAP_APP_DATA.map_apps.default_app = __MAP_APP_DATA.map_apps.apps[i].id;
+    renderMapApps();
+  };
+
+  window.deleteMapApp = function(i){
+    if(confirm('지도앱을 삭제할까요?')){
+      __MAP_APP_DATA.map_apps.apps.splice(i,1);
+      renderMapApps();
+    }
+  };
+
+  window.addMapApp = function(){
+    __MAP_APP_DATA.map_apps.apps.push({
+      id:'custom_map_'+Date.now(),
+      name:'사용자 지도앱',
+      enabled:true,
+      is_default:false,
+      mode:'custom_template',
+      supports_origin:true,
+      supports_destination:true,
+      supports_recommend:true,
+      supports_transit:false,
+      url_template:'https://www.google.com/maps/dir/{origin}/{destination}',
+      note:'관리자 추가 지도앱'
+    });
+    renderMapApps();
+  };
+
+  window.testMapApp = async function(i){
+    const app=__MAP_APP_DATA.map_apps.apps[i];
+    const origin='37.3973061,126.9233094';
+    const destination='부산 해운대';
+    const url=(window.KRXA_MapEngine && KRXA_MapEngine.fillTemplate)
+      ? KRXA_MapEngine.fillTemplate(app.url_template, origin, destination, {name:destination,address:destination,map_query:destination})
+      : app.url_template.replaceAll('{origin}',encodeURIComponent(origin)).replaceAll('{destination}',encodeURIComponent(destination));
+    window.open(url,'_blank');
+  };
+
+  window.saveMapApps = async function(){
+    const d=await api17('/api/patch17/control-first/save',{
+      method:'POST',
+      body:JSON.stringify(__MAP_APP_DATA)
+    });
+    alert('지도앱 저장 완료 / USER 반영');
+    document.getElementById('mapAppModal').remove();
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const bar=document.querySelector('.actionbar');
+    if(bar && !document.getElementById('mapAppMgrBtn')){
+      const btn=document.createElement('button');
+      btn.id='mapAppMgrBtn';
+      btn.className='btn blue';
+      btn.textContent='지도앱 관리';
+      btn.onclick=openMapAppManager;
+      bar.appendChild(btn);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

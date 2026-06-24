@@ -1,6 +1,6 @@
 {
   "version": "PATCH17_3_Travel_Control_Real_Structure_Build_v1",
-  "updatedAt": "20260624_030519",
+  "updatedAt": "20260624_161217",
   "principle": "관제 원본 기준 / DEV 실행 / USER 표시 / 관리자DB와 사용자기기DB 분리",
   "pages": [
     {
@@ -1114,5 +1114,49 @@
         "storage": "device"
       }
     }
+  },
+  "map_apps": {
+    "default_app": "google_maps",
+    "apps": [
+      {
+        "id": "google_maps",
+        "name": "Google Maps",
+        "enabled": true,
+        "is_default": true,
+        "mode": "google_dir_recommend",
+        "supports_origin": true,
+        "supports_destination": true,
+        "supports_recommend": true,
+        "supports_transit": true,
+        "url_template": "https://www.google.com/maps/dir/{origin}/{destination}",
+        "note": "기본맵. 출발지↔목적지 추천 경로 방식"
+      },
+      {
+        "id": "naver_map",
+        "name": "Naver Map",
+        "enabled": true,
+        "is_default": false,
+        "mode": "custom_template",
+        "supports_origin": true,
+        "supports_destination": true,
+        "supports_recommend": true,
+        "supports_transit": true,
+        "url_template": "https://map.naver.com/p/directions/{origin}/{destination}",
+        "note": "추가 지도앱 템플릿. 실제 URL은 테스트 후 관제에서 수정"
+      },
+      {
+        "id": "kakao_map",
+        "name": "Kakao Map",
+        "enabled": false,
+        "is_default": false,
+        "mode": "custom_template",
+        "supports_origin": true,
+        "supports_destination": true,
+        "supports_recommend": true,
+        "supports_transit": true,
+        "url_template": "https://map.kakao.com/link/to/{destination}",
+        "note": "추가 지도앱 템플릿. 실제 URL은 테스트 후 관제에서 수정"
+      }
+    ]
   }
 }
