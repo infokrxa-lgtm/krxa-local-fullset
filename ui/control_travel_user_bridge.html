@@ -2,36 +2,38 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>PATCH19 User UI Mirror Control</title>
+<title>PATCH20-1 Travel V1 Full Flow Control</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
 .wrap{padding:16px}
-.panel{background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
-.grid{display:grid;grid-template-columns:420px 1fr;gap:16px}
-.phone{background:#f8fafc;border:1px solid #cbd5e1;border-radius:22px;padding:12px;max-height:82vh;overflow:auto}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
+.grid{display:grid;grid-template-columns:430px 1fr;gap:16px}
+.left,.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;padding:14px}
 .page{border:1px solid #dbe3ee;border-radius:16px;margin:10px 0;background:white;overflow:hidden}
 .head{background:#e2e8f0;padding:10px;font-weight:900;cursor:pointer}
 .head.active{background:#2563eb;color:white}
 .body{display:none;padding:10px}.body.open{display:block}
-.item{border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:7px 0;background:#fff;cursor:pointer}
+.item{border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:7px 0;background:white;cursor:pointer}
 .item:hover{background:#eff6ff}
 .badge{float:right;font-size:12px;color:#64748b}
 .btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:3px}
 .blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
-.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;padding:16px}
+.flowbox{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:8px 0}
+small{color:#64748b}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="panel">
-<h2>PATCH19 · 사용자 UI 미러 관제</h2>
-<p>사용자 UI 1~8페이지를 그대로 기준으로 보고, 항목 클릭 시 PATCH17 작업창에서 수정합니다.</p>
+<h2>PATCH20-1 · Travel V1 전체 흐름 관제</h2>
+<p>항공·호텔·식당·교통·길찾기·관광·쇼핑·통화·말대말·SOS 전체 흐름을 관리합니다.</p>
 <div class="grid">
-  <div class="phone" id="mirror"></div>
+  <div class="left" id="mirror"></div>
   <div class="right">
     <h2 id="selTitle">선택 없음</h2>
-    <p id="selDesc">좌측 사용자 UI 항목을 선택하세요.</p>
+    <p id="selDesc">좌측에서 사용자 UI 항목을 선택하세요.</p>
+    <div id="flow"></div>
     <div id="actions"></div>
   </div>
 </div>
@@ -41,75 +43,66 @@ body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
 <script>
 let DATA=null, OPEN=1, SELECTED=null;
 
-const PAGE_MAP = [
+const PAGE_FLOW = [
   {page:1,title:"Discovery Home",items:[
-    {id:"hero",title:"Hero 회전",component:"hero",group:"baekban",note:"PATCH17 Hero 작업창 유지"},
-    {id:"mini_talk",title:"미니 말대말",component:"m2m_link",group:"connect"}
+    {id:"gps",title:"GPS/날짜/시간/장소",component:"gps",group:"status",type:"status"},
+    {id:"hero",title:"Hero 회전",component:"hero",group:"baekban",type:"flow"},
+    {id:"mini_talk",title:"미니 말대말",component:"m2m_link",group:"connect",type:"link"}
   ]},
   {page:2,title:"Quick Action",items:[
-    {id:"gps",title:"GPS/위치시간바",component:"gps",group:"default"},
-    {id:"food_hero",title:"맛집 추천 영역",component:"food_hero",group:"recommend",note:"PATCH17 맛집 작업창 유지"},
-    {id:"food",title:"식당",component:"food",group:"recommend"},
-    {id:"taxi",title:"교통",component:"taxi",group:"taxi"},
-    {id:"route",title:"길찾기",component:"route",group:"map_provider"},
-    {id:"sos",title:"SOS",component:"sos",group:"police"},
-    {id:"mini_talk",title:"미니 말대말",component:"m2m_link",group:"connect"}
+    {id:"gps",title:"GPS/위치시간바",component:"gps",group:"status",type:"status"},
+    {id:"food_hero",title:"맛집 추천 영역",component:"food",group:"recommend",type:"flow"},
+    {id:"food",title:"식당",component:"food",group:"recommend",type:"flow"},
+    {id:"taxi",title:"교통",component:"taxi",group:"taxi",type:"flow"},
+    {id:"route",title:"길찾기",component:"route",group:"destination",type:"flow"},
+    {id:"sos",title:"SOS",component:"sos",group:"police",type:"flow"}
   ]},
   {page:3,title:"Travel Hub",items:[
-    {id:"airport",title:"공항",component:"airport",group:"default_sites"},
-    {id:"hotel",title:"호텔",component:"hotel",group:"default_sites"},
-    {id:"food",title:"식당/맛집",component:"food",group:"recommend"},
-    {id:"taxi",title:"교통",component:"taxi",group:"taxi"},
-    {id:"route",title:"길찾기",component:"route",group:"map_provider"},
-    {id:"tour",title:"관광",component:"tour",group:"recommend"},
-    {id:"shopping",title:"쇼핑",component:"shopping",group:"recommend"},
-    {id:"music",title:"음악",component:"music",group:"youtube"},
-    {id:"tv",title:"TV시청",component:"tv",group:"youtube"},
-    {id:"call",title:"통화",component:"call",group:"phone"},
-    {id:"photo",title:"사진",component:"photo",group:"camera"},
-    {id:"video",title:"동영상",component:"video",group:"camera"}
+    {id:"airport",title:"항공/공항",component:"airport",group:"flight_sites",type:"flow"},
+    {id:"hotel",title:"호텔",component:"hotel",group:"default_sites",type:"flow"},
+    {id:"food",title:"식당/맛집",component:"food",group:"recommend",type:"flow"},
+    {id:"taxi",title:"교통",component:"taxi",group:"taxi",type:"flow"},
+    {id:"route",title:"길찾기",component:"route",group:"destination",type:"flow"},
+    {id:"tour",title:"관광",component:"tour",group:"recommend",type:"flow"},
+    {id:"shopping",title:"쇼핑",component:"shopping",group:"recommend",type:"flow"},
+    {id:"music",title:"음악",component:"music",group:"youtube",type:"external"},
+    {id:"tv",title:"TV시청",component:"tv",group:"youtube",type:"external"},
+    {id:"call",title:"통화",component:"call",group:"phone",type:"flow"},
+    {id:"photo",title:"사진",component:"photo",group:"camera",type:"device"},
+    {id:"video",title:"동영상",component:"video",group:"camera",type:"device"}
   ]},
   {page:4,title:"Detail Result",items:[
-    {id:"detail_list",title:"상세 결과 리스트",component:"detail_list",group:"result_list"},
-    {id:"map",title:"지도",component:"detail_list",group:"map"},
-    {id:"reservation",title:"예약/사이트",component:"detail_list",group:"reservation"},
-    {id:"phone",title:"전화",component:"detail_list",group:"phone"},
-    {id:"photo",title:"사진",component:"detail_list",group:"photo"},
-    {id:"video",title:"동영상",component:"detail_list",group:"video"},
-    {id:"mini_talk",title:"말하기 연결",component:"m2m_link",group:"connect"}
+    {id:"detail_list",title:"상세 결과 리스트",component:"detail_list",group:"result_list",type:"flow"},
+    {id:"map",title:"지도",component:"route",group:"map_apps",type:"map"},
+    {id:"reservation",title:"예약/사이트",component:"hotel",group:"default_sites",type:"external"},
+    {id:"phone",title:"전화",component:"call",group:"phone",type:"phone"},
+    {id:"mini_talk",title:"말하기 연결",component:"m2m_link",group:"connect",type:"link"}
   ]},
   {page:5,title:"말대말 통역",items:[
-    {id:"m2m_link",title:"말대말 연결",component:"m2m_link",group:"connect"},
-    {id:"auto",title:"자동통역",component:"m2m_link",group:"language"},
-    {id:"lang_more",title:"기타 언어 선택",component:"m2m_link",group:"language"},
-    {id:"mic",title:"마이크",component:"m2m_link",group:"mic"},
-    {id:"text_input",title:"텍스트 입력",component:"m2m_link",group:"text"}
+    {id:"m2m_link",title:"말대말 연결",component:"m2m_link",group:"connect",type:"link"},
+    {id:"language",title:"언어 설정",component:"m2m_link",group:"language",type:"setting"},
+    {id:"mic",title:"마이크",component:"m2m_link",group:"mic",type:"engine"},
+    {id:"text",title:"텍스트 입력",component:"m2m_link",group:"text",type:"engine"}
   ]},
   {page:6,title:"통화/메신저",items:[
-    {id:"phone",title:"전화",component:"call",group:"phone"},
-    {id:"whatsapp",title:"WhatsApp",component:"call",group:"whatsapp"},
-    {id:"wechat",title:"WeChat",component:"call",group:"wechat"},
-    {id:"hotel_call",title:"호텔 전화",component:"call",group:"user_contacts"},
-    {id:"restaurant_call",title:"식당 전화",component:"call",group:"user_contacts"},
-    {id:"taxi_call",title:"택시 전화",component:"call",group:"user_contacts"}
+    {id:"phone",title:"전화",component:"call",group:"phone",type:"phone"},
+    {id:"whatsapp",title:"WhatsApp",component:"call",group:"whatsapp",type:"external"},
+    {id:"wechat",title:"WeChat",component:"call",group:"wechat",type:"external"},
+    {id:"user_contacts",title:"사용자 연락처",component:"call",group:"user_contacts",type:"user_device"}
   ]},
   {page:7,title:"사용내역/기억",items:[
-    {id:"recent_translate",title:"최근 통역",component:"memory_loop",group:"recent_translate"},
-    {id:"recent_travel",title:"최근 여행",component:"memory_loop",group:"recent_travel"},
-    {id:"memory_loop",title:"KRXA 기억 루프",component:"memory_loop",group:"memory_loop"},
-    {id:"continue_translate",title:"통역 계속하기",component:"m2m_link",group:"connect"},
-    {id:"travel_menu",title:"여행 메뉴 이동",component:"route",group:"destination"},
-    {id:"clear_history",title:"사용내역 초기화",component:"memory_loop",group:"clear_history"}
+    {id:"recent_translate",title:"최근 통역",component:"memory_loop",group:"recent_translate",type:"history"},
+    {id:"recent_travel",title:"최근 여행",component:"memory_loop",group:"recent_travel",type:"history"},
+    {id:"memory_loop",title:"KRXA 기억 루프",component:"memory_loop",group:"memory_loop",type:"memory"},
+    {id:"clear_history",title:"사용내역 초기화",component:"memory_loop",group:"clear_history",type:"device"}
   ]},
   {page:8,title:"SOS",items:[
-    {id:"sos",title:"SOS",component:"sos",group:"police"},
-    {id:"police",title:"경찰",component:"sos",group:"police"},
-    {id:"emergency",title:"구급",component:"sos",group:"emergency"},
-    {id:"hospital",title:"병원",component:"sos",group:"hospital"},
-    {id:"embassy",title:"대사관",component:"sos",group:"embassy"},
-    {id:"insurance",title:"보험",component:"sos",group:"insurance"},
-    {id:"location_share",title:"위치공유",component:"sos",group:"location_share"},
-    {id:"offline_phrase",title:"오프라인 생존문장",component:"sos",group:"offline_phrase"}
+    {id:"police",title:"경찰",component:"sos",group:"police",type:"phone"},
+    {id:"emergency",title:"구급",component:"sos",group:"emergency",type:"phone"},
+    {id:"hospital",title:"병원",component:"sos",group:"hospital",type:"map"},
+    {id:"embassy",title:"대사관",component:"sos",group:"embassy",type:"map"},
+    {id:"insurance",title:"보험",component:"sos",group:"insurance",type:"external"},
+    {id:"offline_phrase",title:"오프라인 생존문장",component:"sos",group:"offline_phrase",type:"content"}
   ]}
 ];
 
@@ -125,19 +118,23 @@ async function load(){
   render();
 }
 
-function isOn(id){
-  const pages=DATA.pages||[];
-  for(const p of pages){
-    const found=(p.items||[]).find(x=>x.id===id);
-    if(found) return found.enabled!==false;
-  }
+function component(id){return DATA.components && DATA.components[id]}
+function group(componentId, groupId){
+  const c=component(componentId);
+  return c && c.groups ? c.groups.find(g=>g.id===groupId) : null;
+}
+function isOn(item){
+  const c=component(item.component);
+  const g=group(item.component,item.group);
+  if(c && c.enabled===false) return false;
+  if(g && g.enabled===false) return false;
   return true;
 }
 
 function render(){
   const box=document.getElementById('mirror');
   box.innerHTML='';
-  PAGE_MAP.forEach(p=>{
+  PAGE_FLOW.forEach(p=>{
     const div=document.createElement('div');
     div.className='page';
 
@@ -151,7 +148,9 @@ function render(){
     p.items.forEach(it=>{
       const row=document.createElement('div');
       row.className='item';
-      row.innerHTML=`<b>${it.title}</b><span class="badge">${isOn(it.id)?'ON':'OFF'}</span><br><small>${it.component} / ${it.group}</small>`;
+      const g=group(it.component,it.group);
+      const count=g && g.items ? g.items.filter(x=>x.enabled!==false).length : 0;
+      row.innerHTML=`<b>${it.title}</b><span class="badge">${isOn(it)?'ON':'OFF'}</span><br><small>${it.component} / ${it.group} · ${count}개</small>`;
       row.onclick=()=>selectItem(p,it);
       body.appendChild(row);
     });
@@ -164,43 +163,73 @@ function render(){
 
 function selectItem(page,item){
   SELECTED={page,item};
+  const g=group(item.component,item.group);
+  const c=component(item.component);
+
   document.getElementById('selTitle').textContent='PAGE '+page.page+' · '+item.title;
-  document.getElementById('selDesc').textContent=item.note || '선택 항목의 연결값/실행값/ON-OFF를 관리합니다.';
+  document.getElementById('selDesc').textContent='사용자 클릭 흐름과 최종 실행값을 관리합니다.';
+
+  document.getElementById('flow').innerHTML=`
+    <div class="flowbox">
+      <b>사용자 흐름</b><br>
+      사용자 화면: ${item.title}<br>
+      ↓ 클릭<br>
+      중간 리스트/그룹: ${g?g.title:item.group}<br>
+      ↓ 항목 클릭<br>
+      최종 실행: ${executionText(item)}
+    </div>
+    <div class="flowbox">
+      <b>관리 대상</b><br>
+      표시명 / 순서 / ON-OFF / 신규 / 수정 / 삭제 / 주소 / 지도검색어 / URL / 전화 / 지도앱
+    </div>
+  `;
 
   document.getElementById('actions').innerHTML=`
-    <button class="btn ${isOn(item.id)?'green':'red'}" onclick="toggleSelected()">${isOn(item.id)?'ON':'OFF'} 전환</button>
-    <button class="btn blue" onclick="openWorkspace('${item.component}','${item.group}')">작업창 열기</button>
+    <button class="btn ${isOn(item)?'green':'red'}" onclick="toggleGroup()">${isOn(item)?'ON':'OFF'} 전환</button>
+    <button class="btn blue" onclick="openWorkspace()">작업창 열기</button>
+    <button class="btn gray" onclick="openMapApps()">지도앱 관리</button>
     <button class="btn gray" onclick="openUser()">사용자 화면 확인</button>
     <button class="btn green" onclick="save()">완료 / USER 반영</button>
   `;
 }
 
-function findOrCreatePageItem(id,title){
-  DATA.pages=DATA.pages||[];
-  let page=(DATA.pages||[]).find(p=>(p.items||[]).some(x=>x.id===id));
-  if(!page){
-    page=DATA.pages[0] || {page:1,title:'Discovery Home',items:[]};
-    if(!DATA.pages.length) DATA.pages.push(page);
-  }
-  page.items=page.items||[];
-  let item=page.items.find(x=>x.id===id);
-  if(!item){
-    item={id,title,enabled:true};
-    page.items.push(item);
-  }
-  return item;
+function executionText(item){
+  if(item.type==='status') return '사용자 기기 자동값 확인';
+  if(item.type==='link') return '기존 말대말 엔진 연결';
+  if(item.type==='phone') return '전화 또는 메신저 실행';
+  if(item.type==='map') return 'Google Maps DIR 추천방식';
+  if(['flow','external'].includes(item.type)) return '외부 앱/사이트/지도 실행';
+  if(item.type==='user_device') return '사용자 기기 저장 데이터';
+  return '관제 설정값 기준 실행';
 }
 
-function toggleSelected(){
-  if(!SELECTED)return;
-  const it=findOrCreatePageItem(SELECTED.item.id, SELECTED.item.title);
-  it.enabled=!(it.enabled!==false);
-  selectItem(SELECTED.page, SELECTED.item);
+function ensureCompGroup(){
+  const item=SELECTED.item;
+  DATA.components=DATA.components||{};
+  const c=DATA.components[item.component] ||= {title:item.title,groups:[]};
+  c.groups=c.groups||[];
+  let g=c.groups.find(x=>x.id===item.group);
+  if(!g){
+    g={id:item.group,title:item.title,enabled:true,items:[]};
+    c.groups.push(g);
+  }
+  return g;
+}
+
+function toggleGroup(){
+  const g=ensureCompGroup();
+  g.enabled=!(g.enabled!==false);
+  selectItem(SELECTED.page,SELECTED.item);
   render();
 }
 
-function openWorkspace(component,group){
-  window.open('/control/patch17-workspace?component='+encodeURIComponent(component)+'&group='+encodeURIComponent(group),'_blank');
+function openWorkspace(){
+  const item=SELECTED.item;
+  window.open('/control/patch17-workspace?component='+encodeURIComponent(item.component)+'&group='+encodeURIComponent(item.group),'_blank');
+}
+
+function openMapApps(){
+  window.open('/control/patch17-workspace?component=route&group=map_provider','_blank');
 }
 
 function openUser(){

@@ -1,6 +1,6 @@
 {
-  "version": "PATCH17_3_Travel_Control_Real_Structure_Build_v1",
-  "updatedAt": "20260624_163419",
+  "version": "PATCH20_1_Travel_Full_Flow_Control_Upgrade_v1",
+  "updatedAt": "20260624_211846",
   "principle": "관제 원본 기준 / DEV 실행 / USER 표시 / 관리자DB와 사용자기기DB 분리",
   "pages": [
     {
@@ -454,6 +454,18 @@
               "travel_mode": "recommend"
             }
           ]
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 맛집",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "route",
+          "title": "식당 길찾기",
+          "enabled": true,
+          "items": []
         }
       ],
       "user_storage": {
@@ -541,6 +553,24 @@
               "travel_mode": "recommend"
             }
           ]
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 호텔",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "route",
+          "title": "호텔 길찾기",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map_apps",
+          "title": "지도앱 선택",
+          "enabled": true,
+          "items": []
         }
       ],
       "user_storage": {
@@ -585,7 +615,7 @@
       }
     },
     "airport": {
-      "title": "공항",
+      "title": "항공/공항",
       "groups": [
         {
           "id": "default_sites",
@@ -613,6 +643,24 @@
           "title": "지도 연결",
           "enabled": true,
           "upload_download": false,
+          "items": []
+        },
+        {
+          "id": "flight_sites",
+          "title": "항공권 사이트",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "route",
+          "title": "공항 길찾기",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 공항",
+          "enabled": true,
           "items": []
         }
       ]
@@ -653,6 +701,18 @@
           "title": "지도앱",
           "enabled": true,
           "upload_download": false,
+          "items": []
+        },
+        {
+          "id": "map_apps",
+          "title": "교통 지도앱",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 교통",
+          "enabled": true,
           "items": []
         }
       ],
@@ -721,6 +781,24 @@
               "travel_mode": "recommend"
             }
           ]
+        },
+        {
+          "id": "google_recommend",
+          "title": "Google 추천경로",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "map_apps",
+          "title": "지도앱 선택",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "recent",
+          "title": "최근 목적지",
+          "enabled": true,
+          "items": []
         }
       ]
     },
@@ -761,6 +839,24 @@
           "enabled": true,
           "upload_download": false,
           "items": []
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 관광지",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "route",
+          "title": "관광지 길찾기",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "site",
+          "title": "관광 사이트",
+          "enabled": true,
+          "items": []
         }
       ],
       "user_storage": {
@@ -797,6 +893,18 @@
           "title": "지도 연결",
           "enabled": true,
           "upload_download": false,
+          "items": []
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 쇼핑",
+          "enabled": true,
+          "items": []
+        },
+        {
+          "id": "route",
+          "title": "쇼핑 길찾기",
+          "enabled": true,
           "items": []
         }
       ],
@@ -918,7 +1026,7 @@
       }
     },
     "call": {
-      "title": "통화",
+      "title": "통화/메신저",
       "groups": [
         {
           "id": "phone",
@@ -1190,5 +1298,13 @@
         "note": "추가 지도앱 템플릿. 실제 URL은 테스트 후 관제에서 수정"
       }
     ]
+  },
+  "travel_full_flow_principle": {
+    "user_ui": "기존 사용자 UI 유지",
+    "control": "사용자 UI 클릭 흐름 전체를 미러링",
+    "workspace": "각 항목 클릭 시 작업창에서 리스트/실행값 수정",
+    "execution": "외부 앱/사이트/지도/말대말 엔진 연결",
+    "map_default": "Google Maps DIR 추천방식 https://www.google.com/maps/dir/{origin}/{destination}",
+    "user_storage": "사용자 등록 정보는 사용자 기기 저장"
   }
 }
