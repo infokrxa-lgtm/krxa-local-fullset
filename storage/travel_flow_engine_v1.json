@@ -1,37 +1,34 @@
 {
-  "version": "PATCH21_Flow_Engine_Travel_UI_Design_Layer_v1",
-  "updatedAt": "20260625_103330",
-  "principle": "Flow Engine은 실행 구조, Travel UI Design Layer는 사용자 경험/디자인",
+  "version": "PATCH21_FULL_Flow_Engine_Audit_v1",
+  "updatedAt": "20260625_113450",
+  "principle": "사용자 UI 디자인은 유지하고, 관제는 Page가 아니라 Travel Flow 전체를 관리한다.",
   "default_map": {
     "name": "Google Maps",
     "mode": "google_dir_recommend",
     "template": "https://www.google.com/maps/dir/{origin}/{destination}",
-    "note": "현재위치 ↔ 목적지 추천경로. 교통수단은 Google Maps에서 사용자 선택"
+    "origin": "device_current_location",
+    "destination": "selected_place_or_user_input",
+    "transport": "user_select_inside_map"
   },
   "flows": [
     {
       "id": "hero",
       "title": "Hero Flow",
-      "ui_layer": "PAGE1 Hero 회전 디자인",
-      "steps": [
-        {
-          "id": "gps",
-          "title": "GPS/날짜/시간/장소 확인",
-          "type": "device_status",
-          "editable": false
-        },
-        {
-          "id": "rotation",
-          "title": "Hero 회전 그룹",
-          "type": "group",
-          "editable": true
-        },
+      "ui_layer": "PAGE1 Hero 회전 / PAGE2 맛집 Hero",
+      "multi_rotation_groups": true,
+      "groups": [
         {
           "id": "baekban",
           "title": "허영만 백반기행",
           "type": "place_list",
           "editable": true,
           "upload_download": true
+        },
+        {
+          "id": "near_food",
+          "title": "주변맛집",
+          "type": "place_list",
+          "editable": true
         },
         {
           "id": "near_tour",
@@ -46,17 +43,33 @@
           "editable": true
         },
         {
-          "id": "map",
-          "title": "장소 클릭 → Google Maps 추천경로",
-          "type": "map_dir",
+          "id": "custom",
+          "title": "관리자 추가 그룹",
+          "type": "place_list",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "Hero 클릭",
+        "회전그룹 선택",
+        "리스트 표시",
+        "장소 선택",
+        "상세/지도/전화/URL 실행"
+      ],
+      "control": [
+        "그룹 추가",
+        "그룹 수정",
+        "그룹 삭제",
+        "ON/OFF",
+        "순서",
+        "회전시간",
+        "엑셀 업로드/다운로드"
       ]
     },
     {
       "id": "flight",
       "title": "항공/공항 Flow",
-      "ui_layer": "PAGE3 공항 카드",
+      "ui_layer": "공항 카드",
       "recommended_sites": [
         {
           "name": "Google Flights",
@@ -71,31 +84,36 @@
           "url": "https://www.airport.kr"
         }
       ],
-      "steps": [
+      "groups": [
         {
-          "id": "site",
-          "title": "항공권/공항 사이트",
+          "id": "flight_sites",
+          "title": "항공권 사이트",
           "type": "url_list",
           "editable": true
         },
         {
           "id": "airport_info",
           "title": "공항 정보",
-          "type": "info",
+          "type": "info_list",
           "editable": true
         },
         {
           "id": "route",
-          "title": "현재위치 ↔ 공항",
+          "title": "공항 길찾기",
           "type": "map_dir",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "공항 클릭",
+        "항공권/공항정보/길찾기 선택",
+        "사이트 또는 지도앱 실행"
       ]
     },
     {
       "id": "hotel",
       "title": "호텔 Flow",
-      "ui_layer": "PAGE3 호텔 카드",
+      "ui_layer": "호텔 카드",
       "recommended_sites": [
         {
           "name": "Google Hotels",
@@ -110,7 +128,7 @@
           "url": "https://www.booking.com"
         }
       ],
-      "steps": [
+      "groups": [
         {
           "id": "default_sites",
           "title": "기본 예약사이트",
@@ -125,7 +143,7 @@
         },
         {
           "id": "route",
-          "title": "현재위치 ↔ 호텔",
+          "title": "호텔 길찾기",
           "type": "map_dir",
           "editable": true
         },
@@ -135,27 +153,18 @@
           "type": "phone",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "호텔 클릭",
+        "예약사이트/사용자호텔/길찾기/전화",
+        "외부 실행"
       ]
     },
     {
       "id": "food",
       "title": "식당/맛집 Flow",
-      "ui_layer": "PAGE2 맛집 영역 / PAGE3 식당 카드",
-      "recommended_sites": [
-        {
-          "name": "Google Maps",
-          "url": "https://www.google.com/maps"
-        },
-        {
-          "name": "Naver Map",
-          "url": "https://map.naver.com"
-        },
-        {
-          "name": "Kakao Map",
-          "url": "https://map.kakao.com"
-        }
-      ],
-      "steps": [
+      "ui_layer": "PAGE2 맛집 / PAGE3 식당",
+      "groups": [
         {
           "id": "recommend",
           "title": "추천리스트",
@@ -178,7 +187,7 @@
         },
         {
           "id": "route",
-          "title": "현재위치 ↔ 식당",
+          "title": "식당 길찾기",
           "type": "map_dir",
           "editable": true
         },
@@ -188,13 +197,19 @@
           "type": "phone",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "식당 클릭",
+        "추천/백반기행/사용자맛집",
+        "식당 선택",
+        "지도/전화/예약 실행"
       ]
     },
     {
       "id": "transport",
       "title": "교통 Flow",
-      "ui_layer": "PAGE2/3 교통 카드",
-      "steps": [
+      "ui_layer": "교통 카드",
+      "groups": [
         {
           "id": "taxi",
           "title": "택시",
@@ -219,19 +234,19 @@
           "type": "map_template",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "교통 클릭",
+        "택시/버스/지하철 선택",
+        "목적지 입력",
+        "지도앱 실행"
       ]
     },
     {
       "id": "route",
       "title": "길찾기 Flow",
-      "ui_layer": "PAGE2/3 길찾기 카드",
-      "steps": [
-        {
-          "id": "origin",
-          "title": "출발지 = 사용자 현재위치",
-          "type": "device_location",
-          "editable": false
-        },
+      "ui_layer": "길찾기 카드",
+      "groups": [
         {
           "id": "destination",
           "title": "목적지 입력",
@@ -239,27 +254,46 @@
           "editable": true
         },
         {
-          "id": "google_dir",
-          "title": "Google Maps 추천경로",
+          "id": "google_recommend",
+          "title": "Google DIR 추천경로",
           "type": "map_dir_recommend",
           "editable": true
         },
         {
           "id": "map_apps",
-          "title": "Naver/Kakao 추가 지도앱",
+          "title": "Google/Naver/Kakao/Apple 지도앱",
           "type": "map_template",
           "editable": true
+        },
+        {
+          "id": "recent",
+          "title": "최근 목적지",
+          "type": "user_device_db",
+          "editable": false
         }
+      ],
+      "click_flow": [
+        "길찾기 클릭",
+        "목적지 입력",
+        "추천경로 보기",
+        "지도앱 선택",
+        "실행"
       ]
     },
     {
       "id": "tour",
       "title": "관광 Flow",
-      "ui_layer": "PAGE3 관광 카드",
-      "steps": [
+      "ui_layer": "관광 카드",
+      "groups": [
         {
           "id": "recommend",
           "title": "추천 관광지",
+          "type": "place_list",
+          "editable": true
+        },
+        {
+          "id": "festival",
+          "title": "지역축제",
           "type": "place_list",
           "editable": true
         },
@@ -271,23 +305,23 @@
         },
         {
           "id": "route",
-          "title": "현재위치 ↔ 관광지",
+          "title": "관광지 길찾기",
           "type": "map_dir",
           "editable": true
-        },
-        {
-          "id": "site",
-          "title": "관광 사이트",
-          "type": "url_list",
-          "editable": true
         }
+      ],
+      "click_flow": [
+        "관광 클릭",
+        "관광지/축제 선택",
+        "상세",
+        "지도/사이트 실행"
       ]
     },
     {
       "id": "shopping",
       "title": "쇼핑 Flow",
-      "ui_layer": "PAGE3 쇼핑 카드",
-      "steps": [
+      "ui_layer": "쇼핑 카드",
+      "groups": [
         {
           "id": "recommend",
           "title": "추천 쇼핑",
@@ -302,16 +336,27 @@
         },
         {
           "id": "route",
-          "title": "현재위치 ↔ 쇼핑장소",
+          "title": "쇼핑 길찾기",
           "type": "map_dir",
           "editable": true
+        },
+        {
+          "id": "site",
+          "title": "쇼핑 사이트",
+          "type": "url_list",
+          "editable": true
         }
+      ],
+      "click_flow": [
+        "쇼핑 클릭",
+        "쇼핑장소/사이트 선택",
+        "지도/사이트 실행"
       ]
     },
     {
       "id": "call",
       "title": "통화/메신저 Flow",
-      "ui_layer": "PAGE6 통화 화면",
+      "ui_layer": "PAGE6 통화",
       "recommended_sites": [
         {
           "name": "WhatsApp",
@@ -322,7 +367,7 @@
           "url": "https://www.wechat.com"
         }
       ],
-      "steps": [
+      "groups": [
         {
           "id": "phone",
           "title": "전화",
@@ -347,44 +392,51 @@
           "type": "user_device_db",
           "editable": false
         }
+      ],
+      "click_flow": [
+        "통화 클릭",
+        "전화/WhatsApp/WeChat 선택",
+        "실행"
       ]
     },
     {
       "id": "m2m",
       "title": "말대말 Flow",
       "ui_layer": "PAGE5 기존 말대말 화면 유지",
-      "steps": [
+      "groups": [
+        {
+          "id": "connect",
+          "title": "말대말 연결 표시",
+          "type": "control_toggle",
+          "editable": true
+        },
+        {
+          "id": "engine",
+          "title": "STT/번역/TTS 엔진",
+          "type": "m2m_engine",
+          "editable": false
+        },
         {
           "id": "language",
           "title": "언어/기타언어",
           "type": "m2m_engine",
           "editable": false
-        },
-        {
-          "id": "mic",
-          "title": "마이크",
-          "type": "m2m_engine",
-          "editable": false
-        },
-        {
-          "id": "translate",
-          "title": "STT/번역/TTS",
-          "type": "m2m_engine",
-          "editable": false
-        },
-        {
-          "id": "link",
-          "title": "Travel V1 연결 표시/숨김",
-          "type": "control_toggle",
-          "editable": true
         }
+      ],
+      "click_flow": [
+        "말대말 클릭",
+        "언어 선택",
+        "마이크",
+        "번역",
+        "TTS",
+        "계속대화"
       ]
     },
     {
       "id": "sos",
       "title": "SOS Flow",
-      "ui_layer": "PAGE8 SOS 화면",
-      "steps": [
+      "ui_layer": "PAGE8 SOS",
+      "groups": [
         {
           "id": "police",
           "title": "경찰 112",
@@ -410,11 +462,22 @@
           "editable": true
         },
         {
+          "id": "insurance",
+          "title": "보험",
+          "type": "url_or_phone",
+          "editable": true
+        },
+        {
           "id": "offline_phrase",
           "title": "오프라인 생존문장",
           "type": "content_list",
           "editable": true
         }
+      ],
+      "click_flow": [
+        "SOS 클릭",
+        "긴급 항목 선택",
+        "전화/지도/문장 실행"
       ]
     }
   ]

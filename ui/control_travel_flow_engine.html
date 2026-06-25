@@ -2,13 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>PATCH21 Flow Engine Control</title>
+<title>PATCH21 Full Flow Engine Audit</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
 .wrap{padding:16px}
 .panel{background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
-.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
 .left,.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;padding:14px}
 .flow{border:1px solid #e5e7eb;border-radius:14px;background:white;margin:8px 0;padding:12px;cursor:pointer}
 .flow.active{background:#dbeafe}
@@ -21,18 +21,19 @@ small{color:#64748b}
 <body>
 <div class="wrap">
 <div class="panel">
-<h2>PATCH21 · Flow Engine + Travel UI Design Layer</h2>
-<p>Flow는 실행 구조, 사용자 UI는 디자인 Layer입니다. 추천 사이트와 지도앱 연결값을 포함합니다.</p>
+<h2>PATCH21 통합 · Flow Engine + Full Travel Flow Audit</h2>
+<p>사용자 UI 디자인은 유지하고, 관제는 Hero/항공/호텔/식당/교통/길찾기/관광/쇼핑/통화/말대말/SOS 전체 Flow를 관리합니다.</p>
 <div class="grid">
   <div class="left" id="flowList"></div>
   <div class="right">
     <h2 id="title">Flow 선택</h2>
     <p id="desc">좌측 Flow를 선택하세요.</p>
-    <div id="steps"></div>
+    <div id="body"></div>
   </div>
 </div>
 </div>
 </div>
+
 <script>
 let FLOW=null, SELECTED=null;
 
@@ -40,17 +41,17 @@ async function load(){
   const r=await fetch('/api/patch21/flow-engine?ts='+Date.now(),{cache:'no-store'});
   const d=await r.json();
   FLOW=d.data;
-  render();
+  renderList();
 }
 
-function render(){
+function renderList(){
   const list=document.getElementById('flowList');
   list.innerHTML='';
   (FLOW.flows||[]).forEach(f=>{
     const div=document.createElement('div');
     div.className='flow '+(SELECTED&&SELECTED.id===f.id?'active':'');
     div.innerHTML='<b>'+f.title+'</b><br><small>'+f.ui_layer+'</small>';
-    div.onclick=()=>{SELECTED=f;renderDetail();render();};
+    div.onclick=()=>{SELECTED=f;renderList();renderDetail();};
     list.appendChild(div);
   });
 }
@@ -60,40 +61,53 @@ function renderDetail(){
   document.getElementById('title').textContent=f.title;
   document.getElementById('desc').textContent=f.ui_layer;
 
-  const siteHtml=(f.recommended_sites||[]).map(s=>
-    '<div class="step"><b>'+s.name+'</b><br><small>'+s.url+'</small><br><button class="btn gray" onclick="window.open(\\''+s.url+'\\',\\'_blank\\')">테스트</button></div>'
-  ).join('');
+  const flowHtml = `
+    <div class="step">
+      <b>사용자 클릭 흐름</b><br>
+      ${(f.click_flow||[]).map((x,i)=>`${i+1}. ${x}`).join('<br>')}
+    </div>
+  `;
 
-  document.getElementById('steps').innerHTML=
-    '<h3>Flow 단계</h3>'+
-    f.steps.map(st=>`
-      <div class="step">
-        <b>${st.title}</b><br>
-        <small>type=${st.type} / editable=${st.editable}</small><br>
-        ${st.editable?'<button class="btn blue" onclick="openWorkspace(\\''+f.id+'\\',\\''+st.id+'\\')">작업창</button>':'<button class="btn gray">자동/엔진 영역</button>'}
-      </div>
-    `).join('')+
-    '<h3>추천 사이트</h3>'+
-    (siteHtml||'<div class="step">추천 사이트 없음</div>')+
+  const groupHtml = (f.groups||[]).map(g=>`
+    <div class="step">
+      <b>${g.title}</b><br>
+      <small>id=${g.id} / type=${g.type} / editable=${g.editable}</small><br>
+      ${g.editable ? `<button class="btn blue" onclick="openWorkspace('${f.id}','${g.id}')">작업창</button>` : `<button class="btn gray">사용자 기기/엔진 영역</button>`}
+      ${g.upload_download ? `<button class="btn green" onclick="openWorkspace('${f.id}','${g.id}')">업로드/다운로드</button>` : ``}
+    </div>
+  `).join('');
+
+  const sites = (f.recommended_sites||[]).map(s=>`
+    <div class="step">
+      <b>${s.name}</b><br>
+      <small>${s.url}</small><br>
+      <button class="btn gray" onclick="window.open('${s.url}','_blank')">테스트</button>
+    </div>
+  `).join('');
+
+  document.getElementById('body').innerHTML =
+    flowHtml +
+    '<h3>관리 그룹</h3>' + groupHtml +
+    '<h3>추천 사이트</h3>' + (sites || '<div class="step">추천 사이트 없음</div>') +
     '<h3>기본 지도</h3><div class="step"><b>'+FLOW.default_map.name+'</b><br><small>'+FLOW.default_map.template+'</small></div>';
 }
 
-function openWorkspace(flowId, stepId){
+function openWorkspace(flowId, groupId){
   const map={
-    hero:['hero','baekban'],
-    flight:['airport','flight_sites'],
-    hotel:['hotel','default_sites'],
-    food:['food','recommend'],
-    transport:['taxi','taxi'],
-    route:['route','destination'],
-    tour:['tour','recommend'],
-    shopping:['shopping','recommend'],
-    call:['call','phone'],
-    m2m:['m2m_link','connect'],
-    sos:['sos','police']
+    hero:'hero',
+    flight:'airport',
+    hotel:'hotel',
+    food:'food',
+    transport:'taxi',
+    route:'route',
+    tour:'tour',
+    shopping:'shopping',
+    call:'call',
+    m2m:'m2m_link',
+    sos:'sos'
   };
-  const pair=map[flowId]||[flowId,stepId];
-  window.open('/control/patch17-workspace?component='+pair[0]+'&group='+pair[1],'_blank');
+  const component=map[flowId] || flowId;
+  window.open('/control/patch17-workspace?component='+encodeURIComponent(component)+'&group='+encodeURIComponent(groupId),'_blank');
 }
 
 load();
