@@ -901,8 +901,14 @@ document.addEventListener("keydown", function(e){
       if(
         el.classList.contains("discoveryHero") ||
         el.classList.contains("travelHero") ||
+        el.classList.contains("foodHero") ||
+        el.classList.contains("travelFoodHero") ||
         el.querySelector("[data-component='hero']") ||
-        el.getAttribute("data-component") === "hero"
+        el.querySelector("[data-component='food_hero']") ||
+        el.getAttribute("data-component") === "hero" ||
+        el.getAttribute("data-component") === "food_hero" ||
+        el.getAttribute("data-admin-id") === "hero" ||
+        el.getAttribute("data-admin-id") === "food_hero"
       ){
         return;
       }
