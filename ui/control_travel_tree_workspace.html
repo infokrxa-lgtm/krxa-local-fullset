@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PATCH23 Travel Tree Workspace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
+.wrap{padding:16px}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}
+.left,.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;padding:14px;min-height:80vh}
+.node{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:10px;margin:7px 0;cursor:pointer}
+.node.active{background:#dbeafe}
+.child{margin-left:18px}
+.btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:3px}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.gray{background:#64748b;color:white}
+input,select{padding:9px;border:1px solid #cbd5e1;border-radius:10px;width:100%;box-sizing:border-box;margin:4px 0}
+.row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 80px 60px 60px 70px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:7px}
+.small{color:#64748b;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="panel">
+<h2>PATCH23 · Travel Tree Workspace</h2>
+<p>Flow → 그룹 → 리스트 → 실행값을 한 화면에서 관리합니다.</p>
+<div class="grid">
+  <div class="left">
+    <h3>Travel Flow Tree</h3>
+    <div id="tree"></div>
+  </div>
+  <div class="right">
+    <h3 id="title">선택 없음</h3>
+    <div id="body">좌측 항목을 선택하세요.</div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+let DATA=null;
+let SELECTED=null;
+
+const TREE_MAP=[
+  {id:"gps",title:"GPS/날짜/시간/장소",type:"status"},
+  {id:"hero",title:"Hero 회전",type:"hero",groups:["baekban","festival","near_food","near_tour"]},
+  {id:"food",title:"식당/맛집",type:"list",groups:["recommend","baekban","user_saved","route"]},
+  {id:"hotel",title:"호텔/숙박",type:"list",groups:["llm_recommend","default_sites","user_saved","route","phone"]},
+  {id:"airport",title:"항공/공항",type:"list",groups:["flight_sites","airport_info","route"]},
+  {id:"route",title:"길찾기",type:"route",groups:["destination","google_recommend","map_apps"]},
+  {id:"taxi",title:"교통",type:"route",groups:["taxi","bus","subway","map_apps"]},
+  {id:"tour",title:"관광",type:"list",groups:["recommend","festival","user_saved","route"]},
+  {id:"shopping",title:"쇼핑",type:"list",groups:["recommend","site","user_saved","route"]},
+  {id:"call",title:"통화/메신저",type:"call",groups:["phone","whatsapp","wechat","user_contacts"]},
+  {id:"m2m_link",title:"말대말",type:"m2m",groups:["connect","language","mic","text"]},
+  {id:"sos",title:"SOS",type:"sos",groups:["police","emergency","hospital","embassy","insurance","offline_phrase"]}
+];
+
+const GROUP_TITLE={
+ baekban:"허영만 백반기행",
+ festival:"지역축제",
+ near_food:"주변맛집",
+ near_tour:"주변관광지",
+ recommend:"추천리스트",
+ user_saved:"사용자 등록",
+ route:"길찾기",
+ llm_recommend:"LLM 추천리스트",
+ default_sites:"기본 사이트",
+ phone:"전화",
+ flight_sites:"항공권 사이트",
+ airport_info:"공항 정보",
+ destination:"목적지 입력",
+ google_recommend:"Google 추천경로",
+ map_apps:"지도앱 선택",
+ taxi:"택시",
+ bus:"버스",
+ subway:"지하철",
+ site:"사이트",
+ whatsapp:"WhatsApp",
+ wechat:"WeChat",
+ user_contacts:"사용자 연락처",
+ connect:"연결",
+ language:"언어",
+ mic:"마이크",
+ text:"텍스트 입력",
+ police:"경찰",
+ emergency:"구급",
+ hospital:"병원",
+ embassy:"대사관",
+ insurance:"보험",
+ offline_phrase:"오프라인 문장"
+};
+
+async function api(path,opt={}){
+ const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+ if(!r.ok) throw new Error(await r.text());
+ return await r.json();
+}
+
+async function load(){
+ const d=await api('/api/patch17/control-first?ts='+Date.now());
+ DATA=d.data||{};
+ normalize();
+ renderTree();
+}
+
+function normalize(){
+ DATA.components=DATA.components||{};
+ TREE_MAP.forEach(f=>{
+   if(f.type==="status") return;
+   const c=DATA.components[f.id] ||= {title:f.title,enabled:true,groups:[]};
+   c.title=f.title;
+   c.groups=c.groups||[];
+   (f.groups||[]).forEach(gid=>{
+     let g=c.groups.find(x=>x.id===gid);
+     if(!g){
+       g={id:gid,title:GROUP_TITLE[gid]||gid,enabled:true,items:[]};
+       c.groups.push(g);
+     }
+   });
+ });
+
+ // 기본 호텔 LLM 추천 그룹 샘플
+ const hotel=DATA.components.hotel;
+ const llm=hotel.groups.find(g=>g.id==="llm_recommend");
+ if(llm && (!llm.items || llm.items.length===0)){
+   llm.items=[
+    {name:"목적지 기반 호텔 추천",area:"사용자 입력",category:"LLM 추천",address:"",map_query:"",url:"https://www.google.com/travel/hotels",action_type:"url",travel_mode:"recommend",enabled:true}
+   ];
+ }
+}
+
+function comp(id){return DATA.components[id]}
+function group(cid,gid){const c=comp(cid);return c&&c.groups?c.groups.find(g=>g.id===gid):null}
+
+function renderTree(){
+ const box=document.getElementById("tree");
+ box.innerHTML="";
+ TREE_MAP.forEach(f=>{
+   const n=document.createElement("div");
+   n.className="node "+(SELECTED&&SELECTED.kind==="flow"&&SELECTED.id===f.id?"active":"");
+   n.innerHTML=`<b>${f.title}</b><span class="small"> ${statusText(f)}</span>`;
+   n.onclick=()=>selectFlow(f);
+   box.appendChild(n);
+
+   (f.groups||[]).forEach(gid=>{
+     const g=group(f.id,gid);
+     const ch=document.createElement("div");
+     ch.className="node child "+(SELECTED&&SELECTED.kind==="group"&&SELECTED.component===f.id&&SELECTED.group===gid?"active":"");
+     ch.innerHTML=`${GROUP_TITLE[gid]||gid} <span class="small">${g&&g.enabled!==false?"ON":"OFF"} / ${g&&g.items?g.items.length:0}개</span>`;
+     ch.onclick=(e)=>{e.stopPropagation();selectGroup(f,gid);};
+     box.appendChild(ch);
+   });
+ });
+}
+
+function statusText(f){
+ if(f.type==="status") return "확인전용";
+ const c=comp(f.id);
+ return c&&c.enabled===false?"OFF":"ON";
+}
+
+function selectFlow(f){
+ SELECTED={kind:"flow",id:f.id};
+ document.getElementById("title").textContent=f.title;
+ if(f.type==="status") return renderGps();
+ document.getElementById("body").innerHTML=`
+   <p>이 Flow의 하위 그룹을 선택하면 리스트/실행값을 관리합니다.</p>
+   <button class="btn ${comp(f.id)&&comp(f.id).enabled===false?'red':'green'}" onclick="toggleComponent('${f.id}')">Flow ON/OFF</button>
+   <button class="btn blue" onclick="openUser()">사용자 화면 확인</button>
+ `;
+ renderTree();
+}
+
+function selectGroup(f,gid){
+ SELECTED={kind:"group",component:f.id,group:gid};
+ renderGroup(f.id,gid);
+ renderTree();
+}
+
+function renderGps(){
+ document.getElementById("body").innerHTML=`
+  <p>GPS/날짜/시간/장소는 사용자 기기 자동값입니다. 관제에서는 정상 인식만 확인합니다.</p>
+  <div id="gpsBox">확인 대기</div>
+  <button class="btn blue" onclick="checkGps()">GPS 확인</button>
+ `;
+ checkGps();
+}
+
+function checkGps(){
+ const box=document.getElementById("gpsBox");
+ const now=new Date().toLocaleString();
+ if(!navigator.geolocation){box.innerHTML="시간: "+now+"<br>GPS 지원 안 됨";return;}
+ navigator.geolocation.getCurrentPosition(p=>{
+   box.innerHTML="시간: "+now+"<br>GPS 정상<br>위도: "+p.coords.latitude+"<br>경도: "+p.coords.longitude+"<br>정확도: "+p.coords.accuracy+"m";
+ },e=>{box.innerHTML="시간: "+now+"<br>GPS 오류/권한 필요: "+e.message;});
+}
+
+function renderGroup(cid,gid){
+ const g=group(cid,gid);
+ document.getElementById("title").textContent=(comp(cid)?.title||cid)+" · "+(g?.title||gid);
+ if(!g){document.getElementById("body").innerHTML="그룹 없음";return;}
+
+ document.getElementById("body").innerHTML=`
+   <button class="btn ${g.enabled!==false?'green':'red'}" onclick="toggleGroup('${cid}','${gid}')">${g.enabled!==false?'ON':'OFF'} 전환</button>
+   <button class="btn blue" onclick="addItem('${cid}','${gid}')">+ 신규</button>
+   <button class="btn gray" onclick="downloadCsv('${cid}','${gid}')">CSV 다운로드</button>
+   <label class="btn gray">CSV 업로드<input type="file" accept=".csv,.txt" onchange="uploadCsv(event,'${cid}','${gid}')" style="display:none"></label>
+   <button class="btn green" onclick="save()">완료 / USER 반영</button>
+   ${gid==="destination"?destinationBox():""}
+   <div id="listBox"></div>
+ `;
+ renderItems(cid,gid);
+}
+
+function destinationBox(){
+ return `
+ <div style="margin:10px 0;padding:10px;background:white;border:1px solid #e5e7eb;border-radius:12px">
+   <b>목적지 테스트</b>
+   <input id="destInput" placeholder="예: 부산 해운대">
+   <button class="btn blue" onclick="openDirFromInput()">현재위치 ↔ 목적지 지도열기</button>
+ </div>`;
+}
+
+async function openDirFromInput(){
+ const v=document.getElementById("destInput").value.trim();
+ if(!v){alert("목적지를 입력하세요.");return;}
+ let origin="";
+ try{origin=await getOrigin();}catch(e){}
+ window.open("https://www.google.com/maps/dir/"+encodeURIComponent(origin)+"/"+encodeURIComponent(v),"_blank");
+}
+
+function getOrigin(){
+ return new Promise((res,rej)=>{
+   if(!navigator.geolocation)return rej();
+   navigator.geolocation.getCurrentPosition(p=>res(p.coords.latitude+","+p.coords.longitude),rej,{enableHighAccuracy:true,timeout:8000});
+ });
+}
+
+function renderItems(cid,gid){
+ const g=group(cid,gid);
+ const box=document.getElementById("listBox");
+ g.items=g.items||[];
+ box.innerHTML=`
+ <div class="row"><b>No</b><b>이름</b><b>지역</b><b>주소/검색어</b><b>ON</b><b>↑</b><b>↓</b><b>삭제</b></div>
+ `+g.items.map((x,i)=>`
+ <div class="row">
+  <span>${i+1}</span>
+  <input value="${esc(x.name)}" onchange="item('${cid}','${gid}',${i}).name=this.value">
+  <input value="${esc(x.area)}" onchange="item('${cid}','${gid}',${i}).area=this.value">
+  <input value="${esc(x.address||x.map_query||x.url||x.phone)}" onchange="setMainValue('${cid}','${gid}',${i},this.value)">
+  <button class="btn ${x.enabled!==false?'green':'red'}" onclick="toggleItem('${cid}','${gid}',${i})">${x.enabled!==false?'ON':'OFF'}</button>
+  <button class="btn gray" onclick="moveItem('${cid}','${gid}',${i},-1)">↑</button>
+  <button class="btn gray" onclick="moveItem('${cid}','${gid}',${i},1)">↓</button>
+  <button class="btn red" onclick="delItem('${cid}','${gid}',${i})">삭제</button>
+ </div>`).join('');
+}
+
+function esc(v){return String(v||"").replaceAll('"','&quot;')}
+function item(cid,gid,i){return group(cid,gid).items[i]}
+function setMainValue(cid,gid,i,v){
+ const x=item(cid,gid,i);
+ if(x.action_type==="url") x.url=v;
+ else if(x.action_type==="phone") x.phone=v;
+ else {x.address=v;x.map_query=v;x.action_type=x.action_type||"map_dir";x.travel_mode="recommend";}
+}
+
+function toggleComponent(cid){const c=comp(cid);c.enabled=!(c.enabled!==false);selectFlow(TREE_MAP.find(x=>x.id===cid));}
+function toggleGroup(cid,gid){const g=group(cid,gid);g.enabled=!(g.enabled!==false);renderGroup(cid,gid);renderTree();}
+function addItem(cid,gid){
+ const g=group(cid,gid);
+ g.items.push({name:"신규",area:"",category:"",address:"",map_query:"",phone:"",url:"",action_type:"map_dir",travel_mode:"recommend",enabled:true});
+ renderGroup(cid,gid);
+}
+function toggleItem(cid,gid,i){item(cid,gid,i).enabled=!(item(cid,gid,i).enabled!==false);renderGroup(cid,gid)}
+function moveItem(cid,gid,i,d){const a=group(cid,gid).items,n=i+d;if(n<0||n>=a.length)return;[a[i],a[n]]=[a[n],a[i]];renderGroup(cid,gid)}
+function delItem(cid,gid,i){if(confirm("삭제할까요?")){group(cid,gid).items.splice(i,1);renderGroup(cid,gid)}}
+
+async function save(){
+ const d=await api('/api/patch17/control-first/save',{method:'POST',body:JSON.stringify(DATA)});
+ DATA=d.data; normalize(); alert("저장 완료 / USER 반영"); renderTree();
+}
+
+function openUser(){window.open('/travel-v1','_blank')}
+
+function csv(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+function downloadCsv(cid,gid){
+ const g=group(cid,gid);
+ const cols=["name","area","category","address","map_query","phone","url","action_type","enabled"];
+ const lines=[cols.join(",")].concat((g.items||[]).map(x=>cols.map(c=>csv(x[c])).join(",")));
+ const b=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=cid+"_"+gid+".csv";a.click();
+}
+function uploadCsv(e,cid,gid){
+ const f=e.target.files[0]; if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  const rows=parseCsv(r.result.replace(/^\ufeff/,''));
+  const head=rows[0].map(x=>x.trim());
+  group(cid,gid).items=rows.slice(1).filter(r=>r.some(Boolean)).map(r=>{
+    const o={};head.forEach((h,i)=>o[h]=r[i]||"");
+    return {name:o.name||o["이름"]||o["식당명"]||"",area:o.area||o["지역"]||"",category:o.category||o["분류"]||"",address:o.address||o["주소"]||"",map_query:o.map_query||o["지도검색어"]||"",phone:o.phone||o["전화"]||"",url:o.url||o.URL||"",action_type:o.action_type||"map_dir",travel_mode:"recommend",enabled:String(o.enabled??"true").toLowerCase()!=="false"};
+  });
+  renderGroup(cid,gid);
+ };
+ r.readAsText(f,"utf-8");
+}
+function parseCsv(text){
+ const rows=[];let row=[],val='',q=false;
+ for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];
+  if(q){if(ch=='"'&&nx=='"'){val+='"';i++;}else if(ch=='"')q=false;else val+=ch;}
+  else{if(ch=='"')q=true;else if(ch==','){row.push(val);val='';}else if(ch=='\n'){row.push(val);rows.push(row);row=[];val='';}else if(ch!='\r')val+=ch;}
+ }
+ row.push(val);rows.push(row);return rows;
+}
+load();
+</script>
+</body>
+</html>

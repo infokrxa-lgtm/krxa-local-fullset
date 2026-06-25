@@ -2890,3 +2890,10 @@ async def control_patch21_flow_engine():
 async def patch22_workspace_factory():
     return FileResponse("ui/patch22_workspace_factory.html")
 # ===== End PATCH22 Workspace Factory Routes =====
+
+
+# ===== PATCH23 Travel Tree Workspace =====
+@app.get("/control/travel-tree")
+async def patch23_travel_tree_workspace():
+    return FileResponse("ui/control_travel_tree_workspace.html")
+# ===== End PATCH23 Travel Tree Workspace =====
