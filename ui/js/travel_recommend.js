@@ -1,3 +1,53 @@
+
+function getTransportDestination_PATCH27(){
+  const el =
+    document.getElementById("krxaTransportDestination") ||
+    document.querySelector("[data-route-destination='true']");
+  return el && el.value ? el.value.trim() : "";
+}
+
+function openTransportGoogleDir_PATCH27(){
+  const dest = getTransportDestination_PATCH27();
+  if(!dest){
+    alert("목적지를 입력하세요.");
+    return;
+  }
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      const origin = pos.coords.latitude + "," + pos.coords.longitude;
+      window.open(
+        "https://www.google.com/maps/dir/" +
+        encodeURIComponent(origin) + "/" +
+        encodeURIComponent(dest),
+        "_blank"
+      );
+    }, function(){
+      window.open(
+        "https://www.google.com/maps/dir//" + encodeURIComponent(dest),
+        "_blank"
+      );
+    }, {enableHighAccuracy:true, timeout:8000, maximumAge:60000});
+  }else{
+    window.open(
+      "https://www.google.com/maps/dir//" + encodeURIComponent(dest),
+      "_blank"
+    );
+  }
+}
+
+function openTransportGoogleSearch_PATCH27(){
+  const dest = getTransportDestination_PATCH27();
+  if(!dest){
+    alert("목적지를 입력하세요.");
+    return;
+  }
+  window.open(
+    "https://www.google.com/maps/search/" + encodeURIComponent(dest),
+    "_blank"
+  );
+}
+
 /* KRXA Travel V1 - Recommend / Discovery / Service Hub Full Version */
 
 (function () {
@@ -166,7 +216,7 @@
     const html =
       "<p><b>교통 허브</b></p>" +
       "<p>목적지를 입력하면 현재 위치를 출발지로 길찾기합니다.</p>" +
-      "<input id='krxaTransportDest' placeholder='목적지 입력 예: 인천공항, 강남역, 호텔명' style='width:100%;margin-top:8px;padding:10px;border-radius:10px'>" +
+      "<input id="krxaTransportDestination" data-route-destination="true" id='krxaTransportDest' placeholder='목적지 입력 예: 인천공항, 강남역, 호텔명' style='width:100%;margin-top:8px;padding:10px;border-radius:10px'>" +
       "<button class='btn green' style='width:100%;margin-top:8px' onclick='KRXA_Recommend.openTransportDir()'>길찾기 Google Dir</button>" +
       "<button class='btn blue' style='width:100%;margin-top:8px' onclick='KRXA_Recommend.openTransportSearch()'>교통 주변보기 Google Search</button>";
 

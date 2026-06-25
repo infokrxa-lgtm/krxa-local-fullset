@@ -661,28 +661,6 @@ document.addEventListener("keydown", function(e){
 
 
 <script>
-/* PATCH25 Route Button Override */
-(function(){
-  document.addEventListener("click", function(e){
-    const t = (e.target && e.target.innerText || "").trim();
-
-    if(t.includes("길찾기 Google Dir") || t.includes("길찾기") && t.includes("Google")){
-      e.preventDefault();
-      e.stopPropagation();
-      KRXA_RouteInputEngine.openGoogleDirFromVisibleInput();
-    }
-
-    if(t.includes("교통 주변보기 Google Search") || t.includes("Google Search")){
-      e.preventDefault();
-      e.stopPropagation();
-      KRXA_RouteInputEngine.openGoogleSearchFromVisibleInput();
-    }
-  }, true);
-})();
-</script>
-
-
-<script>
 /* PATCH26 Control Save → User UI Apply Bridge */
 (function(){
   async function loadControl(){
