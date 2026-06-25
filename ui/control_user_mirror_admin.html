@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PATCH30 User UI Mirror Admin Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#eef4fb;font-family:Arial,sans-serif;color:#0f172a}
+.wrap{padding:14px}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:14px}
+.grid{display:grid;grid-template-columns:460px 1fr;gap:14px}
+.phone{max-width:430px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:24px;padding:12px;min-height:84vh}
+.page{display:none}.page.active{display:block}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.card,.hero,.quick{background:white;border:1px solid #dbe3ee;border-radius:18px;padding:14px;margin:9px 0;cursor:pointer}
+.hero{background:linear-gradient(135deg,#2563eb,#0f766e);color:white}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.nav{display:flex;gap:6px;justify-content:center;margin-top:12px}
+.btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:3px}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.gray{background:#64748b;color:white}
+.badge{float:right;border-radius:999px;color:white;padding:3px 8px;font-size:12px}.on{background:#16a34a}.off{background:#dc2626}
+.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:18px;padding:14px}
+input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;margin:5px 0}
+.row{display:grid;grid-template-columns:1fr 90px 90px 80px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:8px}
+small{color:#64748b}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="panel">
+<h2>PATCH30 · 사용자 UI 그대로 복제한 관제</h2>
+<p>좌측은 사용자 UI 미러, 우측은 선택 항목 수정/신규/삭제/ON-OFF/완료 반영입니다.</p>
+<div class="grid">
+  <div class="phone">
+    <div id="mirror"></div>
+    <div class="nav" id="nav"></div>
+  </div>
+  <div class="right">
+    <h2 id="title">선택 없음</h2>
+    <div id="body">좌측 사용자 UI 항목을 클릭하세요.</div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+let DATA=null;
+let PAGE=1;
+let SELECTED=null;
+
+const UI_PAGES=[
+ {page:1,title:"Discovery Home",items:[
+  {id:"gps",title:"GPS/날짜/시간/장소",component:"gps",group:"status",type:"status"},
+  {id:"hero",title:"Hero 회전",component:"hero",group:"baekban",type:"groups"},
+  {id:"mini_talk",title:"미니 말대말",component:"m2m_link",group:"connect",type:"link"}
+ ]},
+ {page:2,title:"Quick Action",items:[
+  {id:"gps2",title:"GPS/위치시간바",component:"gps",group:"status",type:"status"},
+  {id:"food_hero",title:"맛집 Hero",component:"food",group:"recommend",type:"groups"},
+  {id:"food",title:"식당/맛집",component:"food",group:"recommend",type:"groups"},
+  {id:"taxi",title:"교통",component:"taxi",group:"taxi",type:"destination"},
+  {id:"route",title:"길찾기",component:"route",group:"destination",type:"destination"},
+  {id:"sos",title:"SOS",component:"sos",group:"police",type:"groups"}
+ ]},
+ {page:3,title:"Travel Hub",items:[
+  {id:"airport",title:"공항/항공",component:"airport",group:"flight_sites",type:"groups"},
+  {id:"hotel",title:"호텔/숙박",component:"hotel",group:"llm_recommend",type:"groups"},
+  {id:"food",title:"식당/맛집",component:"food",group:"recommend",type:"groups"},
+  {id:"taxi",title:"교통",component:"taxi",group:"taxi",type:"destination"},
+  {id:"route",title:"길찾기",component:"route",group:"destination",type:"destination"},
+  {id:"tour",title:"관광",component:"tour",group:"recommend",type:"groups"},
+  {id:"shopping",title:"쇼핑",component:"shopping",group:"recommend",type:"groups"},
+  {id:"tv",title:"TV시청",component:"tv",group:"youtube",type:"external"},
+  {id:"call",title:"통화",component:"call",group:"phone",type:"groups"},
+  {id:"photo",title:"사진",component:"photo",group:"camera",type:"device"},
+  {id:"video",title:"동영상",component:"video",group:"camera",type:"device"}
+ ]},
+ {page:4,title:"Detail Result",items:[
+  {id:"detail_list",title:"상세 결과 리스트",component:"detail_list",group:"result_list",type:"groups"},
+  {id:"map",title:"지도",component:"route",group:"map_apps",type:"destination"},
+  {id:"reservation",title:"예약/사이트",component:"hotel",group:"default_sites",type:"groups"},
+  {id:"phone",title:"전화",component:"call",group:"phone",type:"groups"},
+  {id:"mini_talk",title:"말하기 연결",component:"m2m_link",group:"connect",type:"link"}
+ ]},
+ {page:5,title:"말대말 통역",items:[
+  {id:"m2m_link",title:"말대말 연결",component:"m2m_link",group:"connect",type:"link"},
+  {id:"language",title:"언어 설정",component:"m2m_link",group:"language",type:"engine"},
+  {id:"mic",title:"마이크",component:"m2m_link",group:"mic",type:"engine"},
+  {id:"text",title:"텍스트 입력",component:"m2m_link",group:"text",type:"engine"}
+ ]},
+ {page:6,title:"통화/메신저",items:[
+  {id:"phone",title:"전화",component:"call",group:"phone",type:"groups"},
+  {id:"whatsapp",title:"WhatsApp",component:"call",group:"whatsapp",type:"groups"},
+  {id:"wechat",title:"WeChat",component:"call",group:"wechat",type:"groups"},
+  {id:"user_contacts",title:"사용자 연락처",component:"call",group:"user_contacts",type:"user"}
+ ]},
+ {page:7,title:"사용내역/기억",items:[
+  {id:"recent_translate",title:"최근 통역",component:"memory_loop",group:"recent_translate",type:"history"},
+  {id:"recent_travel",title:"최근 여행",component:"memory_loop",group:"recent_travel",type:"history"},
+  {id:"memory_loop",title:"KRXA 기억 루프",component:"memory_loop",group:"memory_loop",type:"history"},
+  {id:"clear_history",title:"사용내역 초기화",component:"memory_loop",group:"clear_history",type:"device"}
+ ]},
+ {page:8,title:"SOS",items:[
+  {id:"police",title:"경찰",component:"sos",group:"police",type:"groups"},
+  {id:"emergency",title:"구급",component:"sos",group:"emergency",type:"groups"},
+  {id:"hospital",title:"병원",component:"sos",group:"hospital",type:"groups"},
+  {id:"embassy",title:"대사관",component:"sos",group:"embassy",type:"groups"},
+  {id:"insurance",title:"보험",component:"sos",group:"insurance",type:"groups"},
+  {id:"offline_phrase",title:"오프라인 생존문장",component:"sos",group:"offline_phrase",type:"groups"}
+ ]}
+];
+
+const DEFAULT_GROUPS={
+ hero:[["baekban","허영만 백반기행"],["festival","지역축제"],["near_food","주변맛집"],["near_tour","주변관광지"]],
+ food:[["recommend","추천리스트"],["baekban","허영만 백반기행"],["user_saved","사용자 등록 맛집"],["route","식당 길찾기"]],
+ hotel:[["llm_recommend","LLM 추천리스트"],["default_sites","기본 예약사이트"],["user_saved","사용자 등록 호텔"],["route","호텔 길찾기"],["phone","호텔 전화"]],
+ airport:[["flight_sites","항공권 사이트"],["airport_info","공항 정보"],["route","공항 길찾기"]],
+ route:[["destination","목적지 입력"],["google_recommend","Google 추천경로"],["map_apps","지도앱 선택"]],
+ taxi:[["taxi","택시"],["bus","버스"],["subway","지하철"],["map_apps","지도앱 선택"]],
+ tour:[["recommend","추천 관광지"],["festival","지역축제"],["user_saved","사용자 관광지"],["route","관광지 길찾기"]],
+ shopping:[["recommend","추천 쇼핑"],["site","쇼핑 사이트"],["user_saved","사용자 쇼핑"],["route","쇼핑 길찾기"]],
+ call:[["phone","전화"],["whatsapp","WhatsApp"],["wechat","WeChat"],["user_contacts","사용자 연락처"]],
+ sos:[["police","경찰"],["emergency","구급"],["hospital","병원"],["embassy","대사관"],["insurance","보험"],["offline_phrase","오프라인 문장"]],
+ m2m_link:[["connect","연결"],["language","언어 설정"],["mic","마이크"],["text","텍스트 입력"]]
+};
+
+async function api(path,opt={}){
+ const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+ if(!r.ok) throw new Error(await r.text());
+ return await r.json();
+}
+
+async function load(){
+ const d=await api("/api/patch17/control-first?ts="+Date.now());
+ DATA=d.data||{};
+ normalize();
+ render();
+}
+
+function normalize(){
+ DATA.components=DATA.components||{};
+ Object.keys(DEFAULT_GROUPS).forEach(cid=>{
+  const c=DATA.components[cid] ||= {title:cid,enabled:true,groups:[]};
+  c.groups=c.groups||[];
+  DEFAULT_GROUPS[cid].forEach(([gid,title])=>{
+   if(!c.groups.find(g=>g.id===gid)) c.groups.push({id:gid,title,enabled:true,items:[]});
+  });
+ });
+}
+
+function comp(cid){return DATA.components[cid]}
+function group(cid,gid){const c=comp(cid);return c&&c.groups?c.groups.find(g=>g.id===gid):null}
+function enabled(it){
+ if(it.type==="status") return true;
+ const c=comp(it.component), g=group(it.component,it.group);
+ if(c&&c.enabled===false)return false;
+ if(g&&g.enabled===false)return false;
+ return true;
+}
+
+function render(){
+ const page=UI_PAGES.find(p=>p.page===PAGE);
+ const box=document.getElementById("mirror");
+ box.innerHTML=`<div class="top"><b>PAGE ${page.page} · ${page.title}</b><button class="btn gray" onclick="openUser()">사용자확인</button></div>`;
+
+ if(PAGE===1){
+  box.innerHTML += `<div class="hero" onclick="selectItem(${PAGE},'hero')"><small>LIVE TRAVEL DISCOVERY</small><h2>Hero 회전</h2><p>허영만 백반기행 / 지역축제 / 주변맛집</p></div>`;
+ } else if(PAGE===2){
+  box.innerHTML += `<div class="hero" onclick="selectItem(${PAGE},'food_hero')"><small>GPS · MARKET · RECOMMEND</small><h2>맛집 Hero</h2><p>추천/백반기행/주변맛집</p></div>`;
+ }
+
+ const grid=document.createElement("div");
+ grid.className="grid2";
+ page.items.forEach(it=>{
+  if((PAGE===1&&it.id==="hero")||(PAGE===2&&it.id==="food_hero")) return;
+  const div=document.createElement("div");
+  div.className="card";
+  div.innerHTML=`<b>${it.title}</b><span class="badge ${enabled(it)?'on':'off'}">${enabled(it)?'ON':'OFF'}</span><br><small>${it.component}/${it.group}</small>`;
+  div.onclick=()=>selectObject(page,it);
+  div.querySelector(".badge").onclick=(e)=>{e.stopPropagation();toggleGroup(it);};
+  grid.appendChild(div);
+ });
+ box.appendChild(grid);
+
+ renderNav();
+}
+
+function renderNav(){
+ const nav=document.getElementById("nav");
+ nav.innerHTML="";
+ UI_PAGES.forEach(p=>{
+  const b=document.createElement("button");
+  b.className="btn "+(p.page===PAGE?"blue":"gray");
+  b.textContent=p.page;
+  b.onclick=()=>{PAGE=p.page;render();};
+  nav.appendChild(b);
+ });
+}
+
+function selectItem(pageNo,id){
+ const page=UI_PAGES.find(p=>p.page===pageNo);
+ const it=page.items.find(x=>x.id===id);
+ selectObject(page,it);
+}
+
+function selectObject(page,it){
+ SELECTED={page,it};
+ document.getElementById("title").textContent=`PAGE ${page.page} · ${it.title}`;
+ renderEditor(it);
+}
+
+function renderEditor(it){
+ let html=`<button class="btn ${enabled(it)?'green':'red'}" onclick="toggleSelected()">${enabled(it)?'ON':'OFF'} 전환</button>
+ <button class="btn green" onclick="save(true)">완료 / USER 반영</button>
+ <button class="btn gray" onclick="openUser()">사용자 화면</button>`;
+
+ if(it.type==="status"){
+  html+=`<p>GPS/날짜/시간/장소는 사용자 기기 자동값입니다.</p><div id="gpsBox"></div><button class="btn blue" onclick="checkGps()">GPS 확인</button>`;
+  document.getElementById("body").innerHTML=html; checkGps(); return;
+ }
+
+ const c=comp(it.component);
+ const groups=c&&c.groups?c.groups:[];
+ html+=`<h3>하위 그룹</h3>`;
+ groups.forEach(g=>{
+  html+=`<div class="row">
+    <b>${g.title}</b>
+    <button class="btn ${g.enabled!==false?'green':'red'}" onclick="toggleGroupById('${it.component}','${g.id}')">${g.enabled!==false?'ON':'OFF'}</button>
+    <button class="btn blue" onclick="openWorkspace('${it.component}','${g.id}')">작업창</button>
+    <button class="btn red" onclick="deleteGroup('${it.component}','${g.id}')">삭제</button>
+  </div>`;
+ });
+ html+=`<h3>신규 그룹</h3>
+ <input id="newGroupTitle" placeholder="그룹명">
+ <button class="btn blue" onclick="addGroup('${it.component}')">+ 신규</button>`;
+
+ document.getElementById("body").innerHTML=html;
+}
+
+function toggleGroup(it){
+ const g=ensureGroup(it.component,it.group,it.title);
+ g.enabled=!(g.enabled!==false);
+ save(false); render();
+}
+
+function toggleSelected(){
+ if(!SELECTED)return;
+ toggleGroup(SELECTED.it);
+ renderEditor(SELECTED.it);
+}
+
+function toggleGroupById(cid,gid){
+ const g=group(cid,gid);
+ if(!g)return;
+ g.enabled=!(g.enabled!==false);
+ save(false);
+ render();
+ renderEditor(SELECTED.it);
+}
+
+function ensureGroup(cid,gid,title){
+ DATA.components=DATA.components||{};
+ const c=DATA.components[cid] ||= {title:cid,enabled:true,groups:[]};
+ c.groups=c.groups||[];
+ let g=c.groups.find(x=>x.id===gid);
+ if(!g){g={id:gid,title:title||gid,enabled:true,items:[]};c.groups.push(g);}
+ return g;
+}
+
+function addGroup(cid){
+ const title=document.getElementById("newGroupTitle").value.trim();
+ if(!title){alert("그룹명을 입력하세요.");return;}
+ const gid="group_"+Date.now();
+ comp(cid).groups.push({id:gid,title,enabled:true,items:[]});
+ save(false); renderEditor(SELECTED.it);
+}
+
+function deleteGroup(cid,gid){
+ if(!confirm("삭제할까요?"))return;
+ const c=comp(cid);
+ c.groups=c.groups.filter(g=>g.id!==gid);
+ save(false); render(); renderEditor(SELECTED.it);
+}
+
+function openWorkspace(component,group){
+ let url="/control/patch17-workspace?component="+encodeURIComponent(component)+"&group="+encodeURIComponent(group);
+ if(component==="hero") url="/ui/patch22_hero_rotation_workspace.html?component=hero&group="+encodeURIComponent(group);
+ window.open(url,"_blank");
+}
+
+async function save(alertOn){
+ const d=await api("/api/patch17/control-first/save",{method:"POST",body:JSON.stringify(DATA)});
+ DATA=d.data; normalize();
+ if(alertOn) alert("저장 완료 / USER 반영");
+}
+
+function openUser(){window.open("/travel-v1","_blank");}
+
+function checkGps(){
+ const box=document.getElementById("gpsBox"); if(!box)return;
+ const now=new Date().toLocaleString();
+ if(!navigator.geolocation){box.innerHTML="GPS 미지원 / "+now;return;}
+ navigator.geolocation.getCurrentPosition(p=>{
+  box.innerHTML=`GPS 정상<br>시간:${now}<br>위도:${p.coords.latitude}<br>경도:${p.coords.longitude}`;
+ },e=>box.innerHTML="GPS 오류: "+e.message);
+}
+
+load();
+</script>
+</body>
+</html>

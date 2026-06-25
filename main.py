@@ -2897,3 +2897,10 @@ async def patch22_workspace_factory():
 async def patch23_travel_tree_workspace():
     return FileResponse("ui/control_travel_tree_workspace.html")
 # ===== End PATCH23 Travel Tree Workspace =====
+
+
+# ===== PATCH30 User Mirror Admin =====
+@app.get("/control/user-mirror")
+async def patch30_user_mirror_admin():
+    return FileResponse("ui/control_user_mirror_admin.html")
+# ===== End PATCH30 User Mirror Admin =====
