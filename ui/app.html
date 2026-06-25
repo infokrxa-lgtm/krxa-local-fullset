@@ -794,64 +794,20 @@ document.addEventListener("keydown", function(e){
 </script>
 
 
+<script src="/ui/js/travel_recommendation_data_layer.js"></script>
 <script>
-/* PATCH28 Travel Action Modal Final v1 */
+/* PATCH29 Travel Recommendation UI Bridge v1 */
 (function(){
-  const SITE_PRESETS = {
-    airport: [
-      ["Google Flights","https://www.google.com/travel/flights"],
-      ["Skyscanner","https://www.skyscanner.com"],
-      ["인천공항","https://www.airport.kr"]
-    ],
-    hotel: [
-      ["Google Hotels","https://www.google.com/travel/hotels"],
-      ["Agoda","https://www.agoda.com"],
-      ["Booking.com","https://www.booking.com"]
-    ],
-    tour: [
-      ["Google Travel","https://www.google.com/travel"],
-      ["Visit Korea","https://english.visitkorea.or.kr"],
-      ["Google Maps 관광","https://www.google.com/maps/search/관광지"]
-    ],
-    shopping: [
-      ["Google Maps 쇼핑","https://www.google.com/maps/search/쇼핑"],
-      ["Naver 쇼핑","https://shopping.naver.com"],
-      ["Google Search 쇼핑","https://www.google.com/search?q=shopping+near+me"]
-    ],
-    food: [
-      ["Google Maps 맛집","https://www.google.com/maps/search/맛집"],
-      ["Naver Map","https://map.naver.com"],
-      ["Kakao Map","https://map.kakao.com"]
-    ]
-  };
-
-  const LLM_PRESETS = {
-    airport: ["인천공항", "김포공항", "공항철도 서울역", "부산 김해공항", "제주공항"],
-    hotel: ["해운대 호텔", "강남 호텔", "명동 호텔", "인천공항 호텔", "부산역 호텔"],
-    tour: ["경복궁", "남산타워", "해운대", "감천문화마을", "전주 한옥마을"],
-    shopping: ["명동 쇼핑거리", "강남역 쇼핑", "코엑스몰", "동대문시장", "부산 신세계 센텀시티"],
-    food: ["허영만 백반기행 맛집", "주변 맛집", "한식 맛집", "백반 맛집", "현지 맛집"]
-  };
-
-  function getAppModal(){
-    return document.getElementById("modal") || document.querySelector(".modal");
+  function getSites(type){
+    return window.KRXA_TravelRecommendationDataLayer
+      ? KRXA_TravelRecommendationDataLayer.sites(type)
+      : [];
   }
 
-  function openModal(title, html){
-    if(window.KRXA_App && typeof KRXA_App.openModal === "function"){
-      KRXA_App.openModal(title, html);
-      return;
-    }
-    const modal = getAppModal();
-    if(!modal){
-      alert(title);
-      return;
-    }
-    const mt = document.getElementById("modalTitle");
-    const mb = document.getElementById("modalBody");
-    if(mt) mt.innerText = title;
-    if(mb) mb.innerHTML = html;
-    modal.style.display = "block";
+  function getRecommendations(type){
+    return window.KRXA_TravelRecommendationDataLayer
+      ? KRXA_TravelRecommendationDataLayer.recommendations(type)
+      : [];
   }
 
   function getOrigin(){
@@ -871,8 +827,10 @@ document.addEventListener("keydown", function(e){
       alert("목적지를 입력하세요.");
       return;
     }
+
     let origin = "";
     try{ origin = await getOrigin(); }catch(e){}
+
     window.open(
       "https://www.google.com/maps/dir/" +
       encodeURIComponent(origin) + "/" +
@@ -881,69 +839,59 @@ document.addEventListener("keydown", function(e){
     );
   }
 
-  function openSearch(query){
-    query = String(query || "").trim();
-    if(!query){
-      alert("검색어를 입력하세요.");
-      return;
-    }
-    window.open("https://www.google.com/maps/search/" + encodeURIComponent(query), "_blank");
+  function openSite(url){
+    if(url) window.open(url, "_blank");
   }
 
-  function buildTravelActionHtml(type, title){
-    const sites = SITE_PRESETS[type] || SITE_PRESETS.food;
-    const recs = LLM_PRESETS[type] || LLM_PRESETS.food;
+  function inputDir(){
+    const el = document.getElementById("krxaPatch29Destination");
+    openDir(el && el.value ? el.value : "");
+  }
 
-    return `
+  function openModal(title, html){
+    if(window.KRXA_App && typeof KRXA_App.openModal === "function"){
+      KRXA_App.openModal(title, html);
+      return;
+    }
+    alert(title);
+  }
+
+  function openAction(type, title){
+    const siteHtml = getSites(type).map(s => `
+      <button class="btn blue" style="width:100%;margin-top:7px"
+        onclick="KRXA_PATCH29.openSite('${s[1]}')">${s[0]}</button>
+    `).join("");
+
+    const recHtml = getRecommendations(type).map(x => `
+      <button class="btn green" style="width:100%;margin-top:7px"
+        onclick="KRXA_PATCH29.openDir('${x.replaceAll("'","")}')">${x}</button>
+    `).join("");
+
+    const html = `
       <div style="font-weight:900;margin-bottom:8px">${title}</div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
         <b>추천사이트</b>
-        ${sites.map(s=>`
-          <button class="btn blue" style="width:100%;margin-top:7px" onclick="window.open('${s[1]}','_blank')">${s[0]}</button>
-        `).join("")}
+        ${siteHtml}
       </div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
-        <b>LLM 추천리스트 5개</b>
-        ${recs.map(x=>`
-          <button class="btn green" style="width:100%;margin-top:7px" onclick="KRXA_TravelActionFinal.openDir('${x.replaceAll("'","")}')">${x}</button>
-        `).join("")}
+        <b>추천리스트 5개</b>
+        ${recHtml}
       </div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
         <b>목적지 입력</b>
-        <input id="krxaFinalDestinationInput" data-route-destination="true"
+        <input id="krxaPatch29Destination"
           placeholder="목적지 입력 예: 서울역, 해운대, 호텔명"
           style="width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:12px;margin:8px 0;box-sizing:border-box">
-        <button class="btn green" style="width:100%" onclick="KRXA_TravelActionFinal.openInputDir()">지도 클릭 · Google Maps</button>
+        <button class="btn green" style="width:100%" onclick="KRXA_PATCH29.inputDir()">지도 클릭 · Google Maps</button>
       </div>
     `;
+    openModal(title, html);
   }
 
-  function openTravelAction(type, title){
-    openModal(title, buildTravelActionHtml(type, title));
-  }
-
-  function openInputDir(){
-    const el =
-      document.getElementById("krxaFinalDestinationInput") ||
-      document.querySelector("[data-route-destination='true']");
-    openDir(el && el.value ? el.value : "");
-  }
-
-  async function openHeroGroupFromControl(groupTitle){
-    const q = groupTitle || "허영만 백반기행 맛집";
-    openModal(q, `
-      <div style="font-weight:900;margin-bottom:8px">${q} · 가까운 순서 추천</div>
-      ${(LLM_PRESETS.food || []).map(x=>`
-        <button class="btn green" style="width:100%;margin-top:7px" onclick="KRXA_TravelActionFinal.openDir('${x}')">${x}</button>
-      `).join("")}
-      <button class="btn blue" style="width:100%;margin-top:10px" onclick="KRXA_TravelActionFinal.openSearch('${q}')">Google Maps 검색</button>
-    `);
-  }
-
-  function bindClicks(){
+  function bind(){
     document.addEventListener("click", function(e){
       const el = e.target.closest("[data-admin-id], .quickCard, .card");
       if(!el) return;
@@ -951,49 +899,31 @@ document.addEventListener("keydown", function(e){
       const id = el.getAttribute("data-admin-id");
       const text = (el.innerText || "").trim();
 
-      if(id === "airport" || text.includes("공항") || text.includes("항공")){
-        e.preventDefault(); e.stopPropagation();
-        openTravelAction("airport", "항공/공항");
-        return;
-      }
+      const matched =
+        id === "airport" || text.includes("공항") || text.includes("항공") ? ["airport","항공/공항"] :
+        id === "hotel" || text.includes("호텔") || text.includes("숙박") ? ["hotel","호텔/숙박"] :
+        id === "tour" || text.includes("관광") ? ["tour","관광지"] :
+        id === "shopping" || text.includes("쇼핑") ? ["shopping","쇼핑"] :
+        id === "food" || text.includes("식당") || text.includes("맛집") ? ["food","식당/맛집"] :
+        null;
 
-      if(id === "hotel" || text.includes("호텔") || text.includes("숙박")){
-        e.preventDefault(); e.stopPropagation();
-        openTravelAction("hotel", "호텔/숙박");
-        return;
-      }
+      if(!matched) return;
 
-      if(id === "tour" || text.includes("관광")){
-        e.preventDefault(); e.stopPropagation();
-        openTravelAction("tour", "관광지");
-        return;
-      }
-
-      if(id === "shopping" || text.includes("쇼핑")){
-        e.preventDefault(); e.stopPropagation();
-        openTravelAction("shopping", "쇼핑");
-        return;
-      }
-
-      if(id === "food" || text.includes("식당") || text.includes("맛집")){
-        e.preventDefault(); e.stopPropagation();
-        openTravelAction("food", "식당/맛집");
-        return;
-      }
+      e.preventDefault();
+      e.stopPropagation();
+      openAction(matched[0], matched[1]);
     }, true);
   }
 
-  window.KRXA_TravelActionFinal = {
-    openTravelAction,
+  window.KRXA_PATCH29 = {
+    openAction,
     openDir,
-    openSearch,
-    openInputDir,
-    openHeroGroupFromControl
+    openSite,
+    inputDir
   };
 
-  document.addEventListener("DOMContentLoaded", bindClicks);
+  document.addEventListener("DOMContentLoaded", bind);
 })();
 </script>
-
 </body>
 </html>
