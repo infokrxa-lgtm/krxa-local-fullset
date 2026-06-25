@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PATCH22 Hero Rotation Group Workspace</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef4fb;margin:0;padding:18px;color:#0f172a}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:14px}
+.left,.right{background:#f8fafc;border:1px solid #dbe3ee;border-radius:16px;padding:14px}
+.group{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:8px 0;cursor:pointer}
+.group.active{background:#dbeafe}
+.btn{border:0;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer;margin:3px}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.gray{background:#64748b;color:white}.red{background:#dc2626;color:white}
+.row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 80px 60px 60px 70px;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;padding:7px}
+input{padding:7px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box}
+</style>
+</head>
+<body>
+<div class="panel">
+<h2>Hero 회전그룹 관리</h2>
+<p>회전그룹을 먼저 관리하고, 그룹을 클릭하면 해당 그룹의 리스트를 수정합니다.</p>
+<div class="grid">
+  <div class="left">
+    <h3>회전그룹</h3>
+    <div id="groups"></div>
+    <button class="btn blue" onclick="addGroup()">+ 회전그룹 추가</button>
+    <button class="btn green" onclick="save()">완료 / USER 반영</button>
+  </div>
+  <div class="right">
+    <h3 id="listTitle">그룹 선택</h3>
+    <div id="items"></div>
+    <button class="btn blue" onclick="addItem()">+ 리스트 항목 추가</button>
+    <button class="btn gray" onclick="downloadCsv()">엑셀용 CSV 다운로드</button>
+    <label class="btn gray">CSV 업로드<input type="file" accept=".csv,.txt" onchange="uploadCsv(event)" style="display:none"></label>
+    <button class="btn green" onclick="save()">완료 / USER 반영</button>
+  </div>
+</div>
+</div>
+
+<script>
+let DATA=null, SELECTED="baekban";
+
+async function api(path,opt={}){
+ const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+ if(!r.ok) throw new Error(await r.text());
+ return await r.json();
+}
+async function load(){
+ const d=await api('/api/patch17/control-first?ts='+Date.now());
+ DATA=d.data||{};
+ ensureHero();
+ render();
+}
+function ensureHero(){
+ DATA.components=DATA.components||{};
+ DATA.components.hero=DATA.components.hero||{title:"Hero 회전",rotation:{enabled:true,interval_ms:5000},groups:[]};
+ const h=DATA.components.hero;
+ h.groups=h.groups||[];
+ const base=[
+  ["baekban","허영만 백반기행"],
+  ["festival","지역축제"],
+  ["near_food","주변맛집"],
+  ["near_tour","주변관광지"]
+ ];
+ base.forEach(([id,title])=>{
+  if(!h.groups.find(g=>g.id===id)) h.groups.push({id,title,enabled:true,items:[]});
+ });
+}
+function hero(){return DATA.components.hero}
+function groups(){return hero().groups||[]}
+function group(){return groups().find(g=>g.id===SELECTED)||groups()[0]}
+function render(){
+ renderGroups(); renderItems();
+}
+function renderGroups(){
+ const box=document.getElementById("groups");
+ box.innerHTML=groups().map((g,i)=>`
+  <div class="group ${g.id===SELECTED?'active':''}" onclick="SELECTED='${g.id}';render()">
+    <b>${g.title}</b><br><small>${g.id} / ${(g.items||[]).length}개</small><br>
+    <button class="btn ${g.enabled!==false?'green':'red'}" onclick="event.stopPropagation();toggleGroup(${i})">${g.enabled!==false?'ON':'OFF'}</button>
+    <button class="btn gray" onclick="event.stopPropagation();moveGroup(${i},-1)">↑</button>
+    <button class="btn gray" onclick="event.stopPropagation();moveGroup(${i},1)">↓</button>
+    <button class="btn red" onclick="event.stopPropagation();delGroup(${i})">삭제</button>
+  </div>`).join('');
+}
+function renderItems(){
+ const g=group(); if(!g)return;
+ document.getElementById("listTitle").textContent=g.title+" 리스트 작업창";
+ g.items=g.items||[];
+ document.getElementById("items").innerHTML=`
+ <div class="row"><b>No</b><b>이름</b><b>지역</b><b>주소/검색어</b><b>ON</b><b>↑</b><b>↓</b><b>삭제</b></div>
+ `+g.items.map((x,i)=>`
+ <div class="row">
+  <span>${i+1}</span>
+  <input value="${esc(x.name)}" onchange="item(${i}).name=this.value" placeholder="식당/장소명">
+  <input value="${esc(x.area)}" onchange="item(${i}).area=this.value" placeholder="지역">
+  <input value="${esc(x.address||x.map_query)}" onchange="item(${i}).address=this.value;item(${i}).map_query=this.value" placeholder="주소/지도검색어">
+  <button class="btn ${x.enabled!==false?'green':'red'}" onclick="toggleItem(${i})">${x.enabled!==false?'ON':'OFF'}</button>
+  <button class="btn gray" onclick="moveItem(${i},-1)">↑</button>
+  <button class="btn gray" onclick="moveItem(${i},1)">↓</button>
+  <button class="btn red" onclick="delItem(${i})">삭제</button>
+ </div>`).join('');
+}
+function esc(v){return String(v||"").replaceAll('"','&quot;')}
+function item(i){return group().items[i]}
+function addGroup(){
+ const title=prompt("회전그룹명 예: 지역축제"); if(!title)return;
+ const id=prompt("그룹 ID 영문/숫자", "group_"+Date.now()); if(!id)return;
+ groups().push({id,title,enabled:true,items:[]}); SELECTED=id; render();
+}
+function toggleGroup(i){groups()[i].enabled=!(groups()[i].enabled!==false);render()}
+function moveGroup(i,d){const a=groups(),n=i+d;if(n<0||n>=a.length)return;[a[i],a[n]]=[a[n],a[i]];render()}
+function delGroup(i){if(confirm("회전그룹 삭제?")){groups().splice(i,1);SELECTED=groups()[0]?.id;render()}}
+function addItem(){group().items.push({name:"신규",area:"",category:"",address:"",map_query:"",phone:"",url:"",action_type:"map_dir",travel_mode:"recommend",enabled:true});render()}
+function toggleItem(i){item(i).enabled=!(item(i).enabled!==false);render()}
+function moveItem(i,d){const a=group().items,n=i+d;if(n<0||n>=a.length)return;[a[i],a[n]]=[a[n],a[i]];render()}
+function delItem(i){if(confirm("항목 삭제?")){group().items.splice(i,1);render()}}
+async function save(){
+ const d=await api('/api/patch17/control-first/save',{method:'POST',body:JSON.stringify(DATA)});
+ DATA=d.data; ensureHero(); alert("저장 완료 / USER 반영"); render();
+}
+function csv(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+function downloadCsv(){
+ const cols=["name","area","category","address","map_query","phone","url","enabled"];
+ const lines=[cols.join(",")].concat((group().items||[]).map(x=>cols.map(c=>csv(x[c])).join(",")));
+ const b=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=group().id+"_items.csv";a.click();
+}
+function uploadCsv(e){
+ const f=e.target.files[0]; if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  const rows=parseCsv(r.result.replace(/^\ufeff/,''));
+  const head=rows[0].map(x=>x.trim());
+  group().items=rows.slice(1).filter(r=>r.some(Boolean)).map(r=>{
+    const o={}; head.forEach((h,i)=>o[h]=r[i]||"");
+    return {name:o.name||o["이름"]||o["식당명"]||"",area:o.area||o["지역"]||"",category:o.category||o["분류"]||"",address:o.address||o["주소"]||"",map_query:o.map_query||o["지도검색어"]||o.address||o.name||"",phone:o.phone||o["전화"]||"",url:o.url||o.URL||"",action_type:"map_dir",travel_mode:"recommend",enabled:String(o.enabled??"true").toLowerCase()!=="false"};
+  });
+  render(); alert("업로드 완료. 완료 / USER 반영을 누르세요.");
+ };
+ r.readAsText(f,"utf-8");
+}
+function parseCsv(text){
+ const rows=[];let row=[],val='',q=false;
+ for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];
+  if(q){if(ch=='"'&&nx=='"'){val+='"';i++;}else if(ch=='"')q=false;else val+=ch;}
+  else{if(ch=='"')q=true;else if(ch==','){row.push(val);val='';}else if(ch=='\n'){row.push(val);rows.push(row);row=[];val='';}else if(ch!='\r')val+=ch;}
+ }
+ row.push(val);rows.push(row);return rows;
+}
+load();
+</script>
+</body></html>

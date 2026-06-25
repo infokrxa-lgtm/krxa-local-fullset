@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><title>GPS 상태 확인</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef4fb;margin:0;padding:18px;color:#0f172a}
+.panel{background:white;border:1px solid #cbd5e1;border-radius:18px;padding:18px}
+.btn{border:0;border-radius:999px;padding:9px 13px;font-weight:900;cursor:pointer;margin:4px}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.gray{background:#64748b;color:white}
+.box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="panel">
+<h2>GPS / 날짜 / 시간 / 장소 상태 확인</h2>
+<p>이 항목은 사용자 기기 자동값입니다. 관제에서는 정상 작동 여부만 확인합니다.</p>
+<div class="box" id="status">확인 대기</div>
+<button class="btn blue" onclick="check()">새로고침</button>
+<button class="btn gray" onclick="window.open('/travel-v1','_blank')">사용자 화면 확인</button>
+</div>
+<script>
+function check(){
+ const box=document.getElementById("status");
+ const now=new Date().toLocaleString();
+ if(!navigator.geolocation){
+   box.innerHTML="시간: "+now+"<br>GPS: 지원 안 됨";
+   return;
+ }
+ navigator.geolocation.getCurrentPosition(pos=>{
+   box.innerHTML=
+    "시간: "+now+"<br>"+
+    "GPS: 정상<br>"+
+    "위도: "+pos.coords.latitude+"<br>"+
+    "경도: "+pos.coords.longitude+"<br>"+
+    "정확도: "+pos.coords.accuracy+"m";
+ },err=>{
+   box.innerHTML="시간: "+now+"<br>GPS 오류/권한 필요: "+err.message;
+ },{enableHighAccuracy:true,timeout:8000});
+}
+check();
+</script>
+</body></html>

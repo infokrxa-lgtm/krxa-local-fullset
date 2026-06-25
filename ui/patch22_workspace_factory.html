@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>PATCH22 Workspace Factory</title></head>
+<body>
+<script>
+const qs=new URLSearchParams(location.search);
+const component=qs.get("component")||"hero";
+const group=qs.get("group")||"baekban";
+
+const typeMap={
+  gps:"/ui/patch22_gps_workspace.html",
+  hero:"/ui/patch22_hero_rotation_workspace.html",
+  food:"/control/patch17-workspace",
+  route:"/control/patch17-workspace",
+  taxi:"/control/patch17-workspace",
+  m2m_link:"/control/patch17-workspace",
+  sos:"/control/patch17-workspace"
+};
+
+const base=typeMap[component]||"/control/patch17-workspace";
+location.replace(base+"?component="+encodeURIComponent(component)+"&group="+encodeURIComponent(group));
+</script>
+</body></html>

@@ -2883,3 +2883,10 @@ async def api_patch21_flow_engine():
 async def control_patch21_flow_engine():
     return FileResponse("ui/control_travel_flow_engine.html")
 # ===== End PATCH21 Flow Engine API =====
+
+
+# ===== PATCH22 Workspace Factory Routes =====
+@app.get("/control/workspace-factory")
+async def patch22_workspace_factory():
+    return FileResponse("ui/patch22_workspace_factory.html")
+# ===== End PATCH22 Workspace Factory Routes =====
