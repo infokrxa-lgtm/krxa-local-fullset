@@ -681,5 +681,139 @@ document.addEventListener("keydown", function(e){
 })();
 </script>
 
+
+<script>
+/* PATCH26 Control Save → User UI Apply Bridge */
+(function(){
+  async function loadControl(){
+    try{
+      const r = await fetch("/api/patch17/control-first?ts=" + Date.now(), {cache:"no-store"});
+      const d = await r.json();
+      return d.data || {};
+    }catch(e){
+      console.warn("PATCH26 control load failed", e);
+      return {};
+    }
+  }
+
+  function isItemEnabled(data, id){
+    if(!data || !id) return true;
+
+    const pages = data.pages || [];
+    for(const p of pages){
+      const found = (p.items || []).find(x => x.id === id);
+      if(found) return found.enabled !== false;
+    }
+
+    const comps = data.components || {};
+    for(const cid of Object.keys(comps)){
+      const c = comps[cid];
+      if(c && c.enabled === false && cid === id) return false;
+
+      for(const g of (c.groups || [])){
+        if(g.id === id && g.enabled === false) return false;
+      }
+    }
+
+    return true;
+  }
+
+  function applyOnOff(data){
+    document.querySelectorAll("[data-admin-id]").forEach(el=>{
+      const id = el.getAttribute("data-admin-id");
+      const on = isItemEnabled(data, id);
+      el.style.display = on ? "" : "none";
+    });
+  }
+
+  function getHeroGroups(data){
+    const hero = data.components && data.components.hero;
+    if(!hero || !hero.groups) return null;
+    return hero.groups.filter(g => g.enabled !== false);
+  }
+
+  function patchHeroRotation(data){
+    const groups = getHeroGroups(data);
+    if(!groups || !groups.length) return;
+
+    window.KRXA_PATCH26_HERO_GROUPS = groups;
+
+    if(window.KRXA_HeroRotation){
+      const oldOpen = window.KRXA_HeroRotation.openCurrent;
+      window.KRXA_HeroRotation.openCurrent = function(){
+        const idx = window.KRXA_PATCH26_HERO_INDEX || 0;
+        const g = groups[idx % groups.length];
+        if(!g) return oldOpen && oldOpen();
+
+        const items = (g.items || []).filter(x => x.enabled !== false);
+        const html = items.length ? items.map((x,i)=>`
+          <button class="detailBtn" onclick='KRXA_PATCH26_runPlace(${JSON.stringify(x).replaceAll("'","&#39;")})'>
+            ${x.name || x.title || "-"}
+          </button>
+        `).join("") : "<p>등록된 항목이 없습니다.</p>";
+
+        if(window.KRXA_App && KRXA_App.openModal){
+          KRXA_App.openModal(g.title || "추천", html);
+        }
+      };
+    }
+  }
+
+  async function getOrigin(){
+    return new Promise((resolve,reject)=>{
+      if(!navigator.geolocation) return reject();
+      navigator.geolocation.getCurrentPosition(
+        p=>resolve(p.coords.latitude + "," + p.coords.longitude),
+        reject,
+        {enableHighAccuracy:true,timeout:8000,maximumAge:60000}
+      );
+    });
+  }
+
+  async function runPlace(x){
+    if(!x) return;
+
+    if(x.action_type === "url" && x.url){
+      window.open(x.url, "_blank");
+      return;
+    }
+
+    if(x.action_type === "phone" && x.phone){
+      location.href = "tel:" + x.phone;
+      return;
+    }
+
+    const dest = x.address || x.map_query || x.name || x.title || "";
+    if(!dest){
+      alert("목적지가 없습니다.");
+      return;
+    }
+
+    let origin = "";
+    try{ origin = await getOrigin(); }catch(e){}
+
+    window.open(
+      "https://www.google.com/maps/dir/" +
+      encodeURIComponent(origin) + "/" +
+      encodeURIComponent(dest),
+      "_blank"
+    );
+  }
+
+  window.KRXA_PATCH26_runPlace = runPlace;
+
+  async function applyControlToUser(){
+    const data = await loadControl();
+    window.KRXA_PATCH26_CONTROL = data;
+
+    applyOnOff(data);
+    patchHeroRotation(data);
+  }
+
+  document.addEventListener("DOMContentLoaded", applyControlToUser);
+  window.KRXA_PATCH26_applyControlToUser = applyControlToUser;
+})();
+</script>
+
 </body>
 </html>
