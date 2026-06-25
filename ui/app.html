@@ -896,6 +896,17 @@ document.addEventListener("keydown", function(e){
       const el = e.target.closest("[data-admin-id], .quickCard, .card");
       if(!el) return;
 
+      // PATCH29-1: Hero/TravelHero는 식당/맛집 모달로 가로채지 않는다.
+      // Hero는 기존 KRXA_HeroRotation.openCurrent() 흐름을 유지해야 한다.
+      if(
+        el.classList.contains("discoveryHero") ||
+        el.classList.contains("travelHero") ||
+        el.querySelector("[data-component='hero']") ||
+        el.getAttribute("data-component") === "hero"
+      ){
+        return;
+      }
+
       const id = el.getAttribute("data-admin-id");
       const text = (el.innerText || "").trim();
 
