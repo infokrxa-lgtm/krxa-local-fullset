@@ -1,0 +1,421 @@
+{
+  "version": "PATCH21_Flow_Engine_Travel_UI_Design_Layer_v1",
+  "updatedAt": "20260625_103330",
+  "principle": "Flow Engine은 실행 구조, Travel UI Design Layer는 사용자 경험/디자인",
+  "default_map": {
+    "name": "Google Maps",
+    "mode": "google_dir_recommend",
+    "template": "https://www.google.com/maps/dir/{origin}/{destination}",
+    "note": "현재위치 ↔ 목적지 추천경로. 교통수단은 Google Maps에서 사용자 선택"
+  },
+  "flows": [
+    {
+      "id": "hero",
+      "title": "Hero Flow",
+      "ui_layer": "PAGE1 Hero 회전 디자인",
+      "steps": [
+        {
+          "id": "gps",
+          "title": "GPS/날짜/시간/장소 확인",
+          "type": "device_status",
+          "editable": false
+        },
+        {
+          "id": "rotation",
+          "title": "Hero 회전 그룹",
+          "type": "group",
+          "editable": true
+        },
+        {
+          "id": "baekban",
+          "title": "허영만 백반기행",
+          "type": "place_list",
+          "editable": true,
+          "upload_download": true
+        },
+        {
+          "id": "near_tour",
+          "title": "주변 관광지",
+          "type": "place_list",
+          "editable": true
+        },
+        {
+          "id": "festival",
+          "title": "지역축제",
+          "type": "place_list",
+          "editable": true
+        },
+        {
+          "id": "map",
+          "title": "장소 클릭 → Google Maps 추천경로",
+          "type": "map_dir",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "flight",
+      "title": "항공/공항 Flow",
+      "ui_layer": "PAGE3 공항 카드",
+      "recommended_sites": [
+        {
+          "name": "Google Flights",
+          "url": "https://www.google.com/travel/flights"
+        },
+        {
+          "name": "Skyscanner",
+          "url": "https://www.skyscanner.com"
+        },
+        {
+          "name": "Incheon Airport",
+          "url": "https://www.airport.kr"
+        }
+      ],
+      "steps": [
+        {
+          "id": "site",
+          "title": "항공권/공항 사이트",
+          "type": "url_list",
+          "editable": true
+        },
+        {
+          "id": "airport_info",
+          "title": "공항 정보",
+          "type": "info",
+          "editable": true
+        },
+        {
+          "id": "route",
+          "title": "현재위치 ↔ 공항",
+          "type": "map_dir",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "hotel",
+      "title": "호텔 Flow",
+      "ui_layer": "PAGE3 호텔 카드",
+      "recommended_sites": [
+        {
+          "name": "Google Hotels",
+          "url": "https://www.google.com/travel/hotels"
+        },
+        {
+          "name": "Agoda",
+          "url": "https://www.agoda.com"
+        },
+        {
+          "name": "Booking.com",
+          "url": "https://www.booking.com"
+        }
+      ],
+      "steps": [
+        {
+          "id": "default_sites",
+          "title": "기본 예약사이트",
+          "type": "url_list",
+          "editable": true
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 호텔",
+          "type": "user_device_db",
+          "editable": false
+        },
+        {
+          "id": "route",
+          "title": "현재위치 ↔ 호텔",
+          "type": "map_dir",
+          "editable": true
+        },
+        {
+          "id": "phone",
+          "title": "호텔 전화",
+          "type": "phone",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "title": "식당/맛집 Flow",
+      "ui_layer": "PAGE2 맛집 영역 / PAGE3 식당 카드",
+      "recommended_sites": [
+        {
+          "name": "Google Maps",
+          "url": "https://www.google.com/maps"
+        },
+        {
+          "name": "Naver Map",
+          "url": "https://map.naver.com"
+        },
+        {
+          "name": "Kakao Map",
+          "url": "https://map.kakao.com"
+        }
+      ],
+      "steps": [
+        {
+          "id": "recommend",
+          "title": "추천리스트",
+          "type": "place_list",
+          "editable": true,
+          "upload_download": true
+        },
+        {
+          "id": "baekban",
+          "title": "허영만 백반기행",
+          "type": "place_list",
+          "editable": true,
+          "upload_download": true
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 등록 맛집",
+          "type": "user_device_db",
+          "editable": false
+        },
+        {
+          "id": "route",
+          "title": "현재위치 ↔ 식당",
+          "type": "map_dir",
+          "editable": true
+        },
+        {
+          "id": "phone",
+          "title": "식당 전화",
+          "type": "phone",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "title": "교통 Flow",
+      "ui_layer": "PAGE2/3 교통 카드",
+      "steps": [
+        {
+          "id": "taxi",
+          "title": "택시",
+          "type": "external_or_phone",
+          "editable": true
+        },
+        {
+          "id": "bus",
+          "title": "버스",
+          "type": "map_or_site",
+          "editable": true
+        },
+        {
+          "id": "subway",
+          "title": "지하철",
+          "type": "map_or_site",
+          "editable": true
+        },
+        {
+          "id": "map_apps",
+          "title": "지도앱 선택",
+          "type": "map_template",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "title": "길찾기 Flow",
+      "ui_layer": "PAGE2/3 길찾기 카드",
+      "steps": [
+        {
+          "id": "origin",
+          "title": "출발지 = 사용자 현재위치",
+          "type": "device_location",
+          "editable": false
+        },
+        {
+          "id": "destination",
+          "title": "목적지 입력",
+          "type": "user_input",
+          "editable": true
+        },
+        {
+          "id": "google_dir",
+          "title": "Google Maps 추천경로",
+          "type": "map_dir_recommend",
+          "editable": true
+        },
+        {
+          "id": "map_apps",
+          "title": "Naver/Kakao 추가 지도앱",
+          "type": "map_template",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "tour",
+      "title": "관광 Flow",
+      "ui_layer": "PAGE3 관광 카드",
+      "steps": [
+        {
+          "id": "recommend",
+          "title": "추천 관광지",
+          "type": "place_list",
+          "editable": true
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 관광지",
+          "type": "user_device_db",
+          "editable": false
+        },
+        {
+          "id": "route",
+          "title": "현재위치 ↔ 관광지",
+          "type": "map_dir",
+          "editable": true
+        },
+        {
+          "id": "site",
+          "title": "관광 사이트",
+          "type": "url_list",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "shopping",
+      "title": "쇼핑 Flow",
+      "ui_layer": "PAGE3 쇼핑 카드",
+      "steps": [
+        {
+          "id": "recommend",
+          "title": "추천 쇼핑",
+          "type": "place_or_url_list",
+          "editable": true
+        },
+        {
+          "id": "user_saved",
+          "title": "사용자 쇼핑",
+          "type": "user_device_db",
+          "editable": false
+        },
+        {
+          "id": "route",
+          "title": "현재위치 ↔ 쇼핑장소",
+          "type": "map_dir",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "call",
+      "title": "통화/메신저 Flow",
+      "ui_layer": "PAGE6 통화 화면",
+      "recommended_sites": [
+        {
+          "name": "WhatsApp",
+          "url": "https://wa.me/"
+        },
+        {
+          "name": "WeChat",
+          "url": "https://www.wechat.com"
+        }
+      ],
+      "steps": [
+        {
+          "id": "phone",
+          "title": "전화",
+          "type": "phone",
+          "editable": true
+        },
+        {
+          "id": "whatsapp",
+          "title": "WhatsApp",
+          "type": "url",
+          "editable": true
+        },
+        {
+          "id": "wechat",
+          "title": "WeChat",
+          "type": "url",
+          "editable": true
+        },
+        {
+          "id": "user_contacts",
+          "title": "사용자 연락처",
+          "type": "user_device_db",
+          "editable": false
+        }
+      ]
+    },
+    {
+      "id": "m2m",
+      "title": "말대말 Flow",
+      "ui_layer": "PAGE5 기존 말대말 화면 유지",
+      "steps": [
+        {
+          "id": "language",
+          "title": "언어/기타언어",
+          "type": "m2m_engine",
+          "editable": false
+        },
+        {
+          "id": "mic",
+          "title": "마이크",
+          "type": "m2m_engine",
+          "editable": false
+        },
+        {
+          "id": "translate",
+          "title": "STT/번역/TTS",
+          "type": "m2m_engine",
+          "editable": false
+        },
+        {
+          "id": "link",
+          "title": "Travel V1 연결 표시/숨김",
+          "type": "control_toggle",
+          "editable": true
+        }
+      ]
+    },
+    {
+      "id": "sos",
+      "title": "SOS Flow",
+      "ui_layer": "PAGE8 SOS 화면",
+      "steps": [
+        {
+          "id": "police",
+          "title": "경찰 112",
+          "type": "phone",
+          "editable": true
+        },
+        {
+          "id": "emergency",
+          "title": "구급 119",
+          "type": "phone",
+          "editable": true
+        },
+        {
+          "id": "hospital",
+          "title": "주변 병원",
+          "type": "map_search",
+          "editable": true
+        },
+        {
+          "id": "embassy",
+          "title": "대사관",
+          "type": "map_search",
+          "editable": true
+        },
+        {
+          "id": "offline_phrase",
+          "title": "오프라인 생존문장",
+          "type": "content_list",
+          "editable": true
+        }
+      ]
+    }
+  ]
+}

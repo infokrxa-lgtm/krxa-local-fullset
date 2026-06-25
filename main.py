@@ -2865,3 +2865,21 @@ async def api_patch17_control_first_save(payload: dict = _P17_BODY(...)):
 async def control_patch17_workspace():
     return FileResponse("ui/patch17_workspace.html")
 # ===== End PATCH17 Control First API =====
+
+
+# ===== PATCH21 Flow Engine API =====
+from pathlib import Path as _P21_Path
+import json as _p21_json
+
+_P21_FILE = _P21_Path("storage") / "travel_flow_engine_v1.json"
+
+@app.get("/api/patch21/flow-engine")
+async def api_patch21_flow_engine():
+    if not _P21_FILE.exists():
+        return {"ok": False, "data": {"flows": []}}
+    return {"ok": True, "data": _p21_json.loads(_P21_FILE.read_text(encoding="utf-8"))}
+
+@app.get("/control/flow-engine")
+async def control_patch21_flow_engine():
+    return FileResponse("ui/control_travel_flow_engine.html")
+# ===== End PATCH21 Flow Engine API =====
