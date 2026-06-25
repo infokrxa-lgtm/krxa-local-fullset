@@ -570,5 +570,116 @@ document.addEventListener("keydown", function(e){
 <script src="/ui/js/admin_dynamic_bar_sync.js"></script>
 <script src="/ui/js/patch17_user_apply.js"></script>
 <script src="/ui/js/patch17_common_map_engine.js"></script>
+
+<script>
+/* PATCH25 Route Destination Input Engine Fix */
+(function(){
+  function getRouteDestination(){
+    const selectors = [
+      "#routeDestination",
+      "#destInput",
+      "#destinationInput",
+      "input[data-route-destination='true']",
+      ".modalBox input",
+      ".modal input"
+    ];
+
+    for(const s of selectors){
+      const el = document.querySelector(s);
+      if(el && el.value && el.value.trim()){
+        return el.value.trim();
+      }
+    }
+
+    const inputs = Array.from(document.querySelectorAll("input"));
+    const visible = inputs.find(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && el.value && el.value.trim();
+    });
+
+    return visible ? visible.value.trim() : "";
+  }
+
+  function getCurrentPositionText(){
+    return new Promise((resolve,reject)=>{
+      if(!navigator.geolocation) return reject(new Error("GPS 미지원"));
+      navigator.geolocation.getCurrentPosition(
+        p=>resolve(p.coords.latitude + "," + p.coords.longitude),
+        reject,
+        {enableHighAccuracy:true, timeout:8000, maximumAge:60000}
+      );
+    });
+  }
+
+  async function openGoogleDirFromVisibleInput(){
+    const dest = getRouteDestination();
+
+    if(!dest){
+      alert("목적지를 입력하세요.");
+      return;
+    }
+
+    let origin = "";
+    try{
+      origin = await getCurrentPositionText();
+    }catch(e){
+      origin = "";
+    }
+
+    const url =
+      "https://www.google.com/maps/dir/" +
+      encodeURIComponent(origin) + "/" +
+      encodeURIComponent(dest);
+
+    window.open(url, "_blank");
+  }
+
+  function openGoogleSearchFromVisibleInput(){
+    const dest = getRouteDestination();
+
+    if(!dest){
+      alert("목적지를 입력하세요.");
+      return;
+    }
+
+    window.open(
+      "https://www.google.com/maps/search/" + encodeURIComponent(dest),
+      "_blank"
+    );
+  }
+
+  window.KRXA_RouteInputEngine = {
+    getRouteDestination,
+    openGoogleDirFromVisibleInput,
+    openGoogleSearchFromVisibleInput
+  };
+
+  window.KRXA_OpenGoogleDirFromInput = openGoogleDirFromVisibleInput;
+  window.KRXA_OpenGoogleSearchFromInput = openGoogleSearchFromVisibleInput;
+})();
+</script>
+
+
+<script>
+/* PATCH25 Route Button Override */
+(function(){
+  document.addEventListener("click", function(e){
+    const t = (e.target && e.target.innerText || "").trim();
+
+    if(t.includes("길찾기 Google Dir") || t.includes("길찾기") && t.includes("Google")){
+      e.preventDefault();
+      e.stopPropagation();
+      KRXA_RouteInputEngine.openGoogleDirFromVisibleInput();
+    }
+
+    if(t.includes("교통 주변보기 Google Search") || t.includes("Google Search")){
+      e.preventDefault();
+      e.stopPropagation();
+      KRXA_RouteInputEngine.openGoogleSearchFromVisibleInput();
+    }
+  }, true);
+})();
+</script>
+
 </body>
 </html>
