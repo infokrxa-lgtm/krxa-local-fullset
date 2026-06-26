@@ -307,5 +307,133 @@ function checkGps(){
 
 load();
 </script>
+
+<script>
+/* PATCH30-1 Mirror Admin Detail Content Editor */
+(function(){
+  function getComponent(cid){
+    window.DATA = window.DATA || {};
+    DATA.components = DATA.components || {};
+    DATA.components[cid] = DATA.components[cid] || {title:cid,enabled:true,groups:[]};
+    DATA.components[cid].groups = DATA.components[cid].groups || [];
+    return DATA.components[cid];
+  }
+
+  function getGroup(cid,gid,title){
+    const c = getComponent(cid);
+    let g = c.groups.find(x=>x.id===gid);
+    if(!g){
+      g = {id:gid,title:title||gid,enabled:true,items:[]};
+      c.groups.push(g);
+    }
+    g.items = g.items || [];
+    return g;
+  }
+
+  function esc(v){
+    return String(v||"").replaceAll('"',"&quot;");
+  }
+
+  window.KRXA_PATCH30_1_renderDetailEditor = function(component, group, title){
+    const g = getGroup(component, group, title);
+    const body = document.getElementById("body");
+    if(!body) return;
+
+    body.innerHTML = `
+      <h3>${g.title || title || group} · 세부 내용 편집</h3>
+
+      <div style="background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin:8px 0">
+        <b>추천사이트 / 추천리스트 / 목적지 항목</b><br>
+        <small>이름, URL, 주소/검색어, 전화, ON/OFF를 관리합니다.</small>
+      </div>
+
+      <div id="patch30Items"></div>
+
+      <button class="btn blue" onclick="KRXA_PATCH30_1_addItem('${component}','${group}')">+ 신규 항목</button>
+      <button class="btn green" onclick="save(true)">완료 / USER 반영</button>
+      <button class="btn gray" onclick="openWorkspace('${component}','${group}')">기존 작업창</button>
+    `;
+
+    KRXA_PATCH30_1_renderItems(component, group);
+  };
+
+  window.KRXA_PATCH30_1_renderItems = function(component, group){
+    const g = getGroup(component, group);
+    const box = document.getElementById("patch30Items");
+    if(!box) return;
+
+    box.innerHTML = `
+      <div style="display:grid;grid-template-columns:34px 1fr 1fr 1fr 80px 60px 60px 70px;gap:6px;font-weight:900;border-bottom:1px solid #ddd;padding:6px">
+        <span>No</span><span>이름</span><span>URL</span><span>주소/검색어/전화</span><span>ON</span><span>↑</span><span>↓</span><span>삭제</span>
+      </div>
+    ` + (g.items||[]).map((x,i)=>`
+      <div style="display:grid;grid-template-columns:34px 1fr 1fr 1fr 80px 60px 60px 70px;gap:6px;align-items:center;border-bottom:1px solid #eee;padding:6px">
+        <span>${i+1}</span>
+        <input value="${esc(x.name || x.title)}" onchange="KRXA_PATCH30_1_item('${component}','${group}',${i}).name=this.value">
+        <input value="${esc(x.url)}" onchange="KRXA_PATCH30_1_item('${component}','${group}',${i}).url=this.value;KRXA_PATCH30_1_item('${component}','${group}',${i}).action_type='url'">
+        <input value="${esc(x.address || x.map_query || x.phone)}" onchange="KRXA_PATCH30_1_setValue('${component}','${group}',${i},this.value)">
+        <button class="btn ${x.enabled!==false?'green':'red'}" onclick="KRXA_PATCH30_1_toggleItem('${component}','${group}',${i})">${x.enabled!==false?'ON':'OFF'}</button>
+        <button class="btn gray" onclick="KRXA_PATCH30_1_moveItem('${component}','${group}',${i},-1)">↑</button>
+        <button class="btn gray" onclick="KRXA_PATCH30_1_moveItem('${component}','${group}',${i},1)">↓</button>
+        <button class="btn red" onclick="KRXA_PATCH30_1_deleteItem('${component}','${group}',${i})">삭제</button>
+      </div>
+    `).join("");
+  };
+
+  window.KRXA_PATCH30_1_item = function(component, group, i){
+    return getGroup(component, group).items[i];
+  };
+
+  window.KRXA_PATCH30_1_setValue = function(component, group, i, v){
+    const x = KRXA_PATCH30_1_item(component, group, i);
+    x.address = v;
+    x.map_query = v;
+    if(!x.action_type) x.action_type = "map_dir";
+    x.travel_mode = "recommend";
+  };
+
+  window.KRXA_PATCH30_1_addItem = function(component, group){
+    getGroup(component, group).items.push({
+      name:"신규 항목",
+      area:"",
+      category:"",
+      address:"",
+      map_query:"",
+      phone:"",
+      url:"",
+      action_type:"map_dir",
+      travel_mode:"recommend",
+      enabled:true
+    });
+    KRXA_PATCH30_1_renderItems(component, group);
+  };
+
+  window.KRXA_PATCH30_1_toggleItem = function(component, group, i){
+    const x = KRXA_PATCH30_1_item(component, group, i);
+    x.enabled = !(x.enabled !== false);
+    KRXA_PATCH30_1_renderItems(component, group);
+  };
+
+  window.KRXA_PATCH30_1_moveItem = function(component, group, i, d){
+    const arr = getGroup(component, group).items;
+    const n = i + d;
+    if(n < 0 || n >= arr.length) return;
+    [arr[i], arr[n]] = [arr[n], arr[i]];
+    KRXA_PATCH30_1_renderItems(component, group);
+  };
+
+  window.KRXA_PATCH30_1_deleteItem = function(component, group, i){
+    if(!confirm("삭제할까요?")) return;
+    getGroup(component, group).items.splice(i,1);
+    KRXA_PATCH30_1_renderItems(component, group);
+  };
+
+  const oldOpenWorkspace = window.openWorkspace;
+  window.openWorkspace = function(component, group){
+    KRXA_PATCH30_1_renderDetailEditor(component, group, group);
+  };
+})();
+</script>
+
 </body>
 </html>
