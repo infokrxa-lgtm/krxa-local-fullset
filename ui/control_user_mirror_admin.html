@@ -435,5 +435,123 @@ load();
 })();
 </script>
 
+
+<script>
+/* PATCH30-2 Admin CSV Upload/Download */
+(function(){
+  function csvEscape(v){
+    return '"' + String(v ?? "").replaceAll('"','""') + '"';
+  }
+
+  function getGroupSafe(component, group){
+    DATA.components = DATA.components || {};
+    const c = DATA.components[component] ||= {title:component, enabled:true, groups:[]};
+    c.groups = c.groups || [];
+    let g = c.groups.find(x=>x.id===group);
+    if(!g){
+      g = {id:group, title:group, enabled:true, items:[]};
+      c.groups.push(g);
+    }
+    g.items = g.items || [];
+    return g;
+  }
+
+  window.KRXA_PATCH30_2_downloadCsv = function(component, group){
+    const g = getGroupSafe(component, group);
+    const cols = ["name","area","category","url","address","map_query","phone","action_type","enabled"];
+    const lines = [cols.join(",")].concat(
+      (g.items||[]).map(x=>cols.map(c=>csvEscape(x[c])).join(","))
+    );
+
+    const blob = new Blob(["\ufeff"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = component + "_" + group + "_items.csv";
+    a.click();
+  };
+
+  function parseCsv(text){
+    const rows=[]; let row=[], val="", q=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], nx=text[i+1];
+      if(q){
+        if(ch=='"' && nx=='"'){ val+='"'; i++; }
+        else if(ch=='"') q=false;
+        else val+=ch;
+      }else{
+        if(ch=='"') q=true;
+        else if(ch==','){ row.push(val); val=""; }
+        else if(ch=='\n'){ row.push(val); rows.push(row); row=[]; val=""; }
+        else if(ch!='\r') val+=ch;
+      }
+    }
+    row.push(val); rows.push(row);
+    return rows.filter(r=>r.some(x=>String(x||"").trim()));
+  }
+
+  window.KRXA_PATCH30_2_uploadCsv = function(ev, component, group){
+    const file = ev.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(){
+      const rows = parseCsv(String(reader.result||"").replace(/^\ufeff/,""));
+      if(rows.length < 2){
+        alert("CSV 내용이 없습니다.");
+        return;
+      }
+
+      const head = rows[0].map(x=>String(x||"").trim());
+      const g = getGroupSafe(component, group);
+
+      g.items = rows.slice(1).map(r=>{
+        const o = {};
+        head.forEach((h,i)=>o[h]=r[i]||"");
+
+        return {
+          name: o.name || o["이름"] || o["사이트명"] || o["추천명"] || "",
+          area: o.area || o["지역"] || "",
+          category: o.category || o["분류"] || "",
+          url: o.url || o.URL || "",
+          address: o.address || o["주소"] || "",
+          map_query: o.map_query || o["지도검색어"] || o.address || o.name || "",
+          phone: o.phone || o["전화"] || "",
+          action_type: o.action_type || (o.url || o.URL ? "url" : "map_dir"),
+          travel_mode: "recommend",
+          enabled: String(o.enabled ?? "true").toLowerCase() !== "false"
+        };
+      });
+
+      if(window.KRXA_PATCH30_1_renderItems){
+        KRXA_PATCH30_1_renderItems(component, group);
+      }
+      alert("CSV 업로드 완료. 완료 / USER 반영을 누르세요.");
+    };
+    reader.readAsText(file, "utf-8");
+  };
+
+  const oldRender = window.KRXA_PATCH30_1_renderDetailEditor;
+  if(oldRender){
+    window.KRXA_PATCH30_1_renderDetailEditor = function(component, group, title){
+      oldRender(component, group, title);
+      const body = document.getElementById("body");
+      if(!body) return;
+
+      const tools = document.createElement("div");
+      tools.style.margin = "10px 0";
+      tools.innerHTML = `
+        <button class="btn gray" onclick="KRXA_PATCH30_2_downloadCsv('${component}','${group}')">CSV 다운로드</button>
+        <label class="btn gray">CSV 업로드
+          <input type="file" accept=".csv,.txt"
+            onchange="KRXA_PATCH30_2_uploadCsv(event,'${component}','${group}')"
+            style="display:none">
+        </label>
+      `;
+      body.appendChild(tools);
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
