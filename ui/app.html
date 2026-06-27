@@ -795,55 +795,127 @@ document.addEventListener("keydown", function(e){
 
 
 
+
 <script>
-/* PATCH30-2 User UI Content Apply From Control */
+/* PATCH31 OFF Apply + M2M Click Guard + Single Map Window */
 (function(){
+  const MAP_WINDOW_NAME = "KRXA_MAP_WINDOW";
+
   async function loadControl(){
     try{
       const r = await fetch("/api/patch17/control-first?ts=" + Date.now(), {cache:"no-store"});
       const d = await r.json();
       return d.data || {};
     }catch(e){
-      console.warn("PATCH30-2 load control failed", e);
+      console.warn("PATCH31 control load failed", e);
       return {};
     }
   }
 
-  function getGroup(data, component, group){
+  function groupState(data, component, group){
     const c = data.components && data.components[component];
-    if(!c || c.enabled === false) return null;
-    const g = (c.groups || []).find(x=>x.id===group);
-    if(!g || g.enabled === false) return null;
-    return g;
+    if(!c || c.enabled === false) return {exists:false, enabled:false, items:[]};
+
+    const g = (c.groups || []).find(x => x.id === group);
+    if(!g) return {exists:false, enabled:false, items:[]};
+
+    return {
+      exists:true,
+      enabled:g.enabled !== false,
+      items:(g.items || []).filter(x => x.enabled !== false)
+    };
+  }
+
+  function applyOffToVisibleCards(data){
+    document.querySelectorAll("[data-admin-id]").forEach(el=>{
+      const id = el.getAttribute("data-admin-id");
+      const map = {
+        food:["food","recommend"],
+        food_hero:["food","recommend"],
+        hotel:["hotel","llm_recommend"],
+        airport:["airport","flight_sites"],
+        tour:["tour","recommend"],
+        shopping:["shopping","recommend"],
+        taxi:["taxi","taxi"],
+        route:["route","destination"],
+        sos:["sos","police"],
+        call:["call","phone"],
+        hero:["hero","baekban"]
+      };
+      const pair = map[id];
+      if(!pair) return;
+      const st = groupState(data, pair[0], pair[1]);
+      el.style.display = st.enabled ? "" : "none";
+    });
+  }
+
+  function isInsideM2M(el){
+    if(!el) return false;
+    const page5 = el.closest("[data-admin-page='page5']");
+    const text = (document.body.innerText || "");
+    return !!page5 || location.hash.includes("page5") || text.includes("말대말 통역");
+  }
+
+  async function getOrigin(){
+    return new Promise((resolve,reject)=>{
+      if(!navigator.geolocation) return reject();
+      navigator.geolocation.getCurrentPosition(
+        p => resolve(p.coords.latitude + "," + p.coords.longitude),
+        reject,
+        {enableHighAccuracy:true, timeout:8000, maximumAge:60000}
+      );
+    });
+  }
+
+  async function openMapDir(dest){
+    dest = String(dest || "").trim();
+    if(!dest){
+      alert("목적지를 입력하세요.");
+      return;
+    }
+
+    let origin = "";
+    try{ origin = await getOrigin(); }catch(e){}
+
+    const url =
+      "https://www.google.com/maps/dir/" +
+      encodeURIComponent(origin) + "/" +
+      encodeURIComponent(dest);
+
+    window.open(url, MAP_WINDOW_NAME);
+  }
+
+  function openMapSearch(q){
+    q = String(q || "").trim();
+    if(!q){
+      alert("검색어를 입력하세요.");
+      return;
+    }
+    window.open(
+      "https://www.google.com/maps/search/" + encodeURIComponent(q),
+      MAP_WINDOW_NAME
+    );
+  }
+
+  function openSite(url){
+    if(url) window.open(url, "_blank");
+  }
+
+  function openModal(title, html){
+    if(window.KRXA_App && typeof KRXA_App.openModal === "function"){
+      KRXA_App.openModal(title, html);
+    }else{
+      alert(title);
+    }
   }
 
   function fallbackSites(type){
     const m = {
-      airport: [
-        ["Google Flights","https://www.google.com/travel/flights"],
-        ["Skyscanner","https://www.skyscanner.com"],
-        ["인천공항","https://www.airport.kr"]
-      ],
-      hotel: [
-        ["Google Hotels","https://www.google.com/travel/hotels"],
-        ["Agoda","https://www.agoda.com"],
-        ["Booking.com","https://www.booking.com"]
-      ],
-      tour: [
-        ["Google Travel","https://www.google.com/travel"],
-        ["Visit Korea","https://korean.visitkorea.or.kr"],
-        ["Google Maps 관광","https://www.google.com/maps/search/관광지"]
-      ],
-      shopping: [
-        ["Google Maps 쇼핑","https://www.google.com/maps/search/쇼핑"],
-        ["Naver 쇼핑","https://shopping.naver.com"],
-        ["Google Search 쇼핑","https://www.google.com/search?q=shopping+near+me"]
-      ],
-      food: [
-        ["Google Maps 맛집","https://www.google.com/maps/search/맛집"],
-        ["Naver Map","https://map.naver.com"],
-        ["Kakao Map","https://map.kakao.com"]
-      ]
+      airport:[["Google Flights","https://www.google.com/travel/flights"],["Skyscanner","https://www.skyscanner.com"],["인천공항","https://www.airport.kr"]],
+      hotel:[["Google Hotels","https://www.google.com/travel/hotels"],["Agoda","https://www.agoda.com"],["Booking.com","https://www.booking.com"]],
+      tour:[["Google Travel","https://www.google.com/travel"],["Visit Korea","https://korean.visitkorea.or.kr"],["Google Maps 관광","https://www.google.com/maps/search/관광지"]],
+      shopping:[["Google Maps 쇼핑","https://www.google.com/maps/search/쇼핑"],["Naver 쇼핑","https://shopping.naver.com"],["Google Search 쇼핑","https://www.google.com/search?q=shopping+near+me"]],
+      food:[["Google Maps 맛집","https://www.google.com/maps/search/맛집"],["Naver Map","https://map.naver.com"],["Kakao Map","https://map.kakao.com"]]
     };
     return m[type] || m.food;
   }
@@ -860,126 +932,91 @@ document.addEventListener("keydown", function(e){
   }
 
   function mapType(type){
-    if(type==="airport") return {site:["airport","flight_sites"], rec:["airport","airport_info"]};
-    if(type==="hotel") return {site:["hotel","default_sites"], rec:["hotel","llm_recommend"]};
-    if(type==="tour") return {site:["tour","site"], rec:["tour","recommend"]};
-    if(type==="shopping") return {site:["shopping","site"], rec:["shopping","recommend"]};
+    if(type === "airport") return {site:["airport","flight_sites"], rec:["airport","airport_info"]};
+    if(type === "hotel") return {site:["hotel","default_sites"], rec:["hotel","llm_recommend"]};
+    if(type === "tour") return {site:["tour","site"], rec:["tour","recommend"]};
+    if(type === "shopping") return {site:["shopping","site"], rec:["shopping","recommend"]};
     return {site:["food","recommend"], rec:["food","recommend"]};
-  }
-
-  async function getOrigin(){
-    return new Promise((resolve,reject)=>{
-      if(!navigator.geolocation) return reject();
-      navigator.geolocation.getCurrentPosition(
-        p=>resolve(p.coords.latitude + "," + p.coords.longitude),
-        reject,
-        {enableHighAccuracy:true, timeout:8000, maximumAge:60000}
-      );
-    });
-  }
-
-  async function openDir(dest){
-    dest = String(dest||"").trim();
-    if(!dest){
-      alert("목적지를 입력하세요.");
-      return;
-    }
-
-    let origin = "";
-    try{ origin = await getOrigin(); }catch(e){}
-
-    window.open(
-      "https://www.google.com/maps/dir/" +
-      encodeURIComponent(origin) + "/" +
-      encodeURIComponent(dest),
-      "_blank"
-    );
-  }
-
-  function openSite(url){
-    if(url) window.open(url, "_blank");
-  }
-
-  function openModal(title, html){
-    if(window.KRXA_App && typeof KRXA_App.openModal === "function"){
-      KRXA_App.openModal(title, html);
-    }else{
-      alert(title);
-    }
   }
 
   async function openAction(type, title){
     const data = await loadControl();
     const map = mapType(type);
 
-    const siteGroup = getGroup(data, map.site[0], map.site[1]);
-    const recGroup = getGroup(data, map.rec[0], map.rec[1]);
+    const siteSt = groupState(data, map.site[0], map.site[1]);
+    const recSt = groupState(data, map.rec[0], map.rec[1]);
 
-    const siteItems = siteGroup && siteGroup.items && siteGroup.items.length
-      ? siteGroup.items.filter(x=>x.enabled!==false)
-      : fallbackSites(type).map(x=>({name:x[0], url:x[1], action_type:"url", enabled:true}));
+    if(siteSt.exists && !siteSt.enabled && recSt.exists && !recSt.enabled){
+      alert("관제에서 OFF 처리된 항목입니다.");
+      return;
+    }
 
-    const recItems = recGroup && recGroup.items && recGroup.items.length
-      ? recGroup.items.filter(x=>x.enabled!==false)
-      : fallbackRecs(type).map(x=>({name:x, map_query:x, action_type:"map_dir", enabled:true}));
+    const siteItems = siteSt.exists
+      ? siteSt.items
+      : fallbackSites(type).map(x => ({name:x[0], url:x[1], action_type:"url", enabled:true}));
 
-    const siteHtml = siteItems.map(x=>`
+    const recItems = recSt.exists
+      ? recSt.items
+      : fallbackRecs(type).map(x => ({name:x, map_query:x, action_type:"map_dir", enabled:true}));
+
+    const siteHtml = siteItems.length ? siteItems.map(x=>`
       <button class="btn blue" style="width:100%;margin-top:7px"
-        onclick="KRXA_PATCH30_2_USER.openSite('${String(x.url||"").replaceAll("'","")}')">
+        onclick="KRXA_PATCH31.openSite('${String(x.url || "").replaceAll("'","")}')">
         ${x.name || x.title || x.url || "-"}
       </button>
-    `).join("");
+    `).join("") : "<p>관제에서 OFF 또는 미등록 상태입니다.</p>";
 
-    const recHtml = recItems.slice(0,10).map(x=>{
+    const recHtml = recItems.length ? recItems.slice(0,10).map(x=>{
       const dest = x.address || x.map_query || x.name || x.title || "";
       return `
         <button class="btn green" style="width:100%;margin-top:7px"
-          onclick="KRXA_PATCH30_2_USER.openDir('${String(dest).replaceAll("'","")}')">
+          onclick="KRXA_PATCH31.openMapDir('${String(dest).replaceAll("'","")}')">
           ${x.name || x.title || dest || "-"}
         </button>
       `;
-    }).join("");
+    }).join("") : "<p>관제에서 OFF 또는 미등록 상태입니다.</p>";
 
     const html = `
       <div style="font-weight:900;margin-bottom:8px">${title}</div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
         <b>추천사이트</b>
-        ${siteHtml || "<p>등록된 추천사이트가 없습니다.</p>"}
+        ${siteHtml}
       </div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
         <b>추천리스트 5~10개</b>
-        ${recHtml || "<p>등록된 추천리스트가 없습니다.</p>"}
+        ${recHtml}
       </div>
 
       <div style="border:1px solid #dbe3ee;border-radius:14px;padding:10px;margin:8px 0;background:#f8fafc">
         <b>목적지 입력</b>
-        <input id="krxaPatch30Destination"
+        <input id="krxaPatch31Destination"
           placeholder="목적지 입력 예: 서울역, 해운대, 호텔명"
           style="width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:12px;margin:8px 0;box-sizing:border-box">
-        <button class="btn green" style="width:100%" onclick="KRXA_PATCH30_2_USER.inputDir()">지도 클릭 · Google Maps</button>
+        <button class="btn green" style="width:100%" onclick="KRXA_PATCH31.inputDir()">지도 클릭 · Google Maps</button>
       </div>
     `;
-
     openModal(title, html);
   }
 
   function inputDir(){
-    const el = document.getElementById("krxaPatch30Destination");
-    openDir(el && el.value ? el.value : "");
+    const el = document.getElementById("krxaPatch31Destination");
+    openMapDir(el && el.value ? el.value : "");
   }
 
-  function bind(){
+  function bindClickGate(){
     document.addEventListener("click", function(e){
       const el = e.target.closest("[data-admin-id], .quickCard, .card");
       if(!el) return;
 
+      if(isInsideM2M(el)) return;
+
       if(
         el.classList.contains("discoveryHero") ||
         el.classList.contains("travelHero") ||
-        el.getAttribute("data-admin-id")==="hero" ||
-        el.getAttribute("data-admin-id")==="food_hero" ||
+        el.getAttribute("data-admin-id") === "hero" ||
+        el.getAttribute("data-admin-id") === "food_hero" ||
         el.querySelector("[data-component='hero']")
       ){
         return;
@@ -989,11 +1026,11 @@ document.addEventListener("keydown", function(e){
       const text = (el.innerText || "").trim();
 
       const matched =
-        id==="airport" || text.includes("공항") || text.includes("항공") ? ["airport","항공/공항"] :
-        id==="hotel" || text.includes("호텔") || text.includes("숙박") ? ["hotel","호텔/숙박"] :
-        id==="tour" || text.includes("관광") ? ["tour","관광지"] :
-        id==="shopping" || text.includes("쇼핑") ? ["shopping","쇼핑"] :
-        id==="food" || text.includes("식당") || text.includes("맛집") ? ["food","식당/맛집"] :
+        id === "airport" || text.includes("공항") || text.includes("항공") ? ["airport","항공/공항"] :
+        id === "hotel" || text.includes("호텔") || text.includes("숙박") ? ["hotel","호텔/숙박"] :
+        id === "tour" || text.includes("관광") ? ["tour","관광지"] :
+        id === "shopping" || text.includes("쇼핑") ? ["shopping","쇼핑"] :
+        id === "food" || text.includes("식당") || text.includes("맛집") ? ["food","식당/맛집"] :
         null;
 
       if(!matched) return;
@@ -1004,14 +1041,21 @@ document.addEventListener("keydown", function(e){
     }, true);
   }
 
-  window.KRXA_PATCH30_2_USER = {
+  async function init(){
+    const data = await loadControl();
+    applyOffToVisibleCards(data);
+    bindClickGate();
+  }
+
+  window.KRXA_PATCH31 = {
     openAction,
-    openDir,
+    openMapDir,
+    openMapSearch,
     openSite,
     inputDir
   };
 
-  document.addEventListener("DOMContentLoaded", bind);
+  document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
 
