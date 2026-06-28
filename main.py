@@ -2904,3 +2904,20 @@ async def patch23_travel_tree_workspace():
 async def patch30_user_mirror_admin():
     return FileResponse("ui/control_user_mirror_admin.html")
 # ===== End PATCH30 User Mirror Admin =====
+
+
+# PATCH48_50_TRAVEL_V1_FINAL_ROUTER_START
+try:
+    from core.travel_api_router import router as travel_v1_final_router
+    app.include_router(travel_v1_final_router)
+    print("[TravelV1] final router loaded: /api/travel-v1/*")
+except Exception as e:
+    print("[TravelV1] final router load failed:", repr(e))
+
+try:
+    from core.travel_scheduler import start_travel_scheduler
+    start_travel_scheduler()
+    print("[TravelV1] scheduler armed: Thursday 01:00 KST")
+except Exception as e:
+    print("[TravelV1] scheduler start failed:", repr(e))
+# PATCH48_50_TRAVEL_V1_FINAL_ROUTER_END

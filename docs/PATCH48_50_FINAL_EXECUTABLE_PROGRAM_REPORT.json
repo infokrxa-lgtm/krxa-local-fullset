@@ -1,0 +1,30 @@
+{
+  "patch": "PATCH48_50_FINAL_EXECUTABLE_PROGRAM_V1",
+  "created_at": "2026-06-29T06:00:47.011039",
+  "main_py_backup": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch48_50_20260629_060046\\main.py",
+  "main_py_injected": true,
+  "created_files": [
+    "core/travel_db.py",
+    "core/travel_api_router.py",
+    "core/travel_auto_updater.py",
+    "core/travel_scheduler.py",
+    "core/travel_map.py",
+    "data/travel_v1_korea_tour_sources_seed_v1.json",
+    "README_PATCH48_50_FINAL_EXECUTABLE_PROGRAM.md"
+  ],
+  "routes": [
+    "/api/travel-v1/status",
+    "/api/travel-v1/db/init",
+    "/api/travel-v1/db/update/run",
+    "/api/travel-v1/sources",
+    "/api/travel-v1/sources/save",
+    "/api/travel-v1/sources/state",
+    "/api/travel-v1/sources/delete",
+    "/api/travel-v1/user-sources/save",
+    "/api/travel-v1/user-ui-reflection",
+    "/api/travel-v1/places/search",
+    "/api/travel-v1/festivals",
+    "/api/travel-v1/map-url",
+    "/api/travel-v1/m2m-boundary"
+  ]
+}
