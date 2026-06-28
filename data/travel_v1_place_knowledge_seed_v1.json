@@ -1,0 +1,153 @@
+{
+  "patch": "PATCH51_53_PLACE_KNOWLEDGE_ENGINE_SEED_V1",
+  "created_at": "2026-06-29T06:59:27.245380",
+  "principle": "콘텐츠를 장소 중심으로 분해한다. TV/YouTube/SNS는 장소의 출처 메타데이터로 누적한다.",
+  "sources": [
+    {
+      "id": "kbs_sixhour",
+      "name": "6시 내고향",
+      "type": "broadcast",
+      "owner": "KBS",
+      "url": "https://program.kbs.co.kr/1tv/culture/sixhour/",
+      "enabled": true,
+      "approved": true,
+      "priority": 10
+    },
+    {
+      "id": "tvchosun_baekban",
+      "name": "식객 허영만의 백반기행",
+      "type": "broadcast",
+      "owner": "TV조선",
+      "url": "https://broadcast.tvchosun.com/",
+      "enabled": true,
+      "approved": true,
+      "priority": 20
+    },
+    {
+      "id": "sbs_life_master",
+      "name": "생활의 달인",
+      "type": "broadcast",
+      "owner": "SBS",
+      "url": "https://programs.sbs.co.kr/culture/lifemaster",
+      "enabled": true,
+      "approved": true,
+      "priority": 30
+    },
+    {
+      "id": "kto_tourapi",
+      "name": "한국관광공사 TourAPI",
+      "type": "official_api",
+      "owner": "KTO",
+      "url": "https://www.data.go.kr/data/15101578/openapi.do",
+      "enabled": true,
+      "approved": true,
+      "priority": 1
+    }
+  ],
+  "content_candidates": [
+    {
+      "candidate_id": "kbs6_food_001",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 K-맛집 후보",
+      "place_name": "영춘옥",
+      "category": "food",
+      "region": "서울",
+      "city": "종로구",
+      "menu_or_theme": "전골",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "방송/2차자료 기반 후보. 주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_002",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 K-맛집 후보",
+      "place_name": "호박집",
+      "category": "food",
+      "region": "서울",
+      "city": "영등포구",
+      "menu_or_theme": "순댓국",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "방송/2차자료 기반 후보. 주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_003",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 K-맛집 후보",
+      "place_name": "현고대닭발",
+      "category": "food",
+      "region": "서울",
+      "city": "동대문구",
+      "menu_or_theme": "닭발/닭볶음탕",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "방송/2차자료 기반 후보. 주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_004",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 지역 맛집 후보",
+      "place_name": "명품 초당순두부",
+      "category": "food",
+      "region": "강원",
+      "city": "강릉시",
+      "menu_or_theme": "초당순두부",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_005",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 지역 맛집 후보",
+      "place_name": "남춘천닭갈비",
+      "category": "food",
+      "region": "강원",
+      "city": "춘천시",
+      "menu_or_theme": "닭갈비",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_006",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 지역 맛집 후보",
+      "place_name": "대청두부마을",
+      "category": "food",
+      "region": "대전",
+      "city": "",
+      "menu_or_theme": "두부 요리",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "주소·전화 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_007",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 부안 곰소 후보",
+      "place_name": "곰소 바지락·백합요리 맛집",
+      "category": "food",
+      "region": "전북",
+      "city": "부안군",
+      "menu_or_theme": "바지락/백합요리",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "기사 기반. 실명/주소 확인 필요"
+    },
+    {
+      "candidate_id": "kbs6_food_008",
+      "source_id": "kbs_sixhour",
+      "content_title": "6시 내고향 부안 곰소 후보",
+      "place_name": "곰소 젓갈백반 맛집",
+      "category": "food",
+      "region": "전북",
+      "city": "부안군",
+      "menu_or_theme": "젓갈백반",
+      "confidence": "candidate",
+      "status": "needs_verification",
+      "notes": "기사 기반. 실명/주소 확인 필요"
+    }
+  ]
+}

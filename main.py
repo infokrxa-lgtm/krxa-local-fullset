@@ -2921,3 +2921,13 @@ try:
 except Exception as e:
     print("[TravelV1] scheduler start failed:", repr(e))
 # PATCH48_50_TRAVEL_V1_FINAL_ROUTER_END
+
+
+# PATCH51_53_PLACE_KNOWLEDGE_ROUTER_START
+try:
+    from core.travel_place_knowledge_router import router as travel_place_knowledge_router
+    app.include_router(travel_place_knowledge_router)
+    print('[TravelV1] place knowledge router loaded: /api/travel-v1/knowledge/*')
+except Exception as e:
+    print('[TravelV1] place knowledge router load failed:', repr(e))
+# PATCH51_53_PLACE_KNOWLEDGE_ROUTER_END

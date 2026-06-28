@@ -1,0 +1,18 @@
+{
+  "patch": "PATCH51_53_PLACE_KNOWLEDGE_ENGINE_V1",
+  "created_at": "2026-06-29T06:59:27.365858",
+  "main_py_backup": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch51_53_20260629_065927\\main.py",
+  "main_py_injected": true,
+  "created_files": [
+    "core/travel_place_knowledge.py",
+    "core/travel_place_knowledge_router.py",
+    "data/travel_v1_place_knowledge_seed_v1.json"
+  ],
+  "routes": [
+    "POST /api/travel-v1/knowledge/seed",
+    "GET /api/travel-v1/knowledge/sources",
+    "GET /api/travel-v1/knowledge/candidates",
+    "GET /api/travel-v1/knowledge/recommend"
+  ],
+  "note": "후보 장소는 needs_verification 상태로 넣었다. 실제 주소/전화/지도 확정 후 verified로 승격한다."
+}
