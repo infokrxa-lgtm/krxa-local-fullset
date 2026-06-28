@@ -2931,3 +2931,13 @@ try:
 except Exception as e:
     print('[TravelV1] place knowledge router load failed:', repr(e))
 # PATCH51_53_PLACE_KNOWLEDGE_ROUTER_END
+
+
+# PATCH54_TRAVEL_V1_MASTER_DB_ROUTER_START
+try:
+    from core.travel_master_router import router as travel_v1_master_router
+    app.include_router(travel_v1_master_router)
+    print('[TravelV1] master db router loaded: /api/travel-v1/master/*')
+except Exception as e:
+    print('[TravelV1] master db router load failed:', repr(e))
+# PATCH54_TRAVEL_V1_MASTER_DB_ROUTER_END

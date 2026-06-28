@@ -1,0 +1,293 @@
+{
+  "patch": "PATCH54_TRAVEL_V1_MASTER_DB_SEED_V1",
+  "created_at": "2026-06-29T07:38:23.781103",
+  "principle": "실존 장소 중심. 공식/방송/YouTube/SNS는 place source metadata로 누적.",
+  "sources": [
+    {
+      "source_id": "kto_tourapi",
+      "name": "한국관광공사 TourAPI 국문 관광정보서비스",
+      "type": "official_api",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://www.data.go.kr/data/15101578/openapi.do",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 1,
+      "verification_status": "verified"
+    },
+    {
+      "source_id": "visitkorea_ko",
+      "name": "대한민국 구석구석",
+      "type": "official",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://korean.visitkorea.or.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 2,
+      "verification_status": "verified"
+    },
+    {
+      "source_id": "visitkorea_en",
+      "name": "VisitKorea",
+      "type": "official",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://english.visitkorea.or.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 3,
+      "verification_status": "verified"
+    },
+    {
+      "source_id": "kto_conlab",
+      "name": "한국관광콘텐츠랩",
+      "type": "official",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://conlab.visitkorea.or.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 4,
+      "verification_status": "verified"
+    },
+    {
+      "source_id": "kbs_sixhour",
+      "name": "6시 내고향",
+      "type": "broadcast",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://program.kbs.co.kr/1tv/culture/sixhour/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 100,
+      "verification_status": "verified"
+    },
+    {
+      "source_id": "tvchosun_baekban",
+      "name": "식객 허영만의 백반기행",
+      "type": "broadcast",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://broadcast.tvchosun.com/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 101,
+      "verification_status": "source"
+    },
+    {
+      "source_id": "sbs_life_master",
+      "name": "생활의 달인",
+      "type": "broadcast",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://programs.sbs.co.kr/culture/lifemaster",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 102,
+      "verification_status": "source"
+    },
+    {
+      "source_id": "kto_instagram",
+      "name": "대한민국 구석구석 Instagram",
+      "type": "instagram",
+      "region_scope": "national",
+      "region": "전국",
+      "url": "https://www.instagram.com/kto9suk9suk/",
+      "enabled": 1,
+      "approved": 1,
+      "priority": 300,
+      "verification_status": "verified"
+    }
+  ],
+  "region_gates": [
+    [
+      "서울",
+      "Visit Seoul",
+      "https://www.visitseoul.net/"
+    ],
+    [
+      "부산",
+      "Visit Busan",
+      "https://www.visitbusan.net/"
+    ],
+    [
+      "대구",
+      "대구관광",
+      "https://tour.daegu.go.kr/"
+    ],
+    [
+      "인천",
+      "인천투어",
+      "https://itour.incheon.go.kr/"
+    ],
+    [
+      "광주",
+      "광주관광",
+      "https://tour.gwangju.go.kr/"
+    ],
+    [
+      "대전",
+      "대전관광",
+      "https://www.daejeon.go.kr/tou/index.do"
+    ],
+    [
+      "울산",
+      "울산관광",
+      "https://tour.ulsan.go.kr/"
+    ],
+    [
+      "세종",
+      "세종관광",
+      "https://www.sejong.go.kr/tour.do"
+    ],
+    [
+      "경기",
+      "경기관광포털",
+      "https://ggtour.or.kr/"
+    ],
+    [
+      "강원",
+      "강원관광",
+      "https://www.gangwon.to/"
+    ],
+    [
+      "충북",
+      "충북나드리",
+      "https://tour.chungbuk.go.kr/"
+    ],
+    [
+      "충남",
+      "충남관광",
+      "https://tour.chungnam.go.kr/"
+    ],
+    [
+      "전북",
+      "전북관광",
+      "https://tour.jb.go.kr/"
+    ],
+    [
+      "전남",
+      "남도여행길잡이",
+      "https://www.namdokorea.com/"
+    ],
+    [
+      "경북",
+      "경북나드리",
+      "https://tour.gb.go.kr/"
+    ],
+    [
+      "경남",
+      "경남관광길잡이",
+      "https://tour.gyeongnam.go.kr/"
+    ],
+    [
+      "제주",
+      "Visit Jeju",
+      "https://www.visitjeju.net/"
+    ]
+  ],
+  "place_candidates": [
+    {
+      "place_id": "candidate_kbs6_001",
+      "name": "영춘옥",
+      "category": "food",
+      "region": "서울",
+      "city": "종로구",
+      "district": "",
+      "address": "",
+      "phone": "",
+      "official_url": "",
+      "source_id": "kbs_sixhour",
+      "source_type": "broadcast",
+      "tags": [
+        "전골",
+        "방송맛집",
+        "needs_verification"
+      ],
+      "status": "needs_verification",
+      "score": 35
+    },
+    {
+      "place_id": "candidate_kbs6_002",
+      "name": "호박집",
+      "category": "food",
+      "region": "서울",
+      "city": "영등포구",
+      "district": "",
+      "address": "",
+      "phone": "",
+      "official_url": "",
+      "source_id": "kbs_sixhour",
+      "source_type": "broadcast",
+      "tags": [
+        "순댓국",
+        "방송맛집",
+        "needs_verification"
+      ],
+      "status": "needs_verification",
+      "score": 35
+    },
+    {
+      "place_id": "candidate_kbs6_003",
+      "name": "현고대닭발",
+      "category": "food",
+      "region": "서울",
+      "city": "동대문구",
+      "district": "",
+      "address": "",
+      "phone": "",
+      "official_url": "",
+      "source_id": "kbs_sixhour",
+      "source_type": "broadcast",
+      "tags": [
+        "닭발",
+        "닭볶음탕",
+        "방송맛집",
+        "needs_verification"
+      ],
+      "status": "needs_verification",
+      "score": 35
+    },
+    {
+      "place_id": "candidate_kbs6_004",
+      "name": "명품 초당순두부",
+      "category": "food",
+      "region": "강원",
+      "city": "강릉시",
+      "district": "",
+      "address": "",
+      "phone": "",
+      "official_url": "",
+      "source_id": "kbs_sixhour",
+      "source_type": "broadcast",
+      "tags": [
+        "초당순두부",
+        "방송맛집",
+        "needs_verification"
+      ],
+      "status": "needs_verification",
+      "score": 35
+    },
+    {
+      "place_id": "candidate_kbs6_005",
+      "name": "남춘천닭갈비",
+      "category": "food",
+      "region": "강원",
+      "city": "춘천시",
+      "district": "",
+      "address": "",
+      "phone": "",
+      "official_url": "",
+      "source_id": "kbs_sixhour",
+      "source_type": "broadcast",
+      "tags": [
+        "닭갈비",
+        "방송맛집",
+        "needs_verification"
+      ],
+      "status": "needs_verification",
+      "score": 35
+    }
+  ]
+}
