@@ -1,3 +1,41 @@
+
+/* PATCH67_V2_AI_DIALOGUE_UI_SAFE_GUARD_START */
+(function(){
+  if(window.KRXA_PATCH67_V2_UI_SAFE_GUARD){ return; }
+  window.KRXA_PATCH67_V2_UI_SAFE_GUARD = true;
+
+  function isRootLike(el){
+    try{
+      if(!el){ return false; }
+      if(el === document.body || el === document.documentElement){ return true; }
+      var id = String(el.id || '').toLowerCase();
+      var cls = String(el.className || '').toLowerCase();
+      if(id === 'app' || id === 'root'){ return true; }
+      if(cls.indexOf('page-wrap') >= 0 || cls.indexOf('phone') >= 0){ return true; }
+    }catch(e){}
+    return false;
+  }
+
+  window.KRXA_SAFE_SET_TEXT = function(el, text){
+    try{
+      if(!el || isRootLike(el)){ return false; }
+      el.textContent = text || '';
+      return true;
+    }catch(e){ return false; }
+  };
+
+  window.KRXA_SAFE_SET_HTML = function(el, html){
+    try{
+      if(!el || isRootLike(el)){ return false; }
+      el.innerHTML = html || '';
+      return true;
+    }catch(e){ return false; }
+  };
+
+  window.KRXA_AI_DIALOGUE_UI_MODE = 'service_only';
+})();
+/* PATCH67_V2_AI_DIALOGUE_UI_SAFE_GUARD_END */
+
 /* ai_dialogue_loop.js - Travel V1 Page5 AI대화 별도 루프 */
 (function(){
   if(window.KRXA_AI_DIALOGUE_LOOP_LOADED){ return; }
@@ -320,7 +358,7 @@
     try{
       const b=box(label); if(!b)return;
       const esc=String(val||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      b.innerHTML='<b>'+label+'</b><br>'+esc;
+      /* PATCH67_V2_SAFE_BOX_WRITE */ if(window.KRXA_SAFE_SET_HTML){ window.KRXA_SAFE_SET_HTML(b, '<b>'+label+'</b><br>'+esc); } else { b.innerHTML='<b>'+label+'</b><br>'+esc; }
     }catch(e){}
   }
   function status(s){
@@ -328,7 +366,7 @@
       const n=Array.from(document.querySelectorAll('p,div,span')).find(x=>{
         const t=txt(x); return t.includes('말하기 버튼')||t.includes('다음 말')||t.includes('듣는 중')||t.includes('기다립니다');
       });
-      if(n)n.innerText=s;
+      /* PATCH67_V2_SAFE_STATUS_WRITE */ if(n && (!window.KRXA_SAFE_SET_TEXT || window.KRXA_SAFE_SET_TEXT(n,s)===false)){ try{ if(n!==document.body) n.innerText=s; }catch(e){} }
     }catch(e){}
   }
 

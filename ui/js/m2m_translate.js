@@ -382,6 +382,18 @@ function shouldSendToSTT(blob, meta) {
 
   async function translateText(text, source) {
 
+  /* PATCH67_V2_MINI_M2M_AI_DIALOGUE_BRANCH */
+  try{
+    if(window.KRXA_MINI_M2M_AI_DIALOGUE && window.KRXA_MINI_M2M_AI_DIALOGUE.isOn && window.KRXA_MINI_M2M_AI_DIALOGUE.isOn()){
+      if(window.KRXA_AI_DIALOGUE && window.KRXA_AI_DIALOGUE.call){
+        return await window.KRXA_AI_DIALOGUE.call(text, {sourceLang: sourceLang, targetLang: sourceLang});
+      }
+    }
+  }catch(e){
+    console.warn("[PATCH67 v2] mini m2m AI dialogue branch failed; fallback to translation", e);
+  }
+
+
   /* PATCH58_AI_DIALOGUE_SEPARATE_ROUTE_BRANCH */
   try{
     if(window.KRXA_AI_DIALOGUE && window.KRXA_AI_DIALOGUE.isOn && window.KRXA_AI_DIALOGUE.isOn()){

@@ -1,0 +1,19 @@
+{
+  "patch": "PATCH67_V2_AI_DIALOGUE_UI_SAFE_MINI_M2M",
+  "created_at": "2026-06-29T16:45:24.985924",
+  "decision": "AI대화는 화면을 다시 그리지 않는 서비스 루프이며, 미니말대말도 AI대화 선택이 가능해야 한다.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch67_v2_20260629_164524\\ui\\app.html",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch67_v2_20260629_164524\\ui\\js\\ai_dialogue_loop.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch67_v2_20260629_164524\\ui\\js\\m2m_translate.js"
+  },
+  "changed": [
+    "inserted PATCH67 v2 UI safe guard",
+    "patched setBox with safe setter",
+    "patched status with safe setter",
+    "created ui/js/mini_m2m_ai_dialogue_toggle.js",
+    "loaded mini_m2m_ai_dialogue_toggle.js in ui/app.html",
+    "added PATCH67 v2 mini M2M AI branch"
+  ],
+  "warnings": []
+}
