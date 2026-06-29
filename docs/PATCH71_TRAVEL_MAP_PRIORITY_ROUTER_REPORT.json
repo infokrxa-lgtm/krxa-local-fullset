@@ -1,0 +1,18 @@
+{
+  "patch": "PATCH71_TRAVEL_MAP_PRIORITY_ROUTER_V1",
+  "created_at": "2026-06-29T23:32:02.086600",
+  "decision": "한국은 NAVER Map 우선, Google Maps 백업. 해외는 국가별 지도 프로필 우선, Google Maps 백업.",
+  "changed": [
+    "created data/travel_v2_map_priority_seed_v1.json",
+    "created core/travel_map_priority.py",
+    "created core/travel_map_priority_router.py",
+    "created ui/js/travel_map_priority.js",
+    "loaded travel_map_priority.js in ui/app.html",
+    "included travel_map_priority_router in main.py"
+  ],
+  "warnings": [],
+  "backups": {
+    "main.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch71_20260629_233201\\main.py",
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch71_20260629_233201\\ui\\app.html"
+  }
+}

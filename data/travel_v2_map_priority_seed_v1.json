@@ -1,0 +1,59 @@
+{
+  "version": "travel_v2_map_priority_seed_v1",
+  "default_policy": {
+    "KR": [
+      "naver_web",
+      "google_web"
+    ],
+    "GLOBAL": [
+      "google_web"
+    ]
+  },
+  "providers": [
+    {
+      "id": "naver_web",
+      "name": "NAVER Map Web",
+      "country_scope": [
+        "KR"
+      ],
+      "enabled": true,
+      "priority": 1,
+      "type": "web",
+      "url_template": "https://map.naver.com/p/directions/{start_lng},{start_lat},현재위치,,/{dest_lng},{dest_lat},{dest_name},,",
+      "requires_coordinates": true,
+      "user_editable": true
+    },
+    {
+      "id": "google_web",
+      "name": "Google Maps Web",
+      "country_scope": [
+        "GLOBAL"
+      ],
+      "enabled": true,
+      "priority": 2,
+      "type": "web",
+      "url_template": "https://www.google.com/maps/dir/?api=1&origin={start_lat},{start_lng}&destination={dest_lat},{dest_lng}&travelmode=transit",
+      "requires_coordinates": true,
+      "user_editable": true
+    }
+  ],
+  "country_profiles": [
+    {
+      "country_code": "KR",
+      "country_name": "대한민국",
+      "provider_order": [
+        "naver_web",
+        "google_web"
+      ],
+      "research_status": "fixed_default"
+    },
+    {
+      "country_code": "GLOBAL",
+      "country_name": "해외 기본",
+      "provider_order": [
+        "google_web"
+      ],
+      "research_status": "needs_country_research"
+    }
+  ]
+}

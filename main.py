@@ -2961,3 +2961,12 @@ try:
 except Exception as e:
     print("[TravelV2] router load failed:", repr(e))
 # TRAVEL_V2_BATCH_PATCH60_64_ROUTER_END
+
+# PATCH71_TRAVEL_MAP_PRIORITY_ROUTER_START
+try:
+    from core.travel_map_priority_router import router as travel_map_priority_router
+    app.include_router(travel_map_priority_router)
+    print("[TravelMapPriority] router loaded: /api/travel-v2/map-priority/*")
+except Exception as e:
+    print("[TravelMapPriority] router load failed:", repr(e))
+# PATCH71_TRAVEL_MAP_PRIORITY_ROUTER_END
