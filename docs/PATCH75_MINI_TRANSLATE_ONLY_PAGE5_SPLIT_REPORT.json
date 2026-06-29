@@ -1,0 +1,19 @@
+{
+  "patch": "PATCH75_MINI_TRANSLATE_ONLY_PAGE5_SPLIT_V1",
+  "created_at": "2026-06-30T08:46:32.994686",
+  "decision": "미니 말대말은 통역 전용. 5페이지에서만 통역/AI대화 전환. STT/TTS 유지.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch75_20260630_084632\\ui\\app.html",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch75_20260630_084632\\ui\\js\\m2m_translate.js",
+    "ui/js/mini_m2m_simple_panel.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch75_20260630_084632\\ui\\js\\mini_m2m_simple_panel.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch75_20260630_084632\\ui\\js\\ai_dialogue_loop.js"
+  },
+  "changed": [
+    "normalized mini_talk onclick to translate-only panel count=4",
+    "replaced mini_m2m_simple_panel.js as translate-only",
+    "changed requestMicAndStart signature to accept opt",
+    "inserted forceTranslate bypass into requestMicAndStart AI gate",
+    "added mini-translate guard to ai_dialogue_loop"
+  ],
+  "warnings": []
+}

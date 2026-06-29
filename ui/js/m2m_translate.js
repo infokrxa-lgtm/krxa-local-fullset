@@ -738,11 +738,14 @@ try {
       setFlowState("error", "마이크 오류");
     }
   }
-   function requestMicAndStart() {
+   function requestMicAndStart(opt) {
+    opt = opt || {};
 
     /* PATCH74_M2M_MIC_AI_GATE_START */
+    /* PATCH75_FORCE_TRANSLATE_BYPASS */
+    if (opt && opt.forceTranslate === true) { window.KRXA_MINI_M2M_FORCE_TRANSLATE = true; }
     try {
-      var aiMode =
+      var aiMode = !(opt && opt.forceTranslate === true) &&
         window.KRXA_MINI_M2M_MODE === "ai" ||
         window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED === true ||
         window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true ||

@@ -85,6 +85,13 @@
   }
 
   function isAiOn(){
+    /* PATCH75_AI_PAGE5_ONLY_GUARD */
+    try{
+      if(window.KRXA_MINI_M2M_FORCE_TRANSLATE === true || window.KRXA_MINI_M2M_MODE === "translate"){
+        return false;
+      }
+    }catch(e){}
+
     try{
       if(window.KRXA_MINI_M2M_MODE === "ai"){ return true; }
       if(window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED === true){ return true; }
