@@ -2941,3 +2941,13 @@ try:
 except Exception as e:
     print('[TravelV1] master db router load failed:', repr(e))
 # PATCH54_TRAVEL_V1_MASTER_DB_ROUTER_END
+
+
+# PATCH58_AI_DIALOGUE_SEPARATE_ROUTER_START
+try:
+    from core.travel_ai_dialogue_router import router as travel_ai_dialogue_router
+    app.include_router(travel_ai_dialogue_router)
+    print("[TravelV1] ai dialogue separate router loaded: /api/travel-v1/ai-dialogue/*")
+except Exception as e:
+    print("[TravelV1] ai dialogue separate router load failed:", repr(e))
+# PATCH58_AI_DIALOGUE_SEPARATE_ROUTER_END

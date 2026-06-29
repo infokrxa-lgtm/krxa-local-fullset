@@ -1,3 +1,44 @@
+
+/* PATCH56_AI_DIALOGUE_ROUTE_BINDING_START */
+function krxaIsAiDialogueMode(){
+  try{
+    if(window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true){ return true; }
+    var labels = Array.from(document.querySelectorAll("label, div, span, button"));
+    var aiLabel = labels.find(function(el){ return (el.innerText || "").indexOf("AI대화") >= 0; });
+    if(aiLabel){
+      var box = aiLabel.querySelector('input[type="checkbox"]') || document.querySelector('input[type="checkbox"]:checked');
+      if(box && box.checked){ return true; }
+    }
+  }catch(e){}
+  return false;
+}
+
+async function krxaTurnDialogue(text, sourceLang, targetLang){
+  var payload = {
+    text: text || "",
+    message: text || "",
+    prompt: text || "",
+    source_lang: sourceLang || "auto",
+    target_lang: targetLang || "ko",
+    mode: "ai_dialogue",
+    context: { page:"travel_v1_page5", route:"ai_dialogue" }
+  };
+  var res = await fetch("/api/turn", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  var data = {};
+  try{ data = await res.json(); }catch(e){ data = {}; }
+  var out = data.reply || data.response || data.answer || data.text || data.translated || data.result || "";
+  data.translated = out;
+  data.text = out;
+  data.mode = "ai_dialogue";
+  data.route = "/api/turn";
+  return data;
+}
+/* PATCH56_AI_DIALOGUE_ROUTE_BINDING_END */
+
 /* KRXA Travel V1 - M2M Translate Engine FINAL
    사람처럼 자연스러운 말대말 대화 전용
    TV시청은 여기서 처리하지 않음: 2페이지 TV 클릭 → 별도 새창 구조
@@ -340,6 +381,26 @@ function shouldSendToSTT(blob, meta) {
 }
 
   async function translateText(text, source) {
+
+  /* PATCH58_AI_DIALOGUE_SEPARATE_ROUTE_BRANCH */
+  try{
+    if(window.KRXA_AI_DIALOGUE && window.KRXA_AI_DIALOGUE.isOn && window.KRXA_AI_DIALOGUE.isOn()){
+      return await window.KRXA_AI_DIALOGUE.call(text, {sourceLang: sourceLang, targetLang: targetLang});
+    }
+  }catch(e){
+    console.warn("[PATCH58] separate AI dialogue route failed; fallback to translation", e);
+  }
+
+
+  /* PATCH56_TRANSLATE_TEXT_AI_DIALOGUE_BRANCH */
+  try{
+    if(krxaIsAiDialogueMode()){
+      return await krxaTurnDialogue(text, sourceLang, targetLang);
+    }
+  }catch(e){
+    console.warn("[PATCH56] AI dialogue branch failed; fallback to translate", e);
+  }
+
     const cleanText = String(text || "").trim();
     if (!cleanText || cleanText === "-") {
       setStatus("원문 없음");

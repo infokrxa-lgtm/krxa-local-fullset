@@ -330,7 +330,7 @@
             <button id="l_zh" onclick="KRXA_Translate.setLang('zh')">중국어</button>
           </div>
           <select id="langMore" onchange="KRXA_Translate.setLang(this.value)"><option value="">기타 언어 선택</option></select>
-          <div class="autoBar"><b>자동대화</b><div id="autoToggle" class="toggle" onclick="KRXA_Translate.toggleAuto()"><div class="knob"></div></div></div>
+          <div class="autoBar"><b>AI대화</b><div id="autoToggle" class="toggle" onclick="KRXA_Translate.toggleAuto()"><div class="knob"></div></div></div>
           <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" onclick="KRXA_Translate.requestMicAndStart()">🎙️</div></div>
           <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
           <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
@@ -420,6 +420,18 @@
 <script src="/ui/js/travel_recommend.js"></script>
 <script src="/ui/js/hero_recommend.js"></script>
 <script src="/ui/js/user_links.js"></script>
+
+<script>
+/* PATCH55_V2_PAGE5_AI_DIALOGUE_TOGGLE_START */
+window.KRXA_PAGE5_TRANSLATION_MODE = 'keep_translation';
+window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = false;
+window.KRXA_PAGE5_AI_DIALOGUE_ROUTE = '/api/turn';
+window.KRXA_PAGE5_TRANSLATION_ROUTE = '/api/translate';
+window.KRXA_PAGE5_AI_DIALOGUE_LABEL = 'AI대화';
+/* PATCH55_V2_PAGE5_AI_DIALOGUE_TOGGLE_END */
+</script>
+
+<script src="/ui/js/ai_dialogue_loop.js"></script>
 <script src="/ui/js/m2m_translate.js"></script>
 
 <script>
@@ -1029,6 +1041,26 @@ document.addEventListener("keydown", function(e){
 
   document.addEventListener("DOMContentLoaded", bindRouter);
 })();
+</script>
+
+
+<script>
+/* PATCH56_AI_DIALOGUE_TOGGLE_STATE_SYNC_START */
+document.addEventListener("change", function(e){
+  try{
+    var t = e.target;
+    if(!t || t.type !== "checkbox"){ return; }
+    var near = "";
+    if(t.closest){
+      var p = t.closest("label, div");
+      near = p ? (p.innerText || "") : "";
+    }
+    if(near.indexOf("AI대화") >= 0 || near.indexOf("자동대화") >= 0){
+      window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = !!t.checked;
+    }
+  }catch(err){}
+});
+/* PATCH56_AI_DIALOGUE_TOGGLE_STATE_SYNC_END */
 </script>
 
 </body>

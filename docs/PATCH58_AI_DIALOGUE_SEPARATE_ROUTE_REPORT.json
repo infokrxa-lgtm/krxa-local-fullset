@@ -1,0 +1,31 @@
+{
+  "patch": "PATCH58_AI_DIALOGUE_SEPARATE_ROUTE_V1",
+  "created_at": "2026-06-29T14:24:35.673543",
+  "decision": "AI대화는 기존 통역 루트에 섞지 않고 별도 루트로 분리한다.",
+  "routes": {
+    "translation": {
+      "js": "ui/js/m2m_translate.js",
+      "api": "/api/translate",
+      "limits": "existing"
+    },
+    "ai_dialogue": {
+      "js": "ui/js/ai_dialogue_loop.js",
+      "api": "/api/travel-v1/ai-dialogue/turn",
+      "limits": "free_dialogue_policy"
+    }
+  },
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch58_20260629_142435\\ui\\app.html",
+    "main.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch58_20260629_142435\\main.py",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch58_20260629_142435\\ui\\js\\m2m_translate.js"
+  },
+  "changed": [
+    "created core/travel_ai_dialogue_router.py",
+    "created ui/js/ai_dialogue_loop.js",
+    "loaded ai_dialogue_loop.js in ui/app.html",
+    "included travel_ai_dialogue_router in main.py",
+    "m2m_translate.js checks separate AI dialogue route first"
+  ],
+  "warnings": [],
+  "next": "PATCH59에서 ai dialogue router를 실제 AI 엔진으로 연결"
+}
