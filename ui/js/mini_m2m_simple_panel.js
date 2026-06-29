@@ -160,6 +160,7 @@
   setTimeout(init, 2500);
 
   window.KRXA_MINI_M2M_SIMPLE_PANEL = {
+    /* PATCH74_OPEN_ALIAS */ open: init,
     init: init,
     runMic: runMic,
     setMode: setMode,

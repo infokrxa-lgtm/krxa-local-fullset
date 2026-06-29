@@ -739,6 +739,28 @@ try {
     }
   }
    function requestMicAndStart() {
+
+    /* PATCH74_M2M_MIC_AI_GATE_START */
+    try {
+      var aiMode =
+        window.KRXA_MINI_M2M_MODE === "ai" ||
+        window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED === true ||
+        window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true ||
+        window.KRXA_AI_DIALOGUE_ENABLED === true;
+
+      if (aiMode) {
+        if (window.KRXA_AI_DIALOGUE_TRUE_AUTO && window.KRXA_AI_DIALOGUE_TRUE_AUTO.start) {
+          window.KRXA_AI_DIALOGUE_TRUE_AUTO.start();
+          return;
+        }
+        if (window.KRXA_AI_DIALOGUE_AUTO_LOOP && window.KRXA_AI_DIALOGUE_AUTO_LOOP.start) {
+          window.KRXA_AI_DIALOGUE_AUTO_LOOP.start();
+          return;
+        }
+      }
+    } catch(e) {}
+    /* PATCH74_M2M_MIC_AI_GATE_END */
+
     if (micStream) {
       recordVoice();
       return;
@@ -770,7 +792,7 @@ try {
         "말하기 / 텍스트 입력",
         "<textarea id='quickTranslateText' placeholder='통역할 내용을 입력하세요'></textarea>" +
           "<button class='btn blue' style='width:100%;margin-top:6px' onclick='KRXA_Translate.sendQuickText()'>전송</button>" +
-          "<button class='btn green' style='width:100%;margin-top:6px' onclick='KRXA_Translate.requestMicAndStart()'>🎙 음성 입력</button>"
+          "<button type='button' class='btn green' style='width:100%;margin-top:6px' onclick='event.preventDefault(); event.stopPropagation(); KRXA_Translate.requestMicAndStart()'>🎙 음성 입력</button>"
       );
       return;
     }
