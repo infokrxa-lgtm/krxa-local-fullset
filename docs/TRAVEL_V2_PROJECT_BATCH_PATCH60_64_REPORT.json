@@ -1,0 +1,31 @@
+{
+  "patch": "TRAVEL_V2_PROJECT_BATCH_PATCH60_64_V1",
+  "created_at": "2026-06-29T15:26:07.906359",
+  "scope": [
+    "1 Travel V2 UX 설계",
+    "2 Master DB V2 재구성",
+    "3 Reflection Engine V2",
+    "4 전국 실존 데이터 구축용 seed/target",
+    "5 Git Push / Render 배포 기준"
+  ],
+  "backups": {
+    "main.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\travel_v2_patch60_64_20260629_152606\\main.py",
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\travel_v2_patch60_64_20260629_152606\\ui\\app.html"
+  },
+  "changed": [
+    "created data/travel_v2_ux_flow_v1.json",
+    "created data/travel_v2_master_seed_v1.json",
+    "created core/travel_v2_engine.py",
+    "created core/travel_v2_router.py",
+    "created ui/js/travel_v2_flow.js",
+    "loaded travel_v2_flow.js in ui/app.html",
+    "included travel_v2_router in main.py"
+  ],
+  "warnings": [],
+  "verify": [
+    "python -m py_compile core\\travel_v2_engine.py core\\travel_v2_router.py",
+    "python -c \"from core.travel_v2_engine import import_seed, status; print(import_seed()); print(status())\"",
+    "findstr /n \"TRAVEL_V2_BATCH_PATCH60_64_ROUTER\" main.py",
+    "findstr /n \"travel_v2_flow\" ui\\app.html"
+  ]
+}

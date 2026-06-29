@@ -1,0 +1,294 @@
+{
+  "version": "Travel V2 Reflection v1",
+  "created_at": "2026-06-29T15:26:33",
+  "ux": {
+    "version": "Travel V2 UX Flow v1",
+    "principle": "사용자는 페이지를 이동하는 것이 아니라 여행 흐름을 이동한다.",
+    "steps": [
+      {
+        "id": "home",
+        "name": "HOME",
+        "label": "현재",
+        "purpose": "현재 위치/시간/언어/국가/상황 인식",
+        "user_actions": [
+          "현재 위치 확인",
+          "언어 확인",
+          "빠른 목적 선택"
+        ]
+      },
+      {
+        "id": "discover",
+        "name": "DISCOVER",
+        "label": "목적",
+        "purpose": "맛집/관광/축제/숙소/쇼핑/병원/교통 선택",
+        "user_actions": [
+          "목적 선택",
+          "키워드 입력",
+          "주변 보기"
+        ]
+      },
+      {
+        "id": "recommend",
+        "name": "RECOMMEND",
+        "label": "추천",
+        "purpose": "공식/방송/YouTube/SNS/사용자/AI 점수를 합친 추천",
+        "user_actions": [
+          "TOP 추천 보기",
+          "필터 변경"
+        ]
+      },
+      {
+        "id": "place",
+        "name": "PLACE",
+        "label": "상세",
+        "purpose": "장소 상세 및 출처 누적 표시",
+        "user_actions": [
+          "지도",
+          "전화",
+          "공식사이트",
+          "출처 확인"
+        ]
+      },
+      {
+        "id": "action",
+        "name": "ACTION",
+        "label": "실행",
+        "purpose": "길찾기/전화/예약/통역/AI질문 실행",
+        "user_actions": [
+          "길찾기",
+          "전화",
+          "예약",
+          "통역",
+          "AI질문"
+        ]
+      },
+      {
+        "id": "ai",
+        "name": "AI",
+        "label": "AI",
+        "purpose": "AI대화 별도 루트와 말대말 통역 루트 연결",
+        "user_actions": [
+          "AI대화 ON/OFF",
+          "마이크",
+          "자동자유대화"
+        ]
+      },
+      {
+        "id": "memory",
+        "name": "MEMORY",
+        "label": "기록",
+        "purpose": "방문/즐겨찾기/평가/학습 기록",
+        "user_actions": [
+          "저장",
+          "평가",
+          "즐겨찾기"
+        ]
+      }
+    ],
+    "route_policy": {
+      "translation": "ui/js/m2m_translate.js -> /api/translate",
+      "ai_dialogue": "ui/js/ai_dialogue_loop.js -> /api/travel-v1/ai-dialogue/turn",
+      "travel_v2": "core/travel_v2_router.py -> /api/travel-v2/*"
+    }
+  },
+  "regions": [
+    {
+      "region": "강원",
+      "name": "강원관광",
+      "url": "https://www.gangwon.to/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "경기",
+      "name": "경기관광포털",
+      "url": "https://ggtour.or.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "경남",
+      "name": "경남관광길잡이",
+      "url": "https://tour.gyeongnam.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "경북",
+      "name": "경북나드리",
+      "url": "https://tour.gb.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "광주",
+      "name": "광주관광",
+      "url": "https://tour.gwangju.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "대구",
+      "name": "대구관광",
+      "url": "https://tour.daegu.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "대전",
+      "name": "대전관광",
+      "url": "https://www.daejeon.go.kr/tou/index.do",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "부산",
+      "name": "Visit Busan",
+      "url": "https://www.visitbusan.net/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "서울",
+      "name": "Visit Seoul",
+      "url": "https://www.visitseoul.net/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "세종",
+      "name": "세종관광",
+      "url": "https://www.sejong.go.kr/tour.do",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "울산",
+      "name": "울산관광",
+      "url": "https://tour.ulsan.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "인천",
+      "name": "인천투어",
+      "url": "https://itour.incheon.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "전남",
+      "name": "남도여행길잡이",
+      "url": "https://www.namdokorea.com/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "전북",
+      "name": "전북관광",
+      "url": "https://tour.jb.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "제주",
+      "name": "Visit Jeju",
+      "url": "https://www.visitjeju.net/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "충남",
+      "name": "충남관광",
+      "url": "https://tour.chungnam.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "region": "충북",
+      "name": "충북나드리",
+      "url": "https://tour.chungbuk.go.kr/",
+      "enabled": 1,
+      "approved": 1,
+      "updated_at": "2026-06-29T15:26:33"
+    }
+  ],
+  "hero": {
+    "steps": [
+      "home",
+      "discover",
+      "recommend",
+      "place",
+      "action",
+      "ai",
+      "memory"
+    ],
+    "categories": [
+      "food",
+      "tour",
+      "festival",
+      "stay",
+      "shopping",
+      "hospital",
+      "transport",
+      "sos"
+    ]
+  },
+  "places": [
+    {
+      "id": "v2_candidate_001",
+      "name": "영춘옥",
+      "category": "food",
+      "region": "서울",
+      "city": "종로구",
+      "source_id": "kbs_sixhour",
+      "status": "needs_verification",
+      "score": 35,
+      "enabled": 1,
+      "approved": 0,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "id": "v2_candidate_003",
+      "name": "현고대닭발",
+      "category": "food",
+      "region": "서울",
+      "city": "동대문구",
+      "source_id": "kbs_sixhour",
+      "status": "needs_verification",
+      "score": 35,
+      "enabled": 1,
+      "approved": 0,
+      "updated_at": "2026-06-29T15:26:33"
+    },
+    {
+      "id": "v2_candidate_002",
+      "name": "호박집",
+      "category": "food",
+      "region": "서울",
+      "city": "영등포구",
+      "source_id": "kbs_sixhour",
+      "status": "needs_verification",
+      "score": 35,
+      "enabled": 1,
+      "approved": 0,
+      "updated_at": "2026-06-29T15:26:33"
+    }
+  ]
+}
