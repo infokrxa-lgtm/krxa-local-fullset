@@ -1,0 +1,16 @@
+{
+  "patch": "PATCH66_KRXA_TRAVEL_AI_CALL_PROMPT_V1",
+  "created_at": "2026-06-29T16:09:29.577315",
+  "decision": "AI대화 호출문을 일반 ChatGPT 기준에서 KRXA Travel AI 동행자 기준으로 교체한다.",
+  "call_phrase": "KRXA_TRAVEL_AI_COMPANION_V1",
+  "prompt_file": "data/travel_v2_krxa_travel_ai_call_prompt_v1.json",
+  "router": "core/travel_ai_dialogue_router.py",
+  "backup": {
+    "core/travel_ai_dialogue_router.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch66_20260629_160929\\core\\travel_ai_dialogue_router.py"
+  },
+  "added_api": [
+    "GET /api/travel-v1/ai-dialogue/prompt",
+    "GET /api/travel-v1/ai-dialogue/status",
+    "POST /api/travel-v1/ai-dialogue/turn"
+  ]
+}

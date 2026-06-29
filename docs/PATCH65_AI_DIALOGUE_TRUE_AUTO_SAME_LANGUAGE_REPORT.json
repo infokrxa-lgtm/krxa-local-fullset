@@ -1,0 +1,21 @@
+{
+  "patch": "PATCH65_AI_DIALOGUE_TRUE_AUTO_SAME_LANGUAGE_V1",
+  "created_at": "2026-06-29T16:06:14.279362",
+  "decision": "AI대화는 통역사가 아니라 같은 언어로 자유대화하는 별도 자동음성 루프다.",
+  "call_phrase": "AI_DIALOGUE_FREE_SAME_LANGUAGE_V1",
+  "rules": [
+    "AI대화 ON 후 말하기/마이크 1회 클릭이면 자동 듣기 루프 시작",
+    "사용자 발화 언어로 인식하고 같은 언어로 답변",
+    "번역은 명시 요청시에만 수행",
+    "기존 통역 루트는 유지"
+  ],
+  "backups": {
+    "core/travel_ai_dialogue_router.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch65_20260629_160614\\core\\travel_ai_dialogue_router.py",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch65_20260629_160614\\ui\\js\\ai_dialogue_loop.js"
+  },
+  "changed": [
+    "updated core/travel_ai_dialogue_router.py with same-language call phrase",
+    "added PATCH65 true auto same-language loop"
+  ],
+  "warnings": []
+}
