@@ -1,0 +1,19 @@
+{
+  "patch": "PATCH73_AI_DIALOGUE_LOOP_SAFE_FULL_REPLACE_V1",
+  "created_at": "2026-06-30T00:06:51.024641",
+  "decision": "ai_dialogue_loop.js를 단일 안전 루프로 풀교체한다. 화면 전체를 덮어쓰지 않고 상태/원문/번역 박스만 좁게 갱신한다.",
+  "backup": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch73_20260630_000651\\ui\\js\\ai_dialogue_loop.js",
+  "changed": [
+    "replaced ui/js/ai_dialogue_loop.js full file",
+    "removed duplicated PATCH59/PATCH65 runtime loops by replacement",
+    "kept KRXA_AI_DIALOGUE, KRXA_AI_DIALOGUE_TRUE_AUTO, KRXA_AI_DIALOGUE_AUTO_LOOP interfaces",
+    "limited click interception to mic/speak buttons only when AI대화 is ON",
+    "same-language AI dialogue route preserved"
+  ],
+  "verify": [
+    "node --check ui\\js\\ai_dialogue_loop.js",
+    "findstr /n \"PATCH73 SAFE FULL REPLACE\" ui\\js\\ai_dialogue_loop.js",
+    "findstr /n \"KRXA_AI_DIALOGUE_TRUE_AUTO\" ui\\js\\ai_dialogue_loop.js",
+    "findstr /n \"document.body.innerHTML\" ui\\js\\ai_dialogue_loop.js"
+  ]
+}
