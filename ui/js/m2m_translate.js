@@ -822,3 +822,10 @@ try {
     releaseMic: releaseMic
   };
 })();
+
+/* PATCH69_EXPOSE_M2M_FUNCTIONS_START */
+try{
+  if(typeof toggleAuto === 'function' && !window.toggleAuto){ window.toggleAuto = toggleAuto; }
+  if(typeof recordVoice === 'function' && !window.recordVoice){ window.recordVoice = recordVoice; }
+}catch(e){}
+/* PATCH69_EXPOSE_M2M_FUNCTIONS_END */

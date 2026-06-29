@@ -1,0 +1,19 @@
+{
+  "patch": "PATCH69_M2M_SANITIZER_BIND_MINI_DIRECT_SERVICE_V1",
+  "created_at": "2026-06-29T22:24:04.246745",
+  "decision": "OpenAI messages sanitizer를 실제 호출부에 연결하고, 미니말대말은 페이지 이동이 아니라 현재 화면에서 기능 수행하게 한다.",
+  "backups": {
+    "core/krxa_engine.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch69_20260629_222403\\core\\krxa_engine.py",
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch69_20260629_222403\\ui\\app.html",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch69_20260629_222403\\ui\\js\\m2m_translate.js"
+  },
+  "changed": [
+    "inserted safe_build_messages before process",
+    "bound messages=build_messages to safe_build_messages",
+    "created ui/js/mini_m2m_direct_service.js",
+    "loaded mini_m2m_direct_service.js in app.html",
+    "exposed toggleAuto/recordVoice to window if available",
+    "created test_patch69_m2m_sanitizer_bind.py"
+  ],
+  "warnings": []
+}

@@ -1,6 +1,56 @@
 import os
 from openai import OpenAI
 
+
+# PATCH68_OPENAI_MESSAGE_SANITIZER_START
+def sanitize_openai_messages(messages):
+    """
+    OpenAI Chat Completions messages sanitizer.
+    content는 string 또는 array만 허용된다.
+    dict/object가 들어오면 JSON 문자열로 변환한다.
+    """
+    import json as _json
+
+    safe = []
+    if messages is None:
+        return []
+
+    for m in messages:
+        if not isinstance(m, dict):
+            safe.append({"role": "user", "content": str(m)})
+            continue
+
+        role = m.get("role") or "user"
+        content = m.get("content", "")
+
+        if content is None:
+            content = ""
+        elif isinstance(content, str):
+            pass
+        elif isinstance(content, list):
+            try:
+                for item in content:
+                    if not isinstance(item, dict):
+                        raise TypeError("non-dict item in content list")
+            except Exception:
+                content = _json.dumps(content, ensure_ascii=False, default=str)
+        elif isinstance(content, dict):
+            content = _json.dumps(content, ensure_ascii=False, default=str)
+        else:
+            content = str(content)
+
+        safe_msg = {"role": str(role), "content": content}
+
+        for k in ("name", "tool_call_id"):
+            if k in m and m[k] is not None:
+                safe_msg[k] = str(m[k])
+
+        safe.append(safe_msg)
+
+    return safe
+# PATCH68_OPENAI_MESSAGE_SANITIZER_END
+
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4o-mini")
 
@@ -91,6 +141,13 @@ def build_messages(user_text, history=None, service="free", mode="interpreter"):
     return messages
 
 
+
+# PATCH69_SAFE_BUILD_MESSAGES_START
+def safe_build_messages(*args, **kwargs):
+    """build_messages 결과를 OpenAI 호출 직전에 sanitize한다."""
+    return sanitize_openai_messages(build_messages(*args, **kwargs))
+# PATCH69_SAFE_BUILD_MESSAGES_END
+
 def process(text, history=None, service="free", mode="interpreter"):
     if not os.getenv("OPENAI_API_KEY"):
         return "KRXA 테스트 모드: " + text
@@ -98,7 +155,7 @@ def process(text, history=None, service="free", mode="interpreter"):
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            messages=build_messages(
+            messages=safe_build_messages(
                 user_text=text,
                 history=history,
                 service=service,

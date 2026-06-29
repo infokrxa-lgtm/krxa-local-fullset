@@ -1,0 +1,24 @@
+{
+  "patch": "PATCH68_M2M_OPENAI_MESSAGE_SANITIZER_V1",
+  "created_at": "2026-06-29T22:08:41.992073",
+  "error": "Invalid type for messages[n].content: expected string or array, got object",
+  "decision": "OpenAI 호출 직전 messages content를 string/array로 정규화한다.",
+  "backups": {
+    "core/krxa_engine.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch68_20260629_220841\\core\\krxa_engine.py",
+    "main.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch68_20260629_220841\\main.py"
+  },
+  "changed": [
+    "inserted sanitize_openai_messages into core/krxa_engine.py",
+    "created test_patch68_sanitizer.py"
+  ],
+  "warnings": [
+    "OpenAI create call detected but nearby sanitizer not confirmed; manual inspection may be needed"
+  ],
+  "verify": [
+    "python -m py_compile core\\krxa_engine.py",
+    "python test_patch68_sanitizer.py",
+    "findstr /n \"PATCH68_OPENAI_MESSAGE_SANITIZER\" core\\krxa_engine.py",
+    "findstr /n \"sanitize_openai_messages\" core\\krxa_engine.py"
+  ],
+  "next_if_persists": "오류가 계속되면 main.py의 직접 OpenAI 호출부에도 동일 sanitizer 적용"
+}
