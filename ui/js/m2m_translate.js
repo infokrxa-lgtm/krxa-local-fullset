@@ -829,3 +829,12 @@ try{
   if(typeof recordVoice === 'function' && !window.recordVoice){ window.recordVoice = recordVoice; }
 }catch(e){}
 /* PATCH69_EXPOSE_M2M_FUNCTIONS_END */
+
+
+/* PATCH72_FORCE_EXPOSE_M2M_FUNCTIONS_START */
+try{
+  if(typeof recordVoice === "function"){ window.recordVoice = recordVoice; }
+  if(typeof toggleAuto === "function"){ window.toggleAuto = toggleAuto; }
+  if(typeof stopAuto === "function"){ window.stopAuto = stopAuto; }
+}catch(e){}
+/* PATCH72_FORCE_EXPOSE_M2M_FUNCTIONS_END */
