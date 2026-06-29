@@ -1,0 +1,21 @@
+{
+  "patch": "PATCH70_RESTORE_USER_CLICKBARS_LIMIT_MINI_CAPTURE_V1",
+  "created_at": "2026-06-29T22:35:51.446036",
+  "decision": "PATCH69의 미니말대말 클릭 차단 범위를 줄여 사용자 UI 1~8페이지 클릭바를 복구한다.",
+  "cause": "mini_m2m_direct_service click capture가 말대말 포함 영역을 너무 넓게 잡아 일반 클릭바까지 preventDefault/stopPropagation 했을 가능성",
+  "fixed": [
+    "페이지 이동/카드/탭/네비게이션 클릭은 우선 통과",
+    "미니말대말 내부의 명확한 말하기/마이크/AI대화 버튼만 차단",
+    "미니말대말은 5페이지 이동이 아니라 현재 화면에서 기능 수행"
+  ],
+  "backups": {
+    "ui/js/mini_m2m_direct_service.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch70_20260629_223551\\ui\\js\\mini_m2m_direct_service.js",
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch70_20260629_223551\\ui\\app.html"
+  },
+  "changed": [
+    "replaced mini_m2m_direct_service.js with limited capture version",
+    "created patch70_clickbar_recovery_marker.js",
+    "loaded patch70_clickbar_recovery_marker.js in app.html"
+  ],
+  "warnings": []
+}
