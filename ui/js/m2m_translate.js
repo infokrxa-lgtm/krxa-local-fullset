@@ -739,6 +739,20 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* PATCH80_M2M_STATE_MACHINE_AI_BLOCK */
+    opt = opt || {};
+    try{
+      if(!(opt && opt.forceTranslate === true) &&
+         window.KRXA_PAGE5_M2M_STATE_MACHINE &&
+         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode &&
+         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode() === "ai_dialogue"){
+        if(window.KRXA_PAGE5_M2M_STATE_MACHINE.runAI){
+          window.KRXA_PAGE5_M2M_STATE_MACHINE.runAI();
+          return;
+        }
+      }
+    }catch(e){}
+
     /* PATCH79_TRANSLATE_FLOW_MARKER */
     try{
       if(opt && opt.forceTranslate === true){

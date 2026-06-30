@@ -1,0 +1,22 @@
+{
+  "patch": "PATCH80_PAGE5_M2M_STATE_MACHINE_V1",
+  "created_at": "2026-06-30T20:45:55.827740",
+  "decision": "5페이지 말대말에서 통역/AI대화 흐름을 전용 상태머신으로 고정한다.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch80_20260630_204555\\ui\\app.html",
+    "ui/js/page5_m2m_state_machine.js": null,
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch80_20260630_204555\\ui\\js\\m2m_translate.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch80_20260630_204555\\ui\\js\\ai_dialogue_loop.js",
+    "ui/js/page5_mode_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch80_20260630_204555\\ui\\js\\page5_mode_router.js",
+    "ui/js/ai_dialogue_session.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch80_20260630_204555\\ui\\js\\ai_dialogue_session.js"
+  },
+  "changed": [
+    "created ui/js/page5_m2m_state_machine.js",
+    "loaded page5_m2m_state_machine.js in app.html",
+    "added PATCH80 AI block into m2m_translate.js",
+    "added PATCH80 translate block into ai_dialogue_loop.js",
+    "page5_mode_router delegates to page5 state machine",
+    "ai_dialogue_session status writes disabled when state machine active"
+  ],
+  "warnings": []
+}

@@ -8,6 +8,8 @@
   var state={active:false,starting:false,session_id:null,started_at:null,last_error:null};
 
   function setStatus(msg){
+    /* PATCH80_SESSION_STATUS_SAFE */
+    try{ if(window.KRXA_PAGE5_M2M_STATE_MACHINE){ return; } }catch(e){}
     try{
       var nodes=Array.from(document.querySelectorAll("p,span,small,div"));
       var n=nodes.find(function(x){

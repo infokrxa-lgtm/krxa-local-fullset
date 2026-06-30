@@ -341,6 +341,15 @@ window.KRXA_PAGE5_AI_SESSION_ACTIVE = false;
   }
 
   function startAuto(){
+    /* PATCH80_AI_STATE_MACHINE_TRANSLATE_BLOCK */
+    try{
+      if(window.KRXA_PAGE5_M2M_STATE_MACHINE &&
+         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode &&
+         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode() !== "ai_dialogue"){
+        return false;
+      }
+    }catch(e){}
+
     /* PATCH79_AI_FLOW_MARKER */
     try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("ai_dialogue",{source:"page5_ai"}); } }catch(e){}
 

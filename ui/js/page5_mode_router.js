@@ -37,6 +37,13 @@
   }
 
   function setMode(mode){
+    /* PATCH80_DELEGATE_TO_PAGE5_STATE_MACHINE */
+    try{
+      if(window.KRXA_PAGE5_M2M_STATE_MACHINE && window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode){
+        return window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode(mode==="ai" ? "ai_dialogue" : "translate");
+      }
+    }catch(e){}
+
     mode = mode==="ai" ? "ai" : "translate";
     window.KRXA_PAGE5_MODE=mode;
     /* PATCH79_PAGE5_FLOW_LOCK_MODE_SET */
