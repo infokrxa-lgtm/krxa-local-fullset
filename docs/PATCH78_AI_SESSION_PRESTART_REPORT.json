@@ -1,0 +1,20 @@
+{
+  "patch": "PATCH78_AI_SESSION_PRESTART_V1",
+  "created_at": "2026-06-30T12:00:29.604352",
+  "decision": "AI대화 ON 전환 순간 LLM 세션을 선호출/준비한다.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch78_20260630_120028\\ui\\app.html",
+    "ui/js/page5_mode_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch78_20260630_120028\\ui\\js\\page5_mode_router.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch78_20260630_120028\\ui\\js\\ai_dialogue_loop.js",
+    "core/travel_ai_dialogue_router.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch78_20260630_120028\\core\\travel_ai_dialogue_router.py"
+  },
+  "changed": [
+    "created ui/js/ai_dialogue_session.js",
+    "loaded ai_dialogue_session.js in app.html",
+    "page5_mode_router starts AI session on AI ON",
+    "page5_mode_router stops AI session on AI OFF",
+    "ai_dialogue_loop ensures AI session before listen",
+    "added AI dialogue session routes"
+  ],
+  "warnings": []
+}

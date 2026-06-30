@@ -341,6 +341,9 @@ window.KRXA_PAGE5_AI_SESSION_ACTIVE = false;
   }
 
   function startAuto(){
+    /* PATCH78_ENSURE_AI_SESSION_BEFORE_LISTEN */
+    try{ if(window.KRXA_AI_DIALOGUE_SESSION&&window.KRXA_AI_DIALOGUE_SESSION.ensure){ window.KRXA_AI_DIALOGUE_SESSION.ensure(); } }catch(e){}
+
     if(!syncAiState()){ return false; }
     autoOn = true;
     window.KRXA_AI_DIALOGUE_AUTO_LISTENING = true;

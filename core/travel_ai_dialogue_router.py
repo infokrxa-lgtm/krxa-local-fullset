@@ -115,3 +115,29 @@ def travel_v1_ai_dialogue_prompt():
         'call_phrase': 'KRXA_TRAVEL_AI_COMPANION_V1',
         'prompt': load_call_prompt()
     }
+
+# PATCH78_AI_DIALOGUE_SESSION_ROUTES_START
+try:
+    from datetime import datetime
+    import uuid
+
+    @router.post("/api/travel-v1/ai-dialogue/session/start")
+    async def travel_ai_dialogue_session_start(payload: dict = None):
+        payload = payload or {}
+        return {
+            "ok": True,
+            "session_id": "ai_" + uuid.uuid4().hex[:12],
+            "mode": payload.get("mode", "page5_ai_dialogue"),
+            "call_phrase": payload.get("call_phrase", "KRXA_TRAVEL_AI_COMPANION_V1"),
+            "stt_owner": payload.get("stt_owner", "llm"),
+            "tts_owner": payload.get("tts_owner", "krxa"),
+            "started_at": datetime.now().isoformat()
+        }
+
+    @router.post("/api/travel-v1/ai-dialogue/session/stop")
+    async def travel_ai_dialogue_session_stop(payload: dict = None):
+        payload = payload or {}
+        return {"ok": True, "session_id": payload.get("session_id"), "stopped_at": datetime.now().isoformat()}
+except Exception:
+    pass
+# PATCH78_AI_DIALOGUE_SESSION_ROUTES_END

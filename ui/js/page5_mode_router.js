@@ -48,8 +48,12 @@
       window.KRXA_PAGE5_AI_DIALOGUE_ENABLED=true;
       window.KRXA_AI_DIALOGUE_FREE_MODE=true;
       stopTranslate();
+      /* PATCH78_AI_SESSION_PRESTART_ON */
+      try{ if(window.KRXA_AI_DIALOGUE_SESSION&&window.KRXA_AI_DIALOGUE_SESSION.start){ window.KRXA_AI_DIALOGUE_SESSION.start(); } }catch(e){}
     }else{
       stopAI();
+      /* PATCH78_AI_SESSION_STOP_OFF */
+      try{ if(window.KRXA_AI_DIALOGUE_SESSION&&window.KRXA_AI_DIALOGUE_SESSION.stop){ window.KRXA_AI_DIALOGUE_SESSION.stop(); } }catch(e){}
       window.KRXA_MINI_M2M_FORCE_TRANSLATE=false;
     }
     return mode;
