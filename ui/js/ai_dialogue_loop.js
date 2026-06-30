@@ -87,6 +87,14 @@ window.KRXA_PAGE5_AI_SESSION_ACTIVE = false;
   }
 
   function isAiOn(){
+
+    /* PATCH77_AI_ONLY_WHEN_PAGE5_MODE_AI */
+    try{
+      if(window.KRXA_PAGE5_MODE_ROUTER && window.KRXA_PAGE5_MODE_ROUTER.isTranslate && window.KRXA_PAGE5_MODE_ROUTER.isTranslate()){
+        return false;
+      }
+    }catch(e){}
+
     /* PATCH75_AI_PAGE5_ONLY_GUARD */
     try{
       if(window.KRXA_MINI_M2M_FORCE_TRANSLATE === true || window.KRXA_MINI_M2M_MODE === "translate"){

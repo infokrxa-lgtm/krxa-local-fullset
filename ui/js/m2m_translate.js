@@ -739,6 +739,18 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+
+    /* PATCH77_M2M_PAGE5_MODE_GATE */
+    opt = opt || {};
+    try{
+      if(!(opt && opt.forceTranslate === true) && window.KRXA_PAGE5_MODE_ROUTER && window.KRXA_PAGE5_MODE_ROUTER.isAi && window.KRXA_PAGE5_MODE_ROUTER.isAi()){
+        if(window.KRXA_AI_DIALOGUE_TRUE_AUTO && window.KRXA_AI_DIALOGUE_TRUE_AUTO.start){
+          window.KRXA_AI_DIALOGUE_TRUE_AUTO.start();
+          return;
+        }
+      }
+    }catch(e){}
+
     /* PATCH76_FORCE_TRANSLATE_HARD_BYPASS */
     opt = opt || {};
     if(opt.forceTranslate === true){

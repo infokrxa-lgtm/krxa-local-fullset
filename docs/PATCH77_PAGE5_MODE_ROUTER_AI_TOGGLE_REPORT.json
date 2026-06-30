@@ -1,0 +1,19 @@
+{
+  "patch": "PATCH77_PAGE5_MODE_ROUTER_AI_TOGGLE_V1",
+  "created_at": "2026-06-30T10:49:01.460739",
+  "decision": "5페이지 AI대화 ON/OFF 토글을 실행 흐름의 주인으로 만든다.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch77_20260630_104900\\ui\\app.html",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch77_20260630_104900\\ui\\js\\m2m_translate.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch77_20260630_104900\\ui\\js\\ai_dialogue_loop.js",
+    "core/travel_ai_dialogue_router.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch77_20260630_104900\\core\\travel_ai_dialogue_router.py"
+  },
+  "changed": [
+    "created ui/js/page5_mode_router.js",
+    "loaded page5_mode_router.js in app.html",
+    "inserted page5 AI mode gate into m2m requestMicAndStart",
+    "restricted ai_dialogue_loop to page5 AI mode",
+    "added PATCH77 route comment"
+  ],
+  "warnings": []
+}
