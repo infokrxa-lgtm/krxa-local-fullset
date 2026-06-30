@@ -1,3 +1,4 @@
+# PATCH76_AI_MODE_LLM_STT_KRXA_TTS: AI대화는 LLM STT/이해 + KRXA TTS 출력 구조를 지향한다.
 from __future__ import annotations
 from fastapi import APIRouter, Body
 from typing import Dict, Any

@@ -52,6 +52,8 @@
   window.KRXA_SAFE_SET_TEXT = safeSetText;
   window.KRXA_SAFE_SET_HTML = safeSetHTML;
   window.KRXA_AI_DIALOGUE_UI_MODE = "service_only_patch73";
+/* PATCH76_PAGE5_AI_SESSION_MARKER */
+window.KRXA_PAGE5_AI_SESSION_ACTIVE = false;
 
   function esc(v){
     return String(v || "").replace(/[<>&]/g, function(c){
@@ -380,6 +382,9 @@
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation){ e.stopImmediatePropagation(); }
+      /* PATCH76_CLEAR_MINI_FORCE_ON_PAGE5_AI_MIC */
+      window.KRXA_MINI_M2M_FORCE_TRANSLATE = false;
+      window.KRXA_PAGE5_AI_SESSION_ACTIVE = true;
       toggleAuto();
     }catch(err){}
   }, true);

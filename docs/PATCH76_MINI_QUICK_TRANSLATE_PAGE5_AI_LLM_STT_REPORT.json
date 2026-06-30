@@ -1,0 +1,21 @@
+{
+  "patch": "PATCH76_MINI_QUICK_TRANSLATE_PAGE5_AI_LLM_STT_V1",
+  "created_at": "2026-06-30T10:05:19.162785",
+  "decision": "미니=빠른 통역. 5페이지=전문 통역/AI대화. AI대화=LLM STT/이해 + KRXA TTS.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch76_20260630_100518\\ui\\app.html",
+    "ui/js/mini_m2m_simple_panel.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch76_20260630_100518\\ui\\js\\mini_m2m_simple_panel.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch76_20260630_100518\\ui\\js\\m2m_translate.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch76_20260630_100518\\ui\\js\\ai_dialogue_loop.js",
+    "core/travel_ai_dialogue_router.py": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch76_20260630_100518\\core\\travel_ai_dialogue_router.py"
+  },
+  "changed": [
+    "mini_m2m_simple_panel.js: existing bottom mini UI only, quick translate only",
+    "app.html mini_talk onclick normalized count=2",
+    "m2m_translate requestMicAndStart hard forceTranslate bypass",
+    "ai_dialogue_loop page5 AI session marker",
+    "ai_dialogue_loop clears mini force on page5 AI mic",
+    "travel_ai_dialogue_router AI mode comment"
+  ],
+  "warnings": []
+}

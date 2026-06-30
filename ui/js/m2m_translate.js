@@ -739,6 +739,14 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* PATCH76_FORCE_TRANSLATE_HARD_BYPASS */
+    opt = opt || {};
+    if(opt.forceTranslate === true){
+      window.KRXA_MINI_M2M_FORCE_TRANSLATE = true;
+      window.KRXA_MINI_M2M_MODE = "translate";
+      window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED = false;
+    }
+
     opt = opt || {};
 
     /* PATCH74_M2M_MIC_AI_GATE_START */
