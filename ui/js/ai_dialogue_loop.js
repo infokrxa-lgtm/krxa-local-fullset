@@ -341,6 +341,9 @@ window.KRXA_PAGE5_AI_SESSION_ACTIVE = false;
   }
 
   function startAuto(){
+    /* PATCH79_AI_FLOW_MARKER */
+    try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("ai_dialogue",{source:"page5_ai"}); } }catch(e){}
+
     /* PATCH78_ENSURE_AI_SESSION_BEFORE_LISTEN */
     try{ if(window.KRXA_AI_DIALOGUE_SESSION&&window.KRXA_AI_DIALOGUE_SESSION.ensure){ window.KRXA_AI_DIALOGUE_SESSION.ensure(); } }catch(e){}
 

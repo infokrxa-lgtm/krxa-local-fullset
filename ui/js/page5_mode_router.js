@@ -39,6 +39,12 @@
   function setMode(mode){
     mode = mode==="ai" ? "ai" : "translate";
     window.KRXA_PAGE5_MODE=mode;
+    /* PATCH79_PAGE5_FLOW_LOCK_MODE_SET */
+    try{
+      if(window.KRXA_FLOW_LOCK){
+        window.KRXA_FLOW_LOCK.setFlow(mode==="ai" ? "ai_dialogue" : "translate", {source:"page5_mode_router"});
+      }
+    }catch(e){}
     window.KRXA_M2M_MODE=mode;
 
     if(mode==="ai"){

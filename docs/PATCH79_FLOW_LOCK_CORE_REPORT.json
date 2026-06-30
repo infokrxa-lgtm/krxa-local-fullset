@@ -1,0 +1,24 @@
+{
+  "patch": "PATCH79_FLOW_LOCK_CORE_V1",
+  "created_at": "2026-06-30T13:24:09.169625",
+  "decision": "각 기능이 자기 영역만 수정하게 하는 공통 Flow Lock을 도입한다.",
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\app.html",
+    "ui/js/flow_lock_core.js": null,
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\js\\m2m_translate.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\js\\ai_dialogue_loop.js",
+    "ui/js/page5_mode_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\js\\page5_mode_router.js",
+    "ui/js/travel_v2_flow.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\js\\travel_v2_flow.js",
+    "ui/js/travel_map_priority.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch79_20260630_132408\\ui\\js\\travel_map_priority.js"
+  },
+  "changed": [
+    "created ui/js/flow_lock_core.js",
+    "loaded flow_lock_core.js in app.html",
+    "added translate flow marker to m2m_translate.js",
+    "added ai flow marker to ai_dialogue_loop.js",
+    "page5_mode_router now sets flow lock mode",
+    "added travel_search flow marker to ui/js/travel_v2_flow.js",
+    "added map flow marker to ui/js/travel_map_priority.js"
+  ],
+  "warnings": []
+}

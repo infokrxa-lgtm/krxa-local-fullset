@@ -1,3 +1,5 @@
+/* PATCH79_MAP_FLOW_MARKER */
+try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow('map',{source:'ui/js/travel_map_priority.js'}); } }catch(e){}
 
 /* travel_map_priority.js */
 (function(){

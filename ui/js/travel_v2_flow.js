@@ -1,3 +1,5 @@
+/* PATCH79_TRAVEL_SEARCH_FLOW_MARKER */
+try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow('travel_search',{source:'ui/js/travel_v2_flow.js'}); } }catch(e){}
 
 /* travel_v2_flow.js */
 (function(){
