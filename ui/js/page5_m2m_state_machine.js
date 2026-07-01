@@ -1,3 +1,4 @@
+/* PATCH90_NO_PERMISSION_CONTROL: no mic permission or overlay control here. Buttons go through recordVoice path. */
 /* page5_m2m_state_machine.js - PATCH80
  * 5페이지 말대말 전용 상태머신.
  * AI대화 OFF = translate / AI대화 ON = ai_dialogue

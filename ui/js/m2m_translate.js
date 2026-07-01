@@ -518,6 +518,21 @@ try {
   }
 
     async function recordVoice() {
+    /* PATCH90_RECORDVOICE_SINGLE_MIC_ENTRY */
+    try{
+      window.KRXA_M2M_MIC_ACTIVE = true;
+      if(!micStream){
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+          throw new Error("getUserMedia not supported");
+        }
+        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+      }
+    }catch(__patch90_mic_error){
+      try{ console.warn("[PATCH90] mic permission failed", __patch90_mic_error); }catch(e){}
+      window.KRXA_M2M_MIC_ACTIVE = false;
+      return false;
+    }
+
     saveMemoryEvent(
       "record_voice_called",
       "debug",
@@ -739,6 +754,14 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* PATCH90_REQUEST_MIC_DIRECT_RECORDVOICE */
+    try{
+      return recordVoice();
+    }catch(__patch90_e){
+      try{ console.warn("[PATCH90] direct recordVoice failed", __patch90_e); }catch(e){}
+      return false;
+    }
+
     /* PATCH80_M2M_STATE_MACHINE_AI_BLOCK */
     opt = opt || {};
     try{
@@ -906,3 +929,22 @@ try{
   if(typeof stopAuto === "function"){ window.stopAuto = stopAuto; }
 }catch(e){}
 /* PATCH72_FORCE_EXPOSE_M2M_FUNCTIONS_END */
+
+
+/* PATCH90_BLOCK_APP_OPENMODAL_IN_M2M_START */
+try{
+  if(window.KRXA_App && window.KRXA_App.openModal && !window.__KRXA_PATCH90_APP_OPENMODAL_BLOCKED){
+    window.__KRXA_PATCH90_APP_OPENMODAL_BLOCKED = true;
+    var __krxa_patch90_old_openModal = window.KRXA_App.openModal;
+    window.KRXA_App.openModal = function(){
+      try{
+        var joined = Array.prototype.slice.call(arguments).map(function(x){ return String(x || ""); }).join(" ");
+        if(joined.indexOf("마이크") >= 0 || joined.indexOf("권한") >= 0 || joined.indexOf("허용") >= 0){
+          return false;
+        }
+      }catch(e){}
+      return __krxa_patch90_old_openModal.apply(this, arguments);
+    };
+  }
+}catch(e){}
+/* PATCH90_BLOCK_APP_OPENMODAL_IN_M2M_END */

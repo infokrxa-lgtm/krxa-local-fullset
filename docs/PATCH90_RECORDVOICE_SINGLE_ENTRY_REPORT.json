@@ -1,0 +1,26 @@
+{
+  "patch": "PATCH90_RECORDVOICE_SINGLE_ENTRY_V1",
+  "created_at": "2026-07-01T10:14:19.100427",
+  "decision": "recordVoice를 단일 마이크 진입점으로 만들고 Travel V1 권한/overlay 제어를 제거한다.",
+  "backups": {
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch90_20260701_101418\\ui\\js\\m2m_translate.js",
+    "ui/js/permission_manager.js": null,
+    "ui/js/mic_permission_flow.js": null,
+    "ui/js/mic_permission_only_core.js": null,
+    "ui/js/page5_m2m_state_machine.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\patch_backup\\patch90_20260701_101418\\ui\\js\\page5_m2m_state_machine.js",
+    "ui/js/mini_m2m_scoped_modal.js": null,
+    "ui/js/overlay_manager.js": null
+  },
+  "changed": [
+    "recordVoice now owns getUserMedia directly",
+    "requestMicAndStart delegates directly to recordVoice",
+    "blocked mic-related KRXA_App.openModal calls",
+    "added no-permission-control note to ui/js/page5_m2m_state_machine.js"
+  ],
+  "warnings": [
+    "ui/js/permission_manager.js not found",
+    "ui/js/mic_permission_flow.js not found",
+    "ui/js/mic_permission_only_core.js not found",
+    "ui/js/mini_m2m_scoped_modal.js not found"
+  ]
+}
