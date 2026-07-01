@@ -1,3 +1,4 @@
+/* PATCH91_M2M_FLOW_ROUTER_COMPAT: m2m.speak는 KRXA_FLOW.go('m2m.speak')에서 recordVoice 경로로 연결된다. */
 
 /* PATCH56_AI_DIALOGUE_ROUTE_BINDING_START */
 function krxaIsAiDialogueMode(){

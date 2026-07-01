@@ -1,3 +1,4 @@
+/* PATCH91_PAGE5_FLOW_SIGNAL_NOTE: 5페이지 클릭은 Flow ID 신호로 먼저 처리한다. */
 /* PATCH90_NO_PERMISSION_CONTROL: no mic permission or overlay control here. Buttons go through recordVoice path. */
 /* page5_m2m_state_machine.js - PATCH80
  * 5페이지 말대말 전용 상태머신.
