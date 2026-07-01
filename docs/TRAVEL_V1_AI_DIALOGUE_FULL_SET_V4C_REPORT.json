@@ -1,0 +1,15 @@
+{
+  "name": "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4C",
+  "created_at": "2026-07-02T01:04:13.954456",
+  "changed": [
+    "flow_signal_router.js full V4C replacement: stronger AI ON detection",
+    "page5_m2m_state_machine.js full V4C replacement: stronger AI toggle sync",
+    "m2m_translate.js V4C guard rebuilt as single entry guard"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/js/flow_signal_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4c\\20260702_010413\\ui\\js\\flow_signal_router.js",
+    "ui/js/page5_m2m_state_machine.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4c\\20260702_010413\\ui\\js\\page5_m2m_state_machine.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4c\\20260702_010413\\ui\\js\\m2m_translate.js"
+  }
+}
