@@ -1,9 +1,10 @@
-/* page5_m2m_state_machine.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V2
- * 상태만 관리. 자동 recordVoice / 자동 AI 청취 없음.
+/* page5_m2m_state_machine.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V3B
+ * 현재 모드만 관리한다.
+ * 자동 마이크/자동 AI 실행 금지.
  */
 (function(){
-  if(window.KRXA_PAGE5_M2M_STATE_STABLE_V2_LOADED){ return; }
-  window.KRXA_PAGE5_M2M_STATE_STABLE_V2_LOADED=true;
+  if(window.KRXA_PAGE5_M2M_STATE_STABLE_V3B_LOADED){ return; }
+  window.KRXA_PAGE5_M2M_STATE_STABLE_V3B_LOADED=true;
 
   var state={mode:"translate",listening:false,busy:false,lastError:null};
 
@@ -14,8 +15,11 @@
     try{
       var inputs=Array.from(document.querySelectorAll("input[type='checkbox']"));
       for(var i=0;i<inputs.length;i++){
-        var around=text(inputs[i].parentElement||inputs[i].closest("label")||document.body);
-        if(around.indexOf("AI대화")>=0){ return inputs[i]; }
+        var block=inputs[i];
+        for(var j=0;j<6 && block && block!==document.body;j++){
+          if(text(block).indexOf("AI대화")>=0){ return inputs[i]; }
+          block=block.parentElement;
+        }
       }
     }catch(e){}
     return null;
@@ -27,7 +31,14 @@
       var target=null;
       nodes.forEach(function(n){
         var t=text(n).trim();
-        if(t.length<80 && (t.indexOf("다음 말")>=0 || t.indexOf("말하기 버튼")>=0 || t.indexOf("STT")>=0 || t.indexOf("AI대화")>=0)){
+        if(t.length<120 && (
+          t.indexOf("다음 말")>=0 ||
+          t.indexOf("말하기 버튼")>=0 ||
+          t.indexOf("AI대화")>=0 ||
+          t.indexOf("음성")>=0 ||
+          t.indexOf("STT")>=0 ||
+          t.indexOf("통역")>=0
+        )){
           if(!n.querySelector || n.querySelectorAll("button,input,select").length===0){ target=n; }
         }
       });
@@ -47,6 +58,7 @@
 
     if(mode==="ai_dialogue"){ setStatus("AI대화 준비 완료 · 말하기를 눌러 시작하세요"); }
     else{ setStatus("말하기 버튼을 눌러 통역을 시작하세요"); }
+
     return state.mode;
   }
 
@@ -57,17 +69,23 @@
 
   function bindToggle(){
     var t=findAiToggle();
-    if(t&&t.getAttribute("data-stable-v2-page5-bound")!=="1"){
-      t.setAttribute("data-stable-v2-page5-bound","1");
+    if(t&&t.getAttribute("data-stable-v3b-page5-bound")!=="1"){
+      t.setAttribute("data-stable-v3b-page5-bound","1");
       t.addEventListener("change",syncFromToggle,true);
       t.addEventListener("click",function(){setTimeout(syncFromToggle,30);},true);
     }
   }
 
-  function init(){ if(!isPage5()){return;} bindToggle(); syncFromToggle(); }
+  function init(){
+    if(!isPage5()){return;}
+    bindToggle();
+    syncFromToggle();
+  }
+
   document.addEventListener("DOMContentLoaded",init);
   setTimeout(init,300);
   setTimeout(init,1000);
+  setInterval(function(){ if(isPage5()){ syncFromToggle(); } },1500);
 
   window.KRXA_PAGE5_M2M_STATE_MACHINE={
     init:init,
