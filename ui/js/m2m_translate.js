@@ -1,3 +1,4 @@
+/* TRAVEL_V1_M2M_STABLE_ENTRY_V4: 통역은 FlowRouter의 translate 모드에서만 실행. AI대화는 ai_dialogue_loop에서 처리. */
 /* TRAVEL_V1_M2M_STABLE_ENTRY_V3B: 통역은 translate 모드에서 flow_signal_router를 통해서만 실행. AI대화는 ai_dialogue_loop로 분기. */
 /* TRAVEL_V1_M2M_STABLE_ENTRY_V2: 통역은 사용자 m2m.speak Flow에서만 실행한다. */
 /* TRAVEL_V1_M2M_STABLE_ENTRY_V1: requestMicAndStart는 명시 사용자 Flow(m2m.speak)에서만 통과한다. */
@@ -759,6 +760,16 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4 */
+    try{
+      opt = opt || {};
+      var ok = opt.userTriggered === true && opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4";
+      if(!ok){
+        console.warn("[TRAVEL_V1_M2M_V4] blocked non-user-triggered m2m request");
+        return false;
+      }
+    }catch(__stable_m2m_v4_e){ return false; }
+
     /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V3B */
     try{
       opt = opt || {};

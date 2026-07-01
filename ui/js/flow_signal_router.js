@@ -1,17 +1,17 @@
-/* flow_signal_router.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V3B
- * 신규 JS 추가 없음.
- * m2m.speak 클릭 시 현재 모드 확인:
- * - translate    → KRXA_Translate.requestMicAndStart()
- * - ai_dialogue  → KRXA_AI_DIALOGUE.speakOnce()
+/* flow_signal_router.js - TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4
+ * 클릭은 data-flow 하나만 전달한다.
+ * m2m.speak:
+ *   translate   -> KRXA_Translate.requestMicAndStart()
+ *   ai_dialogue -> KRXA_AI_DIALOGUE.speakOnce()
  */
 (function(){
-  if(window.KRXA_FLOW_STABLE_V3B_LOADED){ return; }
-  window.KRXA_FLOW_STABLE_V3B_LOADED = true;
+  if(window.KRXA_FLOW_V4_LOADED){ return; }
+  window.KRXA_FLOW_V4_LOADED = true;
 
   var state = window.KRXA_FLOW_STATE || { lastFlow:null, currentFlow:null, modalActive:false };
   window.KRXA_FLOW_STATE = state;
 
-  function log(flowId, payload){ try{ console.log("[TRAVEL_V1_FLOW_V3B]", flowId, payload || ""); }catch(e){} }
+  function log(flowId, payload){ try{ console.log("[TRAVEL_V1_FLOW_V4]", flowId, payload || ""); }catch(e){} }
   function app(){ return window.KRXA_App || null; }
 
   function closeModal(){
@@ -19,12 +19,12 @@
     try{
       ["#modalBack","#modal","#appModal","#commonModal",".modalBack",".modalOverlay",".modal"].forEach(function(sel){
         document.querySelectorAll(sel).forEach(function(el){
-          el.style.display="none";
+          el.style.display = "none";
           el.classList.remove("show","active","open");
         });
       });
     }catch(e){}
-    state.modalActive=false;
+    state.modalActive = false;
     return true;
   }
 
@@ -50,16 +50,32 @@
         window.KRXA_PAGE5_M2M_STATE_MACHINE.sync();
       }
     }catch(e){}
+
     try{
       if(window.KRXA_PAGE5_M2M_STATE_MACHINE && typeof window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode === "function"){
         var m = window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode();
         if(m === "ai_dialogue" || m === "ai"){ return "ai_dialogue"; }
       }
     }catch(e){}
+
     try{
       if(window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true || window.KRXA_AI_DIALOGUE_ENABLED === true){ return "ai_dialogue"; }
       if(window.KRXA_PAGE5_MODE === "ai" || window.KRXA_M2M_MODE === "ai"){ return "ai_dialogue"; }
     }catch(e){}
+
+    try{
+      var checks = Array.from(document.querySelectorAll("input[type='checkbox']"));
+      for(var i=0;i<checks.length;i++){
+        var n = checks[i];
+        var block = n;
+        for(var j=0;j<6 && block && block!==document.body;j++){
+          var tx = block.innerText || block.textContent || "";
+          if(tx.indexOf("AI대화") >= 0 && n.checked){ return "ai_dialogue"; }
+          block = block.parentElement;
+        }
+      }
+    }catch(e){}
+
     return "translate";
   }
 
@@ -67,13 +83,13 @@
     try{
       if(window.KRXA_Translate && typeof window.KRXA_Translate.requestMicAndStart === "function"){
         return window.KRXA_Translate.requestMicAndStart({
-          source:"TRAVEL_V1_FLOW_STABLE_V3B",
+          source:"TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4",
           flow_id:"m2m.speak",
           userTriggered:true,
-          forceTranslate:true
+          mode:"translate"
         });
       }
-    }catch(e){ try{ console.warn("[TRAVEL_V1_FLOW_V3B] translate speak failed", e); }catch(_){} }
+    }catch(e){ try{ console.warn("[FLOW_V4] translate speak failed", e); }catch(_){} }
     return false;
   }
 
@@ -81,12 +97,12 @@
     try{
       if(window.KRXA_AI_DIALOGUE && typeof window.KRXA_AI_DIALOGUE.speakOnce === "function"){
         return window.KRXA_AI_DIALOGUE.speakOnce({
-          source:"TRAVEL_V1_FLOW_STABLE_V3B",
+          source:"TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4",
           flow_id:"m2m.speak",
           userTriggered:true
         });
       }
-    }catch(e){ try{ console.warn("[TRAVEL_V1_FLOW_V3B] ai speak failed", e); }catch(_){} }
+    }catch(e){ try{ console.warn("[FLOW_V4] ai speak failed", e); }catch(_){} }
     return false;
   }
 
@@ -120,9 +136,10 @@
 
   function go(flowId, payload){
     if(!flowId){ return false; }
-    state.lastFlow=flowId;
-    state.currentFlow=flowId;
-    log(flowId,payload);
+    state.lastFlow = flowId;
+    state.currentFlow = flowId;
+    log(flowId, payload);
+
     switch(flowId){
       case "modal.close": return closeModal();
       case "page.back": return pageBack();
@@ -132,30 +149,36 @@
       case "m2m.text.open": return m2mTextOpen();
       case "m2m.replay": return m2mReplay();
       case "user.link.manage": return linkManage();
-      default: log("unhandled", flowId); return false;
+      default:
+        log("unhandled", flowId);
+        return false;
     }
   }
 
   function onClick(e){
-    var el=null;
-    try{ el=e.target && e.target.closest ? e.target.closest("[data-flow]") : null; }catch(err){}
+    var el = null;
+    try{ el = e.target && e.target.closest ? e.target.closest("[data-flow]") : null; }catch(err){}
     if(!el){ return; }
-    var flowId=el.getAttribute("data-flow");
+
+    var flowId = el.getAttribute("data-flow");
     if(!flowId){ return; }
+
     e.preventDefault();
     e.stopPropagation();
     if(e.stopImmediatePropagation){ e.stopImmediatePropagation(); }
+
     go(flowId,{target:el,text:(el.innerText||el.textContent||"").trim()});
     return false;
   }
 
   function init(){
-    if(window.__KRXA_FLOW_STABLE_V3B_BOUND){ return; }
-    window.__KRXA_FLOW_STABLE_V3B_BOUND=true;
+    if(window.__KRXA_FLOW_V4_BOUND){ return; }
+    window.__KRXA_FLOW_V4_BOUND = true;
     document.addEventListener("click", onClick, true);
   }
 
   document.addEventListener("DOMContentLoaded", function(){ setTimeout(init,30); });
   setTimeout(init,200);
-  window.KRXA_FLOW={go:go,init:init,state:state,currentMode:currentMode};
+
+  window.KRXA_FLOW = { go:go, init:init, state:state, currentMode:currentMode };
 })();
