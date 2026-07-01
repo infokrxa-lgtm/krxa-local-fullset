@@ -760,28 +760,19 @@ try {
     }
   }
    function requestMicAndStart(opt) {
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4C */
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4D */
     try{
       opt = opt || {};
-      var aiOn = false;
-      try{
-        aiOn = window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true || window.KRXA_AI_DIALOGUE_ENABLED === true || window.KRXA_PAGE5_MODE === "ai" || window.KRXA_M2M_MODE === "ai";
-      }catch(__ai_mode_e){}
-      if(aiOn && opt.forceTranslate !== true){
-        console.warn("[TRAVEL_V1_M2M_V4C] blocked translate route because AI dialogue is ON", opt.source);
-        return false;
-      }
-      var ok = opt.userTriggered === true && (
-        opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4" ||
-        opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4B" ||
-        opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4C" ||
-        opt.source === "mini_quick_translate"
-      );
+      var allowed = [
+        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_PAGE5_TRANSLATE",
+        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_MINI_TRANSLATE"
+      ];
+      var ok = opt.userTriggered === true && allowed.indexOf(opt.source) >= 0;
       if(!ok){
-        console.warn("[TRAVEL_V1_M2M_V4C] blocked non-user-triggered m2m request", opt.source);
+        console.warn("[TRAVEL_V1_M2M_V4D] blocked non-approved translate request", opt.source);
         return false;
       }
-    }catch(__stable_m2m_v4c_e){ return false; }
+    }catch(__stable_m2m_v4d_e){ return false; }
 recordVoice();
     }catch(__patch90_e){
       try{ console.warn("[PATCH90] direct recordVoice failed", __patch90_e); }catch(e){}

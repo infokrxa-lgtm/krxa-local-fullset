@@ -330,8 +330,8 @@
             <button id="l_zh" onclick="KRXA_Translate.setLang('zh')">중국어</button>
           </div>
           <select id="langMore" onchange="KRXA_Translate.setLang(this.value)"><option value="">기타 언어 선택</option></select>
-          <div class="autoBar"><b>AI대화</b><div id="autoToggle" class="toggle" onclick="KRXA_Translate.toggleAuto()"><div class="knob"></div></div></div>
-          <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" data-flow="m2m.speak">🎙️</div></div>
+          <div class="autoBar"><b>AI대화</b><div id="autoToggle" class="toggle" data-flow="page5.ai.toggle"><div class="knob"></div></div></div>
+          <div class="micWrap"><div id="flowDot" class="flowDot"></div><div class="listenCircle" data-flow="page5.m2m.speak">🎙️</div></div>
           <div class="sub" id="flow">마이크를 누르면 통역을 시작합니다</div>
           <div class="msg"><b>원문</b><span id="sourceText">-</span></div>
           <div class="msg"><b>번역</b><span id="resultText">-</span></div>
@@ -341,7 +341,7 @@
 </div>
 
 <div class="actionRow">
-  <button class="btn green" data-flow="m2m.speak">🎙 말하기</button>
+  <button class="btn green" data-flow="page5.m2m.speak">🎙 말하기</button>
   <button class="btn red" onclick="KRXA_Translate.stopAuto()">종료</button>
 </div>
         </div>

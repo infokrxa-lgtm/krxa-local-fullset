@@ -1,0 +1,19 @@
+{
+  "name": "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_PAGE5_MINI_SPLIT",
+  "created_at": "2026-07-02T01:49:34.219065",
+  "changed": [
+    "flow_signal_router.js full V4D replacement",
+    "page5_m2m_state_machine.js full V4D replacement",
+    "app.html: page5 flow ids applied",
+    "mini_m2m_simple_panel.js: mini flow ids routed",
+    "m2m_translate.js: V4D guard allows page5/mini translate sources"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4d\\20260702_014933\\ui\\app.html",
+    "ui/js/flow_signal_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4d\\20260702_014933\\ui\\js\\flow_signal_router.js",
+    "ui/js/page5_m2m_state_machine.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4d\\20260702_014933\\ui\\js\\page5_m2m_state_machine.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4d\\20260702_014933\\ui\\js\\m2m_translate.js",
+    "ui/js/mini_m2m_simple_panel.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4d\\20260702_014933\\ui\\js\\mini_m2m_simple_panel.js"
+  }
+}
