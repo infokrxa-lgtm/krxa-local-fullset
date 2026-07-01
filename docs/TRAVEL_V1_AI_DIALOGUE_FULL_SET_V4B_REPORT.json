@@ -1,0 +1,13 @@
+{
+  "name": "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4B",
+  "created_at": "2026-07-02T00:42:56.675274",
+  "changed": [
+    "removed inline onclick from data-flow=m2m.speak elements",
+    "cleaned duplicate manual guards and inserted single V4B guard"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4b\\20260702_004256\\ui\\app.html",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_ai_dialogue_full_set_v4b\\20260702_004256\\ui\\js\\m2m_translate.js"
+  }
+}

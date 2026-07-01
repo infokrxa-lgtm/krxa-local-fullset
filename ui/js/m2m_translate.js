@@ -760,55 +760,23 @@ try {
     }
   }
    function requestMicAndStart(opt) {
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4 */
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4B */
     try{
       opt = opt || {};
-      var ok = opt.userTriggered === true && opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4";
+      var ok = opt.userTriggered === true && (
+        opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4" ||
+        opt.source === "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4B"
+      );
       if(!ok){
-        console.warn("[TRAVEL_V1_M2M_V4] blocked non-user-triggered m2m request");
+        console.warn("[TRAVEL_V1_M2M_V4B] blocked non-user-triggered m2m request", opt.source);
         return false;
       }
-    }catch(__stable_m2m_v4_e){ return false; }
+    }catch(__stable_m2m_v4b_e){ return false; }
 
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V3B */
-    try{
-      opt = opt || {};
-      var ok = opt.userTriggered === true && opt.source === "TRAVEL_V1_FLOW_STABLE_V3B";
-      if(!ok){
-        console.warn("[TRAVEL_V1_M2M_V3B] blocked non-user-triggered or non-translate m2m request");
-        return false;
-      }
-    }catch(__stable_m2m_v3b_e){ return false; }
 
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V2 */
-    try{
-      opt = opt || {};
-      var ok = opt.userTriggered === true || opt.source === "TRAVEL_V1_FLOW_STABLE" || opt.source === "TRAVEL_V1_FLOW_STABLE_V2";
-      if(!ok){
-        console.warn("[TRAVEL_V1_M2M_V2] blocked non-user-triggered m2m request");
-        return false;
-      }
-    }catch(__stable_m2m_v2_e){ return false; }
 
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD */
-    try{
-      opt = opt || {};
-      var ok = opt.userTriggered === true || opt.source === "TRAVEL_V1_FLOW_STABLE" || opt.source === "PATCH92_FLOW_ROUTER" || opt.source === "PATCH93B_FLOW_ROUTER";
-      if(!ok){
-        console.warn("[TRAVEL_V1_M2M] blocked non-user-triggered m2m request");
-        return false;
-      }
-    }catch(__stable_m2m_e){ return false; }
 
-    /* PATCH93B_M2M_MANUAL_ONLY_GUARD */
-    try{
-      opt = opt || {};
-      var ok = opt.userTriggered === true || opt.source === "PATCH93B_FLOW_ROUTER" || opt.source === "PATCH93_FLOW_ROUTER" || opt.source === "PATCH92_FLOW_ROUTER" || opt.source === "flow_router";
-      if(!ok){
-        console.warn("[PATCH93B] blocked non-user-triggered m2m request");
-        return false;
-      }
-    }catch(__patch93b_e){ return false; }
+
 
     /* PATCH90_REQUEST_MIC_DIRECT_RECORDVOICE */
     try{
