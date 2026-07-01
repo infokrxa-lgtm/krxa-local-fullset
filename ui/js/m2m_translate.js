@@ -760,19 +760,20 @@ try {
     }
   }
    function requestMicAndStart(opt) {
-    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4D */
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V4F */
     try{
       opt = opt || {};
+      var src = String(opt.source || "");
       var allowed = [
-        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_PAGE5_TRANSLATE",
-        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_MINI_TRANSLATE"
+        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4F_PAGE5_TRANSLATE",
+        "TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4F_MINI_TRANSLATE"
       ];
-      var ok = opt.userTriggered === true && allowed.indexOf(opt.source) >= 0;
+      var ok = opt.userTriggered === true && allowed.indexOf(src) >= 0;
       if(!ok){
-        console.warn("[TRAVEL_V1_M2M_V4D] blocked non-approved translate request", opt.source);
+        console.warn("[TRAVEL_V1_M2M_V4F] blocked non-approved translate request", src);
         return false;
       }
-    }catch(__stable_m2m_v4d_e){ return false; }
+    }catch(__stable_m2m_v4f_e){ return false; }
 recordVoice();
     }catch(__patch90_e){
       try{ console.warn("[PATCH90] direct recordVoice failed", __patch90_e); }catch(e){}
