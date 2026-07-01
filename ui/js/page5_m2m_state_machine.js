@@ -1,9 +1,10 @@
-/* page5_m2m_state_machine.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V1
- * 상태만 관리한다. 마이크/AI 자동실행 없음.
+/* page5_m2m_state_machine.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V2
+ * 상태만 관리. 자동 recordVoice / 자동 AI 청취 없음.
  */
 (function(){
-  if(window.KRXA_PAGE5_M2M_STATE_STABLE_V1_LOADED){ return; }
-  window.KRXA_PAGE5_M2M_STATE_STABLE_V1_LOADED=true;
+  if(window.KRXA_PAGE5_M2M_STATE_STABLE_V2_LOADED){ return; }
+  window.KRXA_PAGE5_M2M_STATE_STABLE_V2_LOADED=true;
+
   var state={mode:"translate",listening:false,busy:false,lastError:null};
 
   function text(el){ try{return (el&&(el.innerText||el.textContent||""))||"";}catch(e){return "";} }
@@ -22,18 +23,28 @@
 
   function setStatus(msg){
     try{
-      var el=document.getElementById("flow")||document.getElementById("status");
-      if(el){ el.innerText=msg; }
+      var nodes=Array.from(document.querySelectorAll("div,span,p,small"));
+      var target=null;
+      nodes.forEach(function(n){
+        var t=text(n).trim();
+        if(t.length<80 && (t.indexOf("다음 말")>=0 || t.indexOf("말하기 버튼")>=0 || t.indexOf("STT")>=0 || t.indexOf("AI대화")>=0)){
+          if(!n.querySelector || n.querySelectorAll("button,input,select").length===0){ target=n; }
+        }
+      });
+      if(target){ target.textContent=msg; }
     }catch(e){}
   }
 
   function setMode(mode){
     mode=(mode==="ai"||mode==="ai_dialogue")?"ai_dialogue":"translate";
     state.mode=mode;
+
     window.KRXA_PAGE5_MODE=mode==="ai_dialogue"?"ai":"translate";
     window.KRXA_M2M_MODE=window.KRXA_PAGE5_MODE;
     window.KRXA_PAGE5_AI_DIALOGUE_ENABLED=mode==="ai_dialogue";
     window.KRXA_AI_DIALOGUE_ENABLED=mode==="ai_dialogue";
+    window.KRXA_AI_DIALOGUE_FREE_MODE=mode==="ai_dialogue";
+
     if(mode==="ai_dialogue"){ setStatus("AI대화 준비 완료 · 말하기를 눌러 시작하세요"); }
     else{ setStatus("말하기 버튼을 눌러 통역을 시작하세요"); }
     return state.mode;
@@ -46,8 +57,8 @@
 
   function bindToggle(){
     var t=findAiToggle();
-    if(t&&t.getAttribute("data-stable-page5-bound")!=="1"){
-      t.setAttribute("data-stable-page5-bound","1");
+    if(t&&t.getAttribute("data-stable-v2-page5-bound")!=="1"){
+      t.setAttribute("data-stable-v2-page5-bound","1");
       t.addEventListener("change",syncFromToggle,true);
       t.addEventListener("click",function(){setTimeout(syncFromToggle,30);},true);
     }

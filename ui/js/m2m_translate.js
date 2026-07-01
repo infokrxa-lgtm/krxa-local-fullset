@@ -1,3 +1,4 @@
+/* TRAVEL_V1_M2M_STABLE_ENTRY_V2: 통역은 사용자 m2m.speak Flow에서만 실행한다. */
 /* TRAVEL_V1_M2M_STABLE_ENTRY_V1: requestMicAndStart는 명시 사용자 Flow(m2m.speak)에서만 통과한다. */
 /* PATCH92_M2M_FLOW_ROUTER_COMPAT: m2m.speak is routed only through explicit data-flow and KRXA_FLOW.go. */
 /* PATCH91_M2M_FLOW_ROUTER_COMPAT: m2m.speak는 KRXA_FLOW.go('m2m.speak')에서 recordVoice 경로로 연결된다. */
@@ -757,6 +758,16 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD_V2 */
+    try{
+      opt = opt || {};
+      var ok = opt.userTriggered === true || opt.source === "TRAVEL_V1_FLOW_STABLE" || opt.source === "TRAVEL_V1_FLOW_STABLE_V2";
+      if(!ok){
+        console.warn("[TRAVEL_V1_M2M_V2] blocked non-user-triggered m2m request");
+        return false;
+      }
+    }catch(__stable_m2m_v2_e){ return false; }
+
     /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD */
     try{
       opt = opt || {};

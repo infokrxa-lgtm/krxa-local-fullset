@@ -1,0 +1,19 @@
+{
+  "name": "TRAVEL_V1_FULL_FLOW_STABLE_SET_V2",
+  "created_at": "2026-07-01T15:37:57.620725",
+  "changed": [
+    "flow_signal_router.js full stable V2 replacement with translate/ai_dialogue branch",
+    "page5_m2m_state_machine.js full stable V2 replacement",
+    "ai_dialogue_loop.js full stable V2 replacement: manual speakOnce only",
+    "app.html load order/data-flow cleanup for V2",
+    "inserted V2 manual-only guard into requestMicAndStart"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_full_flow_stable_v2\\20260701_153757\\ui\\app.html",
+    "ui/js/flow_signal_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_full_flow_stable_v2\\20260701_153757\\ui\\js\\flow_signal_router.js",
+    "ui/js/page5_m2m_state_machine.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_full_flow_stable_v2\\20260701_153757\\ui\\js\\page5_m2m_state_machine.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_full_flow_stable_v2\\20260701_153757\\ui\\js\\ai_dialogue_loop.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_full_flow_stable_v2\\20260701_153757\\ui\\js\\m2m_translate.js"
+  }
+}
