@@ -1,183 +1,111 @@
-/* flow_signal_router.js - PATCH92 FULL VERSION
- * 원칙:
- * 1) 자동 태깅 금지
- * 2) data-flow가 명시된 클릭바만 처리
- * 3) 클릭바는 Flow ID 하나만 전달
- * 4) 실행은 KRXA_FLOW.go(flow_id)가 담당
- * 5) 1차 범위: modal.close, page.back, m2m.speak, m2m.stop
+/* flow_signal_router.js - TRAVEL_V1_FULL_FLOW_STABLE_SET_V1
+ * 명시 data-flow만 처리한다. 자동 태깅 없음.
  */
 (function(){
-  if(window.KRXA_FLOW_SIGNAL_ROUTER_PATCH92_LOADED){ return; }
-  window.KRXA_FLOW_SIGNAL_ROUTER_PATCH92_LOADED = true;
+  if(window.KRXA_FLOW_STABLE_V1_LOADED){ return; }
+  window.KRXA_FLOW_STABLE_V1_LOADED = true;
 
-  var state = window.KRXA_FLOW_STATE || {
-    lastFlow: null,
-    currentFlow: null,
-    currentPage: null,
-    modalActive: false
-  };
+  var state = window.KRXA_FLOW_STATE || { lastFlow:null, currentFlow:null, modalActive:false };
   window.KRXA_FLOW_STATE = state;
 
-  function log(flowId, detail){
-    try{ console.log("[PATCH92 FLOW]", flowId, detail || ""); }catch(e){}
-  }
+  function log(flowId, payload){ try{ console.log("[TRAVEL_V1_FLOW]", flowId, payload || ""); }catch(e){} }
+  function app(){ return window.KRXA_App || null; }
 
-  function app(){
-    return window.KRXA_App || null;
-  }
-
-  function flowModalClose(){
-    var a = app();
+  function closeModal(){
+    try{ if(app() && typeof app().closeModal === "function"){ app().closeModal(); } }catch(e){}
     try{
-      if(a && typeof a.closeModal === "function"){
-        a.closeModal();
-        state.modalActive = false;
-        return true;
-      }
-    }catch(e){}
-
-    try{
-      var candidates = [
-        "#modalBack",
-        "#modal",
-        "#appModal",
-        "#commonModal",
-        ".modalBack",
-        ".modalOverlay",
-        ".modal"
-      ];
-      candidates.forEach(function(sel){
+      ["#modalBack","#modal","#appModal","#commonModal",".modalBack",".modalOverlay",".modal"].forEach(function(sel){
         document.querySelectorAll(sel).forEach(function(el){
-          el.style.display = "none";
-          el.classList.remove("show","active","open");
+          el.style.display="none"; el.classList.remove("show","active","open");
         });
       });
-      state.modalActive = false;
-      return true;
     }catch(e){}
-    return false;
+    state.modalActive=false;
+    return true;
   }
 
-  function flowPageBack(){
-    var a = app();
+  function pageBack(){
     try{
-      if(a && typeof a.goUserPage === "function"){
-        a.goUserPage(2);
-        return true;
-      }
-      if(a && typeof a.goPage === "function"){
-        a.goPage(1);
-        return true;
-      }
+      if(app() && typeof app().goUserPage === "function"){ app().goUserPage(2); return true; }
+      if(app() && typeof app().goPage === "function"){ app().goPage(1); return true; }
     }catch(e){}
     return false;
   }
 
-  function flowM2MSpeak(){
+  function enterM2M(){
+    try{
+      if(app() && typeof app().goUserPage === "function"){ app().goUserPage(5); return true; }
+      if(app() && typeof app().goPage === "function"){ app().goPage(5); return true; }
+    }catch(e){}
+    return false;
+  }
+
+  function m2mSpeak(){
     try{
       if(window.KRXA_Translate && typeof window.KRXA_Translate.requestMicAndStart === "function"){
-        return window.KRXA_Translate.requestMicAndStart({
-          source: "PATCH92_FLOW_ROUTER",
-          flow_id: "m2m.speak"
-        });
+        return window.KRXA_Translate.requestMicAndStart({source:"TRAVEL_V1_FLOW_STABLE", flow_id:"m2m.speak", userTriggered:true});
       }
-    }catch(e){
-      try{ console.warn("[PATCH92] KRXA_Translate.requestMicAndStart failed", e); }catch(_){}
-    }
-
-    try{
-      if(typeof window.recordVoice === "function"){
-        return window.recordVoice();
-      }
-    }catch(e){
-      try{ console.warn("[PATCH92] recordVoice failed", e); }catch(_){}
-    }
-
+    }catch(e){ try{ console.warn("[TRAVEL_V1_FLOW] m2m.speak failed", e); }catch(_){} }
     return false;
   }
 
-  function flowM2MStop(){
-    try{
-      if(window.KRXA_Translate && typeof window.KRXA_Translate.stopAuto === "function"){
-        return window.KRXA_Translate.stopAuto();
-      }
-    }catch(e){}
-    try{
-      if(typeof window.stopAuto === "function"){
-        return window.stopAuto();
-      }
-    }catch(e){}
-    state.currentFlow = null;
+  function m2mStop(){
+    try{ window.KRXA_M2M_USER_TRIGGERED = false; }catch(e){}
+    try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.stopAuto === "function"){ window.KRXA_Translate.stopAuto(); } }catch(e){}
+    try{ if(typeof window.stopAuto === "function"){ window.stopAuto(); } }catch(e){}
     return true;
+  }
+
+  function m2mTextOpen(){
+    try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.openQuickInput === "function"){ window.KRXA_Translate.openQuickInput(); return true; } }catch(e){}
+    return false;
+  }
+
+  function m2mReplay(){
+    try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.replayTTS === "function"){ window.KRXA_Translate.replayTTS(); return true; } }catch(e){}
+    return false;
+  }
+
+  function linkManage(){
+    try{ if(app() && typeof app().openLinkManager === "function"){ app().openLinkManager(); return true; } }catch(e){}
+    return false;
   }
 
   function go(flowId, payload){
     if(!flowId){ return false; }
-
-    state.lastFlow = flowId;
-    state.currentFlow = flowId;
-    log(flowId, payload);
-
+    state.lastFlow=flowId; state.currentFlow=flowId; log(flowId,payload);
     switch(flowId){
-      case "modal.close":
-        return flowModalClose();
-
-      case "page.back":
-        return flowPageBack();
-
-      case "m2m.speak":
-        return flowM2MSpeak();
-
-      case "m2m.stop":
-        return flowM2MStop();
-
-      default:
-        log("unhandled", flowId);
-        return false;
+      case "modal.close": return closeModal();
+      case "page.back": return pageBack();
+      case "m2m.enter": return enterM2M();
+      case "m2m.speak": return m2mSpeak();
+      case "m2m.stop": return m2mStop();
+      case "m2m.text.open": return m2mTextOpen();
+      case "m2m.replay": return m2mReplay();
+      case "user.link.manage": return linkManage();
+      default: log("unhandled", flowId); return false;
     }
   }
 
-  function bind(root){
-    root = root || document;
-    try{
-      root.querySelectorAll("[data-flow]").forEach(function(el){
-        if(el.__KRXA_PATCH92_FLOW_BOUND){ return; }
-        el.__KRXA_PATCH92_FLOW_BOUND = true;
-
-        el.addEventListener("click", function(e){
-          var flowId = el.getAttribute("data-flow");
-          if(!flowId){ return; }
-
-          e.preventDefault();
-          e.stopPropagation();
-          if(e.stopImmediatePropagation){ e.stopImmediatePropagation(); }
-
-          go(flowId, {
-            target: el,
-            text: (el.innerText || el.textContent || "").trim()
-          });
-
-          return false;
-        }, true);
-      });
-    }catch(e){
-      try{ console.warn("[PATCH92] bind failed", e); }catch(_){}
-    }
+  function onClick(e){
+    var el=null;
+    try{ el=e.target && e.target.closest ? e.target.closest("[data-flow]") : null; }catch(err){}
+    if(!el){ return; }
+    var flowId=el.getAttribute("data-flow");
+    if(!flowId){ return; }
+    e.preventDefault(); e.stopPropagation();
+    if(e.stopImmediatePropagation){ e.stopImmediatePropagation(); }
+    go(flowId,{target:el,text:(el.innerText||el.textContent||"").trim()});
+    return false;
   }
 
   function init(){
-    bind(document);
+    if(window.__KRXA_FLOW_STABLE_V1_BOUND){ return; }
+    window.__KRXA_FLOW_STABLE_V1_BOUND=true;
+    document.addEventListener("click", onClick, true);
   }
 
-  document.addEventListener("DOMContentLoaded", function(){
-    setTimeout(init, 100);
-    setTimeout(init, 600);
-  });
-
-  window.KRXA_FLOW = {
-    go: go,
-    bind: bind,
-    init: init,
-    state: state
-  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(init,30); });
+  setTimeout(init,200);
+  window.KRXA_FLOW={go:go,init:init,state:state};
 })();

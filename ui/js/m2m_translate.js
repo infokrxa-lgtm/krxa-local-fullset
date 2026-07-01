@@ -1,3 +1,4 @@
+/* TRAVEL_V1_M2M_STABLE_ENTRY_V1: requestMicAndStart는 명시 사용자 Flow(m2m.speak)에서만 통과한다. */
 /* PATCH92_M2M_FLOW_ROUTER_COMPAT: m2m.speak is routed only through explicit data-flow and KRXA_FLOW.go. */
 /* PATCH91_M2M_FLOW_ROUTER_COMPAT: m2m.speak는 KRXA_FLOW.go('m2m.speak')에서 recordVoice 경로로 연결된다. */
 
@@ -756,6 +757,26 @@ try {
     }
   }
    function requestMicAndStart(opt) {
+    /* TRAVEL_V1_M2M_MANUAL_ONLY_GUARD */
+    try{
+      opt = opt || {};
+      var ok = opt.userTriggered === true || opt.source === "TRAVEL_V1_FLOW_STABLE" || opt.source === "PATCH92_FLOW_ROUTER" || opt.source === "PATCH93B_FLOW_ROUTER";
+      if(!ok){
+        console.warn("[TRAVEL_V1_M2M] blocked non-user-triggered m2m request");
+        return false;
+      }
+    }catch(__stable_m2m_e){ return false; }
+
+    /* PATCH93B_M2M_MANUAL_ONLY_GUARD */
+    try{
+      opt = opt || {};
+      var ok = opt.userTriggered === true || opt.source === "PATCH93B_FLOW_ROUTER" || opt.source === "PATCH93_FLOW_ROUTER" || opt.source === "PATCH92_FLOW_ROUTER" || opt.source === "flow_router";
+      if(!ok){
+        console.warn("[PATCH93B] blocked non-user-triggered m2m request");
+        return false;
+      }
+    }catch(__patch93b_e){ return false; }
+
     /* PATCH90_REQUEST_MIC_DIRECT_RECORDVOICE */
     try{
       return recordVoice();
