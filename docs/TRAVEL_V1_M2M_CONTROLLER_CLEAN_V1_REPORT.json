@@ -1,0 +1,20 @@
+{
+  "name": "TRAVEL_V1_M2M_CONTROLLER_CLEAN_V1",
+  "created_at": "2026-07-02T10:48:51.755818",
+  "changed": [
+    "flow_signal_router.js replaced with one clean controller",
+    "page5_m2m_state_machine.js replaced with state-only machine",
+    "m2m_translate.js controller-only translate guard",
+    "ai_dialogue_loop.js release/TTS patch appended"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\app.html",
+    "ui/js/flow_signal_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\js\\flow_signal_router.js",
+    "ui/js/page5_m2m_state_machine.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\js\\page5_m2m_state_machine.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\js\\m2m_translate.js",
+    "ui/js/mini_m2m_simple_panel.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\js\\mini_m2m_simple_panel.js",
+    "ui/js/ai_dialogue_loop.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1\\20260702_104851\\ui\\js\\ai_dialogue_loop.js"
+  },
+  "core_algorithm": "click -> source(page5/mini) -> ai_on -> AI else Translate"
+}

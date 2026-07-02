@@ -223,3 +223,13 @@
 
 /* AI_DIALOGUE_V4G_FIXED_RELEASE_TTS_PATCH */
 (function(){function rel(){try{window.KRXA_AI_DIALOGUE_BUSY=false;window.KRXA_AI_DIALOGUE_LISTENING=false;if(window.KRXA_FLOW&&window.KRXA_FLOW.forceReleaseUI)window.KRXA_FLOW.forceReleaseUI();}catch(e){}}function unlock(){try{if(window.KRXA_FLOW&&window.KRXA_FLOW.unlockMobileTTS)window.KRXA_FLOW.unlockMobileTTS();}catch(e){}}setTimeout(function(){try{if(!window.KRXA_AI_DIALOGUE)return;var oldStop=window.KRXA_AI_DIALOGUE.stop;window.KRXA_AI_DIALOGUE.stop=function(){try{if(oldStop)oldStop.apply(window.KRXA_AI_DIALOGUE,arguments);}catch(e){}try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}rel();return true;};var oldSpeak=window.KRXA_AI_DIALOGUE.speakOnce;window.KRXA_AI_DIALOGUE.speakOnce=function(){unlock();var r=false;try{r=oldSpeak.apply(window.KRXA_AI_DIALOGUE,arguments);}catch(e){rel();throw e;}setTimeout(rel,15000);return r;};}catch(e){}},200);})();
+
+
+/* AI_DIALOGUE_RELEASE_TTS_CLEAN_V1 */
+(function(){
+ if(window.AI_DIALOGUE_RELEASE_TTS_CLEAN_V1_LOADED)return;window.AI_DIALOGUE_RELEASE_TTS_CLEAN_V1_LOADED=true;
+ function release(){try{window.KRXA_AI_DIALOGUE_BUSY=false;window.KRXA_AI_DIALOGUE_LISTENING=false;if(window.KRXA_FLOW&&window.KRXA_FLOW.forceReleaseUI)window.KRXA_FLOW.forceReleaseUI();}catch(e){}}
+ function unlock(){try{if(window.KRXA_FLOW&&window.KRXA_FLOW.unlockMobileTTS)window.KRXA_FLOW.unlockMobileTTS();}catch(e){}}
+ setTimeout(function(){try{if(!window.KRXA_AI_DIALOGUE)return;var oldStop=window.KRXA_AI_DIALOGUE.stop;window.KRXA_AI_DIALOGUE.stop=function(){try{if(oldStop)oldStop.apply(window.KRXA_AI_DIALOGUE,arguments);}catch(e){}try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}release();return true;};var oldSpeak=window.KRXA_AI_DIALOGUE.speakOnce;if(typeof oldSpeak==='function'){window.KRXA_AI_DIALOGUE.speakOnce=function(){unlock();var r=false;try{r=oldSpeak.apply(window.KRXA_AI_DIALOGUE,arguments);}catch(e){release();throw e;}setTimeout(release,15000);return r;};}}catch(e){}},200);
+})();
+
