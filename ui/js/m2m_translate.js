@@ -100,19 +100,31 @@
     return 'ko';
   }
 
-  async function fetchFirst(urls, payload){
-    var lastErr = null;
-    for(var i=0;i<urls.length;i++){
-      try{
-        var res = await fetch(urls[i], {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-        if(!res.ok){ lastErr = new Error('HTTP '+res.status+' '+urls[i]); continue; }
-        var data = await res.json().catch(function(){ return {}; });
-        data.__url = urls[i];
-        return data;
-      }catch(e){ lastErr = e; }
-    }
-    throw lastErr || new Error('No translate endpoint');
+async function fetchFirst(urls, payload){
+  var lastErr = null;
+
+  var fd = new FormData();
+  fd.append('text', payload.text || payload.message || '');
+  fd.append('service', 'travel');
+  fd.append('session_id', payload.session_id || '');
+  fd.append('source', payload.source || 'voice');
+  fd.append('device_locale', navigator.language || '');
+  fd.append('location_text', '');
+  fd.append('lat', '');
+  fd.append('lng', '');
+  fd.append('target_language', payload.target_language || payload.target_lang || 'auto');
+
+  for(var i=0;i<urls.length;i++){
+    try{
+      var res = await fetch(urls[i], {method:'POST', body:fd});
+      if(!res.ok){ lastErr = new Error('HTTP '+res.status+' '+urls[i]); continue; }
+      var data = await res.json().catch(function(){ return {}; });
+      data.__url = urls[i];
+      return data;
+    }catch(e){ lastErr = e; }
   }
+  throw lastErr || new Error('No translate endpoint');
+}
 
   async function translateText(input, source){
     var src = guessLangByText(input);
@@ -128,12 +140,12 @@
       mode:'translate',
       service:'travel_v1_m2m'
     };
-    var data = await fetchFirst([
-      '/api/travel-v1/translate',
-      '/api/m2m/translate',
-      '/api/translate',
-      '/translate'
-    ], payload);
+ var data = await fetchFirst([
+  '/api/translate'
+], payload);
+
+var out = data.translated_text || data.translation || data.output || data.reply || data.response || data.text || data.result || '';
+return out || input;
     var out = data.translated_text || data.translation || data.output || data.reply || data.response || data.text || data.result || '';
     return out || input;
   }
