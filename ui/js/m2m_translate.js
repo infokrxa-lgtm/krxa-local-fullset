@@ -1,876 +1,310 @@
-/* TRAVEL_V1_M2M_STABLE_ENTRY_V4: 통역은 FlowRouter의 translate 모드에서만 실행. AI대화는 ai_dialogue_loop에서 처리. */
-/* TRAVEL_V1_M2M_STABLE_ENTRY_V3B: 통역은 translate 모드에서 flow_signal_router를 통해서만 실행. AI대화는 ai_dialogue_loop로 분기. */
-/* TRAVEL_V1_M2M_STABLE_ENTRY_V2: 통역은 사용자 m2m.speak Flow에서만 실행한다. */
-/* TRAVEL_V1_M2M_STABLE_ENTRY_V1: requestMicAndStart는 명시 사용자 Flow(m2m.speak)에서만 통과한다. */
-/* PATCH92_M2M_FLOW_ROUTER_COMPAT: m2m.speak is routed only through explicit data-flow and KRXA_FLOW.go. */
-/* PATCH91_M2M_FLOW_ROUTER_COMPAT: m2m.speak는 KRXA_FLOW.go('m2m.speak')에서 recordVoice 경로로 연결된다. */
+/* m2m_translate.js - TRAVEL_V1_M2M_CONTROLLER_FULLFILES_V1
+ * Translate engine only.
+ * Controller decides AI vs Translate. This file does STT -> translate -> TTS.
+ */
+(function(){
+  'use strict';
+  if(window.KRXA_TRANSLATE_FULLFILES_V1_LOADED){ return; }
+  window.KRXA_TRANSLATE_FULLFILES_V1_LOADED = true;
 
-/* PATCH56_AI_DIALOGUE_ROUTE_BINDING_START */
-function krxaIsAiDialogueMode(){
-  try{
-    if(window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true){ return true; }
-    var labels = Array.from(document.querySelectorAll("label, div, span, button"));
-    var aiLabel = labels.find(function(el){ return (el.innerText || "").indexOf("AI대화") >= 0; });
-    if(aiLabel){
-      var box = aiLabel.querySelector('input[type="checkbox"]') || document.querySelector('input[type="checkbox"]:checked');
-      if(box && box.checked){ return true; }
-    }
-  }catch(e){}
-  return false;
-}
-
-async function krxaTurnDialogue(text, sourceLang, targetLang){
-  var payload = {
-    text: text || "",
-    message: text || "",
-    prompt: text || "",
-    source_lang: sourceLang || "auto",
-    target_lang: targetLang || "ko",
-    mode: "ai_dialogue",
-    context: { page:"travel_v1_page5", route:"ai_dialogue" }
-  };
-  var res = await fetch("/api/turn", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
-  });
-  var data = {};
-  try{ data = await res.json(); }catch(e){ data = {}; }
-  var out = data.reply || data.response || data.answer || data.text || data.translated || data.result || "";
-  data.translated = out;
-  data.text = out;
-  data.mode = "ai_dialogue";
-  data.route = "/api/turn";
-  return data;
-}
-/* PATCH56_AI_DIALOGUE_ROUTE_BINDING_END */
-
-/* KRXA Travel V1 - M2M Translate Engine FINAL
-   사람처럼 자연스러운 말대말 대화 전용
-   TV시청은 여기서 처리하지 않음: 2페이지 TV 클릭 → 별도 새창 구조
-*/
-
-(function () {
-  let autoConversation = false;
-  let autoRunning = false;
-  let isTtsPlaying = false;
-  let isRecording = false;
-  let autoRestartTimer = null;
-
-  let micStream = null;
-  let targetLanguage = localStorage.getItem("krxa_language_mode") || "auto";
-  let lastAudioText = "";
-
-  const sessionId =
-    localStorage.getItem("krxa_session_id") ||
-    "session-" + Math.random().toString(16).slice(2, 10);
-
-  localStorage.setItem("krxa_session_id", sessionId);
-
-  const LISTEN_PRESETS = {
-    conversation: {
-      name: "대화 모드",
-      volumeThreshold: 6,
-      minSpeechMs: 600,
-      endSilenceMs: 1200,
-      maxSilenceMs: 3000,
-      minBlobSize: 220,
-      blockBackgroundCaption: true
-    },
-    restaurant: {
-      name: "식당 모드",
-      volumeThreshold: 6,
-      minSpeechMs: 200,
-      endSilenceMs: 420,
-      maxSilenceMs: 1400,
-      minBlobSize: 220,
-      blockBackgroundCaption: true
-    },
-    call: {
-      name: "통화 모드",
-      volumeThreshold: 6,
-      minSpeechMs: 200,
-      endSilenceMs: 420,
-      maxSilenceMs: 1400,
-      minBlobSize: 220,
-      blockBackgroundCaption: false
-    }
-  };
-
-  let currentListenMode =
-    localStorage.getItem("krxa_listen_mode") || "conversation";
-
-  const LANGS = [
-    ["auto", "자동"],
-    ["en", "English"],
-    ["ja", "Japanese"],
-    ["zh", "Chinese"],
-    ["ko", "Korean"],
-    ["es", "Spanish"],
-    ["fr", "French"],
-    ["de", "German"],
-    ["it", "Italian"],
-    ["pt", "Portuguese"],
-    ["ru", "Russian"],
-    ["vi", "Vietnamese"],
-    ["th", "Thai"],
-    ["id", "Indonesian"],
-    ["ms", "Malay"],
-    ["ar", "Arabic"],
-    ["hi", "Hindi"],
-    ["bn", "Bengali"],
-    ["tr", "Turkish"],
-    ["nl", "Dutch"],
-    ["sv", "Swedish"],
-    ["pl", "Polish"],
-    ["uk", "Ukrainian"],
-    ["fa", "Persian"],
-    ["he", "Hebrew"],
-    ["el", "Greek"],
-    ["cs", "Czech"],
-    ["da", "Danish"],
-    ["fi", "Finnish"],
-    ["no", "Norwegian"]
+  var LANGS = [
+    {code:'auto', label:'자동'},
+    {code:'en', label:'영어'},
+    {code:'ja', label:'일본어'},
+    {code:'zh', label:'중국어'},
+    {code:'vi', label:'베트남어'},
+    {code:'th', label:'태국어'},
+    {code:'fr', label:'프랑스어'},
+    {code:'de', label:'독일어'},
+    {code:'es', label:'스페인어'},
+    {code:'ru', label:'러시아어'},
+    {code:'ar', label:'아랍어'}
   ];
 
-  function getListenPreset() {
-    return LISTEN_PRESETS[currentListenMode] || LISTEN_PRESETS.conversation;
+  var targetLanguage = 'en';
+  var lastTTS = '';
+  var recognition = null;
+  var isRecording = false;
+
+  function $(id){ return document.getElementById(id); }
+  function text(el){ try{ return (el && (el.innerText || el.textContent || '')) || ''; }catch(e){ return ''; } }
+  function esc(v){ return String(v||'').replace(/[<>&]/g,function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; }); }
+
+  function setStatus(msg){
+    try{
+      var nodes = Array.from(document.querySelectorAll('div,span,p,small'));
+      var target = null;
+      nodes.forEach(function(n){
+        var t = text(n).trim();
+        if(t.length < 160 && (t.indexOf('마이크')>=0 || t.indexOf('통역')>=0 || t.indexOf('AI대화')>=0 || t.indexOf('다음 말')>=0 || t.indexOf('응답')>=0)){
+          if(!n.querySelector || n.querySelectorAll('button,input,select').length === 0) target = n;
+        }
+      });
+      if(target) target.textContent = msg;
+    }catch(e){}
   }
 
-  function setListenMode(mode) {
-    if (!LISTEN_PRESETS[mode]) mode = "conversation";
-
-    currentListenMode = mode;
-    localStorage.setItem("krxa_listen_mode", currentListenMode);
-
-    const preset = getListenPreset();
-    setStatus(preset.name);
-    setFlowState("", preset.name + " 적용");
-  }
-
-  function setFlowState(state, message) {
-    const dot = document.getElementById("flowDot");
-    if (dot) dot.className = "flowDot " + (state || "");
-
-    const flow = document.getElementById("flow");
-    if (flow && message) flow.innerText = message;
-  }
-
-  function setStatus(text) {
-    const el = document.getElementById("status");
-    if (el) el.innerText = text;
-  }
-
-  function setLang(value) {
-    if (!value) return;
-
-    targetLanguage = value;
-    localStorage.setItem("krxa_language_mode", value);
-
-    document.querySelectorAll(".lang button").forEach(function (b) {
-      b.classList.remove("active");
-    });
-
-    const active = document.getElementById("l_" + value);
-    if (active) active.classList.add("active");
-
-    const more = document.getElementById("langMore");
-    if (
-      more &&
-      value !== "auto" &&
-      value !== "en" &&
-      value !== "ja" &&
-      value !== "zh"
-    ) {
-      more.value = value;
-    }
-  }
-
-  function initLanguages() {
-    const select = document.getElementById("langMore");
-    if (!select) return;
-
-    while (select.options.length > 1) select.remove(1);
-
-    LANGS.forEach(function (item) {
-      if (
-        item[0] === "auto" ||
-        item[0] === "en" ||
-        item[0] === "ja" ||
-        item[0] === "zh"
-      ) {
-        return;
+  function setBox(label, value){
+    try{
+      var ids = label === '원문' ? ['sourceText','srcText','inputText'] : ['targetText','translatedText','resultText'];
+      for(var i=0;i<ids.length;i++){
+        var el = $(ids[i]);
+        if(el){ el.innerText = value || ''; return; }
       }
-
-      const opt = document.createElement("option");
-      opt.value = item[0];
-      opt.textContent = item[1];
-      select.appendChild(opt);
-    });
-
-    setLang(targetLanguage);
+      var nodes = Array.from(document.querySelectorAll('b,strong,label,div,span'));
+      var tag = nodes.find(function(x){ return text(x).trim() === label; });
+      if(tag && tag.parentElement){ tag.parentElement.innerHTML = '<b>'+label+'</b><br>'+esc(value||'-'); }
+    }catch(e){}
   }
 
-   function getDeviceContext() {
-    if (window.KRXA_DeviceContext && window.KRXA_DeviceContext.get) {
-      return window.KRXA_DeviceContext.get();
-    }
-
-    return {
-      locale: navigator.language || "",
-      lat: "",
-      lng: "",
-      gpsReady: false
-    };
-  }
-
-  function guessLangByText(text) {
-    const t = String(text || "");
-
-    if (/[가-힣]/.test(t)) return "ko";
-    if (/[\u4e00-\u9fff]/.test(t)) return "zh";
-    if (/[\u3040-\u30ff]/.test(t)) return "ja";
-    if (/[a-zA-Z]/.test(t)) return "en";
-
-    return "auto";
-  }
-
-  function resolveTargetLanguageByText(text) {
-    const src = guessLangByText(text);
-
-    if (targetLanguage === "zh") return src === "zh" ? "ko" : "zh";
-    if (targetLanguage === "ja") return src === "ja" ? "ko" : "ja";
-    if (targetLanguage === "en") return src === "en" ? "ko" : "en";
-
+  function setLang(value){
+    targetLanguage = value || 'auto';
+    try{
+      document.querySelectorAll('.lang button').forEach(function(b){ b.classList.toggle('active', b.id === 'l_' + targetLanguage); });
+    }catch(e){}
+    updateOtherLanguageLabel();
     return targetLanguage;
   }
-  async function saveMemoryEvent(type, status, input, output, message) {
-    try {
-      await fetch("/api/krxai-memory/event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: type || "unknown",
-          source: "m2m_translate",
-          status: status || "",
-          input: input || "",
-          output: output || "",
-          message: message || ""
-        })
-      });
-    } catch (e) {}
-  }
 
-  async function acquireMic() {
-    if (micStream) return micStream;
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("이 브라우저는 마이크를 지원하지 않습니다.");
-    }
-
-    micStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
-    });
-
-    return micStream;
-  }
-
-  function releaseMic() {
-    if (micStream) {
-      micStream.getTracks().forEach(function (track) {
-        try {
-          track.stop();
-        } catch (e) {}
-      });
-    }
-    micStream = null;
-  }
-
-  function toggleAuto() {
-    autoConversation = !autoConversation;
-
-    const toggle = document.getElementById("autoToggle");
-    if (toggle) toggle.className = "toggle" + (autoConversation ? " on" : "");
-
-    if (autoConversation) {
-  autoRunning = true;
-  acquireMic().catch(function () {});
-      clearTimeout(autoRestartTimer);
-      setStatus("자동대화 준비 완료");
-      setFlowState("", "말하기 버튼을 눌러 시작하세요");
-      saveMemoryEvent("auto_on", "ok", "", "", "자동대화 ON");
-    } else {
-      stopAuto();
-    }
-  }
-
-  function stopAuto() {
-    autoConversation = false;
-    autoRunning = false;
-    isRecording = false;
-
-    clearTimeout(autoRestartTimer);
-    
-    const toggle = document.getElementById("autoToggle");
-    if (toggle) toggle.className = "toggle";
-
-    saveMemoryEvent("user_stop", "ok", "", "", "사용자 종료");
-    setStatus("대기 중");
-    setFlowState("", "자동대화 종료");
-  }
-
-  function isLikelyBackgroundCaption(text) {
-    const t = String(text || "").trim().toLowerCase();
-    if (!t) return true;
-
-    const blocked = [
-      "시청해 주셔서 감사합니다",
-      "구독",
-      "좋아요",
-      "알림 설정",
-      "유료광고",
-      "광고를 포함",
-      "이 영상",
-      "자막",
-      "다음 영상",
-      "thank you for watching",
-      "subscribe",
-      "like and subscribe"
-    ];
-
-    return blocked.some(function (x) {
-      return t.includes(x.toLowerCase());
-    });
-  }
-
-function shouldSendToSTT(blob, meta) {
-  const preset = getListenPreset();
-  const size = blob ? blob.size : 0;
-  const duration = meta ? meta.durationMs : 0;
-
-  if (!blob || size < preset.minBlobSize) {
-    return {
-      ok: false,
-      reason: "음성 데이터가 너무 짧음"
-    };
-  }
-
-  if (!meta || !meta.speechStarted) {
-    if (size >= preset.minBlobSize * 2 && duration >= 600) {
-      return {
-        ok: true,
-        reason: "약한 발화 STT 전송"
-      };
-    }
-
-    return {
-      ok: false,
-      reason: "발화 시작 감지 안됨"
-    };
-  }
-
-  if (duration < 500) {
-    return {
-      ok: false,
-      reason: "발화 시간이 너무 짧음"
-    };
-  }
-
-  return {
-    ok: true,
-    reason: "STT 전송 가능"
-  };
-}
-
-  async function translateText(text, source) {
-
-  /* PATCH67_V2_MINI_M2M_AI_DIALOGUE_BRANCH */
-  try{
-    if(window.KRXA_MINI_M2M_AI_DIALOGUE && window.KRXA_MINI_M2M_AI_DIALOGUE.isOn && window.KRXA_MINI_M2M_AI_DIALOGUE.isOn()){
-      if(window.KRXA_AI_DIALOGUE && window.KRXA_AI_DIALOGUE.call){
-        return await window.KRXA_AI_DIALOGUE.call(text, {sourceLang: sourceLang, targetLang: sourceLang});
-      }
-    }
-  }catch(e){
-    console.warn("[PATCH67 v2] mini m2m AI dialogue branch failed; fallback to translation", e);
-  }
-
-
-  /* PATCH58_AI_DIALOGUE_SEPARATE_ROUTE_BRANCH */
-  try{
-    if(window.KRXA_AI_DIALOGUE && window.KRXA_AI_DIALOGUE.isOn && window.KRXA_AI_DIALOGUE.isOn()){
-      return await window.KRXA_AI_DIALOGUE.call(text, {sourceLang: sourceLang, targetLang: targetLang});
-    }
-  }catch(e){
-    console.warn("[PATCH58] separate AI dialogue route failed; fallback to translation", e);
-  }
-
-
-  /* PATCH56_TRANSLATE_TEXT_AI_DIALOGUE_BRANCH */
-  try{
-    if(krxaIsAiDialogueMode()){
-      return await krxaTurnDialogue(text, sourceLang, targetLang);
-    }
-  }catch(e){
-    console.warn("[PATCH56] AI dialogue branch failed; fallback to translate", e);
-  }
-
-    const cleanText = String(text || "").trim();
-    if (!cleanText || cleanText === "-") {
-      setStatus("원문 없음");
-      return;
-    }
-
-    const sourceEl = document.getElementById("sourceText");
-    const resultEl = document.getElementById("resultText");
-
-    if (sourceEl) sourceEl.innerText = cleanText;
-
-    setStatus("통역 처리 중...");
-    setFlowState("translate", "번역 중");
-
-    const ctx = getDeviceContext();
-
-    const fd = new FormData();
-    fd.append("text", cleanText);
-    fd.append("service", "travel");
-    fd.append("session_id", sessionId);
-    fd.append("source", source || "text");
-    fd.append("source_language", "auto");
-    fd.append("target_language", resolveTargetLanguageByText(cleanText));
-    fd.append("lat", ctx.lat || "");
-    fd.append("lng", ctx.lng || "");
-    fd.append("device_locale", ctx.locale || navigator.language || "");
-
-    try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        body: fd
-      });
-
-      const raw = await res.text();
-
-let data = null;
-try {
-  data = JSON.parse(raw);
-} catch (jsonErr) {
-  throw new Error(
-    "번역 API가 JSON이 아닌 응답을 반환했습니다: " +
-    raw.slice(0, 80)
-  );
-}
-      const result = data.result || data.text || "";
-
-      if (resultEl) resultEl.innerText = result || "-";
-
-      lastAudioText = result;
-
-      saveMemoryEvent("translate_success", "ok", cleanText, result, "번역 성공");
-
-      setStatus("통역 완료");
-      setFlowState("speak", "음성 출력 중");
-
-      await playTTS(result);
-
-      setFlowState("", "다음 말을 기다립니다");
-      setStatus(autoConversation ? "자동대화 대기 중" : "대기 중");
-
-    } catch (e) {
-      saveMemoryEvent("translate_error", "error", cleanText, "", e.message);
-      setStatus("통역 연결 오류");
-      setFlowState("error", "API 확인 필요");
-      if (resultEl) resultEl.innerText = "통역 API 오류: " + e.message;
-    }
-  }
-
-  async function playTTS(text) {
-    const cleanText = String(text || "").trim();
-    if (!cleanText) return;
-
-    isTtsPlaying = true;
-
-    try {
-      const fd = new FormData();
-      fd.append("text", cleanText);
-      fd.append("session_id", sessionId);
-
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        body: fd
-      });
-
-      const blob = await res.blob();
-
-      if (blob.size > 100) {
-        const audio = new Audio(URL.createObjectURL(blob));
-        await new Promise(function (resolve) {
-          audio.onended = resolve;
-          audio.onerror = resolve;
-          audio.play().catch(resolve);
-        });
-      }
-    } catch (e) {
-    } finally {
-      isTtsPlaying = false;
-    }
-  }
-
-  function replayTTS() {
-    playTTS(lastAudioText);
-  }
-
-    async function recordVoice() {
-    /* PATCH90_RECORDVOICE_SINGLE_MIC_ENTRY */
+  function updateOtherLanguageLabel(){
     try{
-      window.KRXA_M2M_MIC_ACTIVE = true;
-      if(!micStream){
-        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-          throw new Error("getUserMedia not supported");
+      Array.from(document.querySelectorAll('select')).forEach(function(sel){
+        var opt = sel.options[sel.selectedIndex];
+        var name = opt ? (opt.text || opt.label || opt.value || '').trim() : '';
+        if(!name || name.indexOf('기타') >= 0) return;
+        var holder = document.getElementById('otherLangLabel');
+        if(!holder){
+          holder = document.createElement('div');
+          holder.id = 'otherLangLabel';
+          holder.style.cssText = 'font-size:12px;color:#2563eb;font-weight:800;margin-top:4px;';
+          sel.parentElement.appendChild(holder);
         }
-        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        holder.textContent = '선택 언어: ' + name;
+        sel.setAttribute('data-selected-label', name);
+      });
+    }catch(e){}
+  }
+
+  function guessLangByText(v){
+    var t = String(v||'');
+    if(/[가-힣]/.test(t)) return 'ko';
+    if(/[\u3040-\u30ff]/.test(t)) return 'ja';
+    if(/[\u4e00-\u9fff]/.test(t)) return 'zh';
+    if(/[a-zA-Z]/.test(t)) return 'en';
+    return 'auto';
+  }
+
+  function resolveTarget(src){
+    if(targetLanguage && targetLanguage !== 'auto') return targetLanguage;
+    if(src === 'ko') return 'en';
+    return 'ko';
+  }
+
+  async function fetchFirst(urls, payload){
+    var lastErr = null;
+    for(var i=0;i<urls.length;i++){
+      try{
+        var res = await fetch(urls[i], {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        if(!res.ok){ lastErr = new Error('HTTP '+res.status+' '+urls[i]); continue; }
+        var data = await res.json().catch(function(){ return {}; });
+        data.__url = urls[i];
+        return data;
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('No translate endpoint');
+  }
+
+  async function translateText(input, source){
+    var src = guessLangByText(input);
+    var tgt = resolveTarget(src);
+    var payload = {
+      text:input,
+      message:input,
+      source:source || 'voice',
+      source_lang:src,
+      source_language:src,
+      target_lang:tgt,
+      target_language:tgt,
+      mode:'translate',
+      service:'travel_v1_m2m'
+    };
+    var data = await fetchFirst([
+      '/api/travel-v1/translate',
+      '/api/m2m/translate',
+      '/api/translate',
+      '/translate'
+    ], payload);
+    var out = data.translated_text || data.translation || data.output || data.reply || data.response || data.text || data.result || '';
+    return out || input;
+  }
+
+  function ttsLang(){
+    var t = targetLanguage || 'ko';
+    if(t === 'zh') return 'zh-CN';
+    if(t === 'ja') return 'ja-JP';
+    if(t === 'en') return 'en-US';
+    if(t === 'vi') return 'vi-VN';
+    return 'ko-KR';
+  }
+
+  async function playTTS(v){
+    lastTTS = v || '';
+    if(!lastTTS) return;
+    try{ if(window.KRXA_FLOW && window.KRXA_FLOW.unlockMobileTTS) window.KRXA_FLOW.unlockMobileTTS(); }catch(e){}
+    try{
+      if(window.KRXA_TTS && typeof window.KRXA_TTS.speak === 'function'){
+        window.KRXA_TTS.speak(lastTTS,{lang:ttsLang(),source:'m2m_translate'});
+        return;
       }
-    }catch(__patch90_mic_error){
-      try{ console.warn("[PATCH90] mic permission failed", __patch90_mic_error); }catch(e){}
-      window.KRXA_M2M_MIC_ACTIVE = false;
+    }catch(e){}
+    try{
+      if(window.speechSynthesis){
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(lastTTS);
+        u.lang = ttsLang();
+        u.volume = 1; u.rate = 1; u.pitch = 1;
+        window.speechSynthesis.speak(u);
+      }
+    }catch(e){}
+  }
+
+  function replayTTS(){ playTTS(lastTTS); }
+
+  function browserSTT(callback){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return false;
+    try{
+      recognition = new SR();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = 'ko-KR';
+      recognition.onstart = function(){ isRecording = true; setStatus('통역 듣는 중입니다'); };
+      recognition.onerror = function(){ isRecording = false; setStatus('음성 인식 오류'); };
+      recognition.onend = function(){ isRecording = false; };
+      recognition.onresult = function(ev){
+        var finalText = '';
+        var interim = '';
+        for(var i=ev.resultIndex;i<ev.results.length;i++){
+          var tx = ev.results[i][0] && ev.results[i][0].transcript || '';
+          if(ev.results[i].isFinal) finalText += tx; else interim += tx;
+        }
+        if(interim) setBox('원문', interim);
+        if(finalText) callback(finalText);
+      };
+      recognition.start();
+      return true;
+    }catch(e){ isRecording=false; return false; }
+  }
+
+  async function handleInput(input, source){
+    input = String(input||'').trim();
+    if(!input){ setStatus('통역 입력이 없습니다'); return false; }
+    setBox('원문', input);
+    setStatus('통역 중입니다');
+    try{
+      var out = await translateText(input, source || 'voice');
+      setBox('번역', out);
+      setStatus('다음 말을 기다립니다');
+      await playTTS(out);
+      try{ if(window.KRXA_FLOW && window.KRXA_FLOW.forceReleaseUI) window.KRXA_FLOW.forceReleaseUI(); }catch(e){}
+      return true;
+    }catch(e){
+      setBox('번역','통역 오류: '+(e && e.message ? e.message : e));
+      setStatus('통역 오류');
+      try{ if(window.KRXA_FLOW && window.KRXA_FLOW.forceReleaseUI) window.KRXA_FLOW.forceReleaseUI(); }catch(_e){}
       return false;
     }
-
-    saveMemoryEvent(
-      "record_voice_called",
-      "debug",
-      "",
-      "",
-      "autoConversation=" + autoConversation + ", autoRunning=" + autoRunning
-    );
-
-    if (isRecording || isTtsPlaying) {
-            return;
-    }
-
-    isRecording = true;
-    autoRunning = true;
-
-    setStatus("말씀하세요");
-    setFlowState("listen", "듣는 중");
-
-    let stream = null;
-    let audioContext = null;
-
-    try {
-      stream = await acquireMic();
-
-      audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-
-      analyser.fftSize = 2048;
-      source.connect(analyser);
-
-      const data = new Uint8Array(analyser.fftSize);
-      const recorder = new MediaRecorder(stream);
-      const chunks = [];
-
-      const preset = getListenPreset();
-
-      let speechStarted = false;
-      let lastVoiceTime = Date.now();
-      let startedAt = Date.now();
-      let stopped = false;
-
-      function safeStop() {
-        if (stopped) return;
-        stopped = true;
-
-        if (recorder && recorder.state !== "inactive") {
-          recorder.stop();
-        }
-      }
-
-      recorder.ondataavailable = function (e) {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
-      };
-
-      recorder.onstop = async function () {
-        try {
-          if (audioContext && audioContext.state !== "closed") {
-            await audioContext.close();
-          }
-        } catch (e) {}
-
-        isRecording = false;
-
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const durationMs = Date.now() - startedAt;
-
-        const gate = shouldSendToSTT(blob, {
-          speechStarted: speechStarted,
-          durationMs: durationMs
-        });
-
-        if (!gate.ok) {
-          saveMemoryEvent("pre_stt_hold", "hold", "", "", gate.reason);
-          setStatus("STT 전 보류");
-          setFlowState("", gate.reason);
-
-                    return;
-        }
-
-        setStatus("음성 인식 중...");
-        setFlowState("translate", "STT 처리 중");
-
-        const ctx = getDeviceContext();
-
-        const fd = new FormData();
-        fd.append("file", blob, "voice.webm");
-        fd.append("session_id", sessionId);
-        fd.append("duration", String(Math.round(durationMs / 1000)));
-        fd.append("user_language_mode", "auto");
-        fd.append("source_language", "auto");
-        fd.append("target_language", targetLanguage);
-        fd.append("lat", ctx.lat || "");
-        fd.append("lng", ctx.lng || "");
-        fd.append("device_locale", ctx.locale || navigator.language || "");
-
-        try {
-          const res = await fetch("/api/stt", {
-            method: "POST",
-            body: fd
-          });
-
-          const sttData = await res.json();
-
-          if (sttData.ok && sttData.text) {
-            const currentText = String(sttData.text || "").trim();
-            if (currentText.length < 1) {
-              saveMemoryEvent("stt_too_short", "hold", currentText, "", "STT 결과 너무 짧음");
-              setStatus("음성 없음");
-              setFlowState("", "인식 문장이 너무 짧음");
-
-                        return;
-            }
-            if (!currentText || currentText === "-") {
-              saveMemoryEvent("stt_empty", "hold", "", "", "인식 문장 없음");
-              setStatus("음성 없음");
-              setFlowState("", "인식 문장 없음");
-
-                            return;
-            }
-
-            if (
-              autoConversation &&
-              getListenPreset().blockBackgroundCaption &&
-              isLikelyBackgroundCaption(currentText)
-            ) {
-              saveMemoryEvent("background_block", "hold", currentText, "", "배경 자막성 문구 차단");
-              setStatus("배경음 차단");
-              setFlowState("", "사용자 발화 아님");
-
- return;
-            }
-
-saveMemoryEvent("stt_success", "ok", currentText, "", "STT 성공");
-
-try {
-  await translateText(currentText, "voice");
-} catch (translateErr) {
-  saveMemoryEvent(
-    "after_stt_translate_error",
-    "error",
-    currentText,
-    "",
-    translateErr.message
-  );
-
-  setStatus("번역 연결 오류");
-  setFlowState("error", "STT 성공 · 번역 단계 확인 필요");
-
-  const resultEl = document.getElementById("resultText");
-  if (resultEl) {
-    resultEl.innerText = "STT 성공 / 번역 오류: " + translateErr.message;
   }
 
-}
-          } else {
-            saveMemoryEvent("stt_fail", "fail", "", "", "음성 인식 실패");
-            setStatus("음성 인식 실패");
-            setFlowState("error", "다시 말해주세요");
-
-           }
-        } catch (e) {
-          saveMemoryEvent("stt_error", "error", "", "", e.message);
-          setStatus("STT 연결 오류");
-          setFlowState("error", "STT API 확인 필요");
-        }
-      };
-
-      recorder.start(250);
-
-      function detect() {
-        if (!recorder || recorder.state === "inactive") return;
-
-        analyser.getByteTimeDomainData(data);
-
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) {
-          sum += Math.abs(data[i] - 128);
-        }
-
-        const volume = sum / data.length;
-        const now = Date.now();
-
-        if (volume > preset.volumeThreshold) {
-          speechStarted = true;
-          lastVoiceTime = now;
-        }
-
-        if (
-          speechStarted &&
-          now - startedAt > preset.minSpeechMs &&
-          now - lastVoiceTime > preset.endSilenceMs
-        ) {
-          safeStop();
-          return;
-        }
-
-        if (!speechStarted && now - startedAt > preset.maxSilenceMs) {
-          safeStop();
-          return;
-        }
-
-        requestAnimationFrame(detect);
-      }
-
-      detect();
-    } catch (e) {
-      isRecording = false;
-
-      try {
-        if (audioContext && audioContext.state !== "closed") {
-          await audioContext.close();
-        }
-      } catch (err) {}
-
-      saveMemoryEvent("mic_error", "error", "", "", e.message);
-      setStatus("마이크 권한 필요");
-      setFlowState("error", "마이크 오류");
+  function recordVoice(){
+    if(isRecording) return false;
+    var ok = browserSTT(function(finalText){ handleInput(finalText, 'voice'); });
+    if(!ok){
+      openQuickInput();
+      setStatus('브라우저 음성인식 미지원 · 텍스트 입력으로 진행하세요');
     }
+    return ok;
   }
-   function requestMicAndStart(opt) {
-    /* M2M_CONTROLLER_CLEAN_V1D_TRANSLATE_GUARD */
+
+  function requestMicAndStart(opt){
+    opt = opt || {};
+    var src = String(opt.source || '');
+    var allowed = [
+      'M2M_CONTROLLER_FULLFILES_V1_PAGE5_TRANSLATE',
+      'M2M_CONTROLLER_FULLFILES_V1_MINI_TRANSLATE'
+    ];
+    var ok = opt.userTriggered === true && allowed.indexOf(src) >= 0;
+    if(!ok){
+      console.warn('[M2M_TRANSLATE_FULLFILES_V1] blocked non-controller translate request', src);
+      return false;
+    }
+    return recordVoice();
+  }
+
+  function openQuickInput(){
     try{
-      opt = opt || {};
-      var src = String(opt.source || "");
-      var allowed = [
-        "M2M_CONTROLLER_CLEAN_V1C_PAGE5_TRANSLATE",
-        "M2M_CONTROLLER_CLEAN_V1C_MINI_TRANSLATE",
-        "M2M_CONTROLLER_CLEAN_V1D_PAGE5_TRANSLATE",
-        "M2M_CONTROLLER_CLEAN_V1D_MINI_TRANSLATE"
-      ];
-      var ok = opt.userTriggered === true && allowed.indexOf(src) >= 0;
-      if(!ok){
-        console.warn("[M2M_CONTROLLER_CLEAN_V1D] blocked non-controller translate request", src);
-        return false;
+      var html = ''+
+        '<div style="display:flex;flex-direction:column;gap:8px">'+
+        '<textarea id="quickM2MInput" style="width:100%;min-height:90px;border-radius:12px;padding:10px" placeholder="번역할 말을 입력하세요"></textarea>'+
+        '<button type="button" class="btn green" style="width:100%" onclick="KRXA_Translate.sendQuickText()">보내기</button>'+
+        '<button type="button" class="btn green" style="width:100%" data-flow="page5.m2m.speak">🎙 음성 입력</button>'+
+        '</div>';
+      if(window.KRXA_App && typeof window.KRXA_App.openModal === 'function'){
+        window.KRXA_App.openModal('텍스트 입력', html);
+        return true;
       }
-    }catch(__m2m_controller_clean_v1d_guard_e){ return false; }
-    try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("translate",{source:opt.source||"m2m"}); } }catch(__flow_lock_e){}
-    try{ recordVoice(); return true; }
-    catch(__record_voice_e){ try{ console.warn("[M2M_CONTROLLER_CLEAN_V1D] recordVoice failed", __record_voice_e); }catch(e){} return false; }
+    }catch(e){}
+    var v = prompt('번역할 말을 입력하세요');
+    if(v) handleInput(v,'text');
+    return true;
   }
 
-  function openQuickInput() {
-    if (window.KRXA_App && window.KRXA_App.openModal) {
-      window.KRXA_App.openModal(
-        "말하기 / 텍스트 입력",
-        "<textarea id='quickTranslateText' placeholder='통역할 내용을 입력하세요'></textarea>" +
-          "<button class='btn blue' style='width:100%;margin-top:6px' onclick='KRXA_Translate.sendQuickText()'>전송</button>" +
-          "<button type='button' class='btn green' style='width:100%;margin-top:6px' onclick='event.preventDefault(); event.stopPropagation(); KRXA_Translate.requestMicAndStart()'>🎙 음성 입력</button>"
-      );
-      return;
-    }
-
-    const text = prompt("통역할 내용을 입력하세요.");
-    if (text && text.trim()) translateText(text.trim(), "quick_text");
+  function sendQuickText(){
+    var el = document.getElementById('quickM2MInput');
+    var v = el ? el.value : '';
+    if(v) handleInput(v,'text');
+    try{ if(window.KRXA_App && window.KRXA_App.closeModal) window.KRXA_App.closeModal(); }catch(e){}
   }
 
-  function sendQuickText() {
-    const el = document.getElementById("quickTranslateText");
-    const text = el ? el.value : "";
-
-    autoConversation = false;
-    autoRunning = false;
+  function stopAuto(){
+    try{ if(recognition) recognition.stop(); }catch(e){}
+    try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
     isRecording = false;
-    clearTimeout(autoRestartTimer);
-
-    const toggle = document.getElementById("autoToggle");
-    if (toggle) toggle.className = "toggle";
-
-    if (window.KRXA_App && window.KRXA_App.closeModal) {
-      window.KRXA_App.closeModal();
-    }
-
-    translateText(text, "quick_text");
+    setStatus('종료되었습니다');
+    try{ if(window.KRXA_FLOW && window.KRXA_FLOW.forceReleaseUI) window.KRXA_FLOW.forceReleaseUI(); }catch(e){}
+    return true;
   }
 
-  function init() {
-    initLanguages();
-    setListenMode("conversation");
-    setStatus("대기 중");
-    setFlowState("", "마이크를 누르면 통역을 시작합니다");
+  function toggleAuto(){
+    try{
+      var next = !(window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true);
+      window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = next;
+      if(window.KRXA_PAGE5_M2M_STATE_MACHINE && window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode){
+        window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode(next ? 'ai_dialogue' : 'translate');
+      }
+      return next;
+    }catch(e){ return false; }
   }
+
+  function init(){ updateOtherLanguageLabel(); }
+  document.addEventListener('DOMContentLoaded', init);
 
   window.KRXA_Translate = {
-    init: init,
-    setLang: setLang,
-    toggleAuto: toggleAuto,
-    stopAuto: stopAuto,
-    recordVoice: recordVoice,
-    requestMicAndStart: requestMicAndStart,
-    translateText: translateText,
-    playTTS: playTTS,
-    replayTTS: replayTTS,
-    openQuickInput: openQuickInput,
-    sendQuickText: sendQuickText,
-    setListenMode: setListenMode,
-    getListenPreset: getListenPreset,
-    releaseMic: releaseMic
+    setLang:setLang,
+    requestMicAndStart:requestMicAndStart,
+    recordVoice:recordVoice,
+    openQuickInput:openQuickInput,
+    sendQuickText:sendQuickText,
+    replayTTS:replayTTS,
+    stopAuto:stopAuto,
+    toggleAuto:toggleAuto,
+    handleInput:handleInput,
+    translateText:translateText,
+    playTTS:playTTS
   };
+
+  if(!window.recordVoice) window.recordVoice = recordVoice;
+  if(!window.stopAuto) window.stopAuto = stopAuto;
+  if(!window.toggleAuto) window.toggleAuto = toggleAuto;
 })();
-
-/* PATCH69_EXPOSE_M2M_FUNCTIONS_START */
-try{
-  if(typeof toggleAuto === 'function' && !window.toggleAuto){ window.toggleAuto = toggleAuto; }
-  if(typeof recordVoice === 'function' && !window.recordVoice){ window.recordVoice = recordVoice; }
-}catch(e){}
-/* PATCH69_EXPOSE_M2M_FUNCTIONS_END */
-
-
-/* PATCH72_FORCE_EXPOSE_M2M_FUNCTIONS_START */
-try{
-  if(typeof recordVoice === "function"){ window.recordVoice = recordVoice; }
-  if(typeof toggleAuto === "function"){ window.toggleAuto = toggleAuto; }
-  if(typeof stopAuto === "function"){ window.stopAuto = stopAuto; }
-}catch(e){}
-/* PATCH72_FORCE_EXPOSE_M2M_FUNCTIONS_END */
-
-
-/* PATCH90_BLOCK_APP_OPENMODAL_IN_M2M_START */
-try{
-  if(window.KRXA_App && window.KRXA_App.openModal && !window.__KRXA_PATCH90_APP_OPENMODAL_BLOCKED){
-    window.__KRXA_PATCH90_APP_OPENMODAL_BLOCKED = true;
-    var __krxa_patch90_old_openModal = window.KRXA_App.openModal;
-    window.KRXA_App.openModal = function(){
-      try{
-        var joined = Array.prototype.slice.call(arguments).map(function(x){ return String(x || ""); }).join(" ");
-        if(joined.indexOf("마이크") >= 0 || joined.indexOf("권한") >= 0 || joined.indexOf("허용") >= 0){
-          return false;
-        }
-      }catch(e){}
-      return __krxa_patch90_old_openModal.apply(this, arguments);
-    };
-  }
-}catch(e){}
-/* PATCH90_BLOCK_APP_OPENMODAL_IN_M2M_END */

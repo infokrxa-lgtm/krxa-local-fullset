@@ -1,64 +1,40 @@
-/* mini_m2m_simple_panel.js - PATCH76
- * Mini = 기존 하단 UI 유지 + 빠른 통역만 실행
- * 새 패널 생성 금지 / AI대화 없음
+/* mini_m2m_simple_panel.js - TRAVEL_V1_M2M_CONTROLLER_FULLFILES_V1
+ * Mini panel calls only KRXA_FLOW.go(). It never calls requestMicAndStart directly.
  */
 (function(){
-  if(window.KRXA_MINI_M2M_PATCH76_LOADED){ return; }
-  window.KRXA_MINI_M2M_PATCH76_LOADED = true;
+  'use strict';
+  if(window.KRXA_MINI_M2M_SIMPLE_PANEL_FULLFILES_V1_LOADED){ return; }
+  window.KRXA_MINI_M2M_SIMPLE_PANEL_FULLFILES_V1_LOADED = true;
 
-  function setMiniTranslateOnly(){
-    window.KRXA_MINI_M2M_MODE = "translate";
-    window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED = false;
-    window.KRXA_MINI_M2M_FORCE_TRANSLATE = true;
-  }
-
-  function stopAI(){
+  function go(flow){
     try{
-      if(window.KRXA_AI_DIALOGUE_TRUE_AUTO && window.KRXA_AI_DIALOGUE_TRUE_AUTO.stop){ window.KRXA_AI_DIALOGUE_TRUE_AUTO.stop(); }
-      if(window.KRXA_AI_DIALOGUE_AUTO_LOOP && window.KRXA_AI_DIALOGUE_AUTO_LOOP.stop){ window.KRXA_AI_DIALOGUE_AUTO_LOOP.stop(); }
-    }catch(e){}
-  }
-
-  function quickTranslate(){
-    setMiniTranslateOnly();
-    stopAI();
-    try{
-      if(window.KRXA_Translate && window.KRXA_Translate.requestMicAndStart){
-        window.KRXA_FLOW && window.KRXA_FLOW.go ? window.KRXA_FLOW.go("mini.m2m.speak") : false;
-        return true;
+      if(window.KRXA_FLOW && typeof window.KRXA_FLOW.go === 'function'){
+        return window.KRXA_FLOW.go(flow, {source:'mini_panel'});
       }
-      if(typeof window.recordVoice === "function"){ window.recordVoice(); return true; }
-      if(window.KRXA_FLOW&&window.KRXA_FLOW.go){window.KRXA_FLOW.go("mini.ai.toggle");return true;}
-    }catch(e){ console.warn("[PATCH76] mini quick translate failed", e); }
+    }catch(e){ try{ console.warn('[MINI_M2M_FULLFILES_V1] flow failed', flow, e); }catch(_){} }
     return false;
   }
 
-  function bindExistingMini(){
-    try{
-      var nodes = Array.from(document.querySelectorAll("[data-admin-id='mini_talk'], .homeMicDock"));
-      nodes.forEach(function(n){
-        if(n.getAttribute("data-patch76-mini-bound")==="1"){ return; }
-        n.setAttribute("data-patch76-mini-bound","1");
-        n.onclick=function(e){
-          if(e){ e.preventDefault(); e.stopPropagation(); }
-          quickTranslate();
-          return false;
-        };
-      });
-      var old=document.getElementById("krxa-mini-m2m-simple-panel");
-      if(old && old.parentNode){ old.parentNode.removeChild(old); }
-    }catch(e){}
+  function open(){
+    return go('mini.m2m.speak');
   }
 
-  function open(){ bindExistingMini(); return quickTranslate(); }
-  function init(){ setMiniTranslateOnly(); bindExistingMini(); }
+  function speak(){
+    return go('mini.m2m.speak');
+  }
 
-  document.addEventListener("DOMContentLoaded", init);
-  setTimeout(init,300); setTimeout(init,1000); setTimeout(init,2500);
+  function toggleAI(){
+    return go('mini.ai.toggle');
+  }
 
-  window.KRXA_MINI_M2M_SIMPLE_PANEL={
-    open:open, init:init, runMic:quickTranslate,
-    setMode:setMiniTranslateOnly,
-    getMode:function(){return "translate";}
+  function stop(){
+    return go('m2m.stop');
+  }
+
+  window.KRXA_MINI_M2M_SIMPLE_PANEL = {
+    open:open,
+    speak:speak,
+    toggleAI:toggleAI,
+    stop:stop
   };
 })();

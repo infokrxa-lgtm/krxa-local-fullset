@@ -1,36 +1,243 @@
-/* flow_signal_router.js - TRAVEL_V1_M2M_CONTROLLER_CLEAN_V1D */
+/* flow_signal_router.js - TRAVEL_V1_M2M_CONTROLLER_FULLFILES_V1
+ * Single click controller only.
+ * UI click -> source(page5/mini) -> ai_on -> AI dialogue or translate.
+ */
 (function(){
-  if(window.KRXA_M2M_CONTROLLER_CLEAN_V1D_LOADED){ return; }
-  window.KRXA_M2M_CONTROLLER_CLEAN_V1D_LOADED = true;
-  if(typeof window.KRXA_PAGE5_AI_DIALOGUE_ENABLED !== 'boolean'){ window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = false; }
-  if(typeof window.KRXA_MINI_AI_DIALOGUE_ENABLED !== 'boolean'){ window.KRXA_MINI_AI_DIALOGUE_ENABLED = false; }
-  var state = { lastFlow:null, running:false };
-  function text(el){ try{ return (el && (el.innerText || el.textContent || '')) || ''; }catch(e){ return ''; } }
-  function log(id,payload){ try{ console.log('[M2M_CONTROLLER_CLEAN_V1D]', id, payload || ''); }catch(e){} }
-  function isMine(id){ return ['page5.ai.toggle','mini.ai.toggle','page5.m2m.speak','mini.m2m.speak','m2m.speak','m2m.stop','m2m.text.open','m2m.replay','page.back','modal.close','m2m.enter'].indexOf(id) >= 0; }
-  function releaseUI(){ try{ state.running=false; window.KRXA_M2M_BUSY=false; window.KRXA_AI_DIALOGUE_BUSY=false; window.KRXA_AI_DIALOGUE_LISTENING=false; document.body.classList.remove('busy','listening','locked','modal-open'); document.querySelectorAll('[disabled]').forEach(function(el){ if(el.getAttribute('data-keep-disabled') !== '1'){ el.removeAttribute('disabled'); }}); }catch(e){} }
-  function unlockTTS(){ try{ window.KRXA_TTS_UNLOCKED=true; if(window.speechSynthesis){ var u=new SpeechSynthesisUtterance(' '); u.volume=0.01; window.speechSynthesis.speak(u); setTimeout(function(){ try{ window.speechSynthesis.cancel(); }catch(e){} },50); } }catch(e){} }
-  function visual(el,on){ try{ if(!el){return;} el.classList.toggle('active',!!on); el.classList.toggle('on',!!on); el.setAttribute('data-ai', on?'on':'off'); el.setAttribute('aria-checked', on?'true':'false'); if(text(el).indexOf('AI') >= 0){ el.textContent = on ? 'AI ON' : 'AI OFF'; } }catch(e){} }
-  function page5AiOn(){ try{ if(window.KRXA_PAGE5_M2M_STATE_MACHINE && typeof window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode === 'function'){ var m=window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode(); if(m==='ai_dialogue'||m==='ai'){ return true; } } }catch(e){} try{ var el=document.getElementById('autoToggle'); if(el && (el.classList.contains('active')||el.classList.contains('on')||el.getAttribute('data-ai')==='on'||el.getAttribute('aria-checked')==='true')){ return true; } }catch(e){} return window.KRXA_PAGE5_AI_DIALOGUE_ENABLED===true; }
-  function miniAiOn(){ try{ var el=document.querySelector('[data-flow="mini.ai.toggle"]'); if(el && (el.classList.contains('active')||el.classList.contains('on')||el.getAttribute('data-ai')==='on'||el.getAttribute('aria-checked')==='true')){ return true; } }catch(e){} return window.KRXA_MINI_AI_DIALOGUE_ENABLED===true; }
-  function setPage5Ai(on,el){ window.KRXA_PAGE5_AI_DIALOGUE_ENABLED=!!on; window.KRXA_AI_DIALOGUE_ENABLED=!!on; window.KRXA_PAGE5_MODE=on?'ai':'translate'; window.KRXA_M2M_MODE=window.KRXA_PAGE5_MODE; try{ if(window.KRXA_PAGE5_M2M_STATE_MACHINE && typeof window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode==='function'){ window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode(on?'ai_dialogue':'translate'); } }catch(e){} visual(el||document.getElementById('autoToggle'),!!on); }
-  function setMiniAi(on,el){ window.KRXA_MINI_AI_DIALOGUE_ENABLED=!!on; visual(el||document.querySelector('[data-flow="mini.ai.toggle"]'),!!on); }
-  function runTranslate(source,flowId){ unlockTTS(); releaseUI(); state.running=true; try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.requestMicAndStart==='function'){ return window.KRXA_Translate.requestMicAndStart({source:source,flow_id:flowId,userTriggered:true,forceTranslate:true,mode:'translate'}); } }catch(e){ try{ console.warn('[M2M_CONTROLLER_CLEAN_V1D translate failed]',e); }catch(_){} } releaseUI(); return false; }
-  function runAI(source,flowId){ unlockTTS(); releaseUI(); state.running=true; try{ if(window.KRXA_AI_DIALOGUE && typeof window.KRXA_AI_DIALOGUE.speakOnce==='function'){ return window.KRXA_AI_DIALOGUE.speakOnce({source:source,flow_id:flowId,userTriggered:true}); } }catch(e){ try{ console.warn('[M2M_CONTROLLER_CLEAN_V1D ai failed]',e); }catch(_){} } releaseUI(); return false; }
-  function speak(source){ if(source==='page5'){ return page5AiOn()?runAI('M2M_CONTROLLER_CLEAN_V1D_PAGE5_AI','page5.m2m.speak'):runTranslate('M2M_CONTROLLER_CLEAN_V1D_PAGE5_TRANSLATE','page5.m2m.speak'); } if(source==='mini'){ return miniAiOn()?runAI('M2M_CONTROLLER_CLEAN_V1D_MINI_AI','mini.m2m.speak'):runTranslate('M2M_CONTROLLER_CLEAN_V1D_MINI_TRANSLATE','mini.m2m.speak'); } return text(document.body).indexOf('말대말 통역')>=0?speak('page5'):speak('mini'); }
-  function stopAll(){ try{ if(window.KRXA_AI_DIALOGUE && typeof window.KRXA_AI_DIALOGUE.stop==='function'){ window.KRXA_AI_DIALOGUE.stop(); } }catch(e){} try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.stopAuto==='function'){ window.KRXA_Translate.stopAuto(); } }catch(e){} try{ if(window.speechSynthesis){ window.speechSynthesis.cancel(); } }catch(e){} releaseUI(); return true; }
-  function openText(){ try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.openQuickInput==='function'){ window.KRXA_Translate.openQuickInput(); return true; } }catch(e){} return false; }
-  function replay(){ try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.replayTTS==='function'){ window.KRXA_Translate.replayTTS(); return true; } }catch(e){} return false; }
-  function closeModal(){ try{ if(window.KRXA_App && typeof window.KRXA_App.closeModal==='function'){ window.KRXA_App.closeModal(); } }catch(e){} releaseUI(); return true; }
-  function pageBack(){ stopAll(); try{ if(window.KRXA_App && typeof window.KRXA_App.goUserPage==='function'){ window.KRXA_App.goUserPage(2); return true; } }catch(e){} return false; }
-  function enterM2M(){ try{ if(window.KRXA_App && typeof window.KRXA_App.goUserPage==='function'){ window.KRXA_App.goUserPage(5); return true; } }catch(e){} return false; }
-  function go(flowId,payload){ log(flowId,payload); state.lastFlow=flowId; if(flowId==='page5.ai.toggle'){ setPage5Ai(!page5AiOn(),payload&&payload.target); return true; } if(flowId==='mini.ai.toggle'){ setMiniAi(!miniAiOn(),payload&&payload.target); return true; } if(flowId==='page5.m2m.speak'){ return speak('page5'); } if(flowId==='mini.m2m.speak'){ return speak('mini'); } if(flowId==='m2m.speak'){ return speak(); } if(flowId==='m2m.stop'){ return stopAll(); } if(flowId==='m2m.text.open'){ return openText(); } if(flowId==='m2m.replay'){ return replay(); } if(flowId==='page.back'){ return pageBack(); } if(flowId==='modal.close'){ return closeModal(); } if(flowId==='m2m.enter'){ return enterM2M(); } return false; }
-  function onClick(ev){ var el=null; try{ el=ev.target&&ev.target.closest?ev.target.closest('[data-flow]'):null; }catch(e){} if(!el){return;} var flowId=el.getAttribute('data-flow'); if(!flowId || !isMine(flowId)){return;} ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation){ ev.stopImmediatePropagation(); } go(flowId,{target:el,text:text(el)}); return false; }
-  function ensureMiniToggle(){ try{ if(document.querySelector('[data-flow="mini.ai.toggle"]')){return;} if(text(document.body).indexOf('말대말 통역')>=0){return;} var bars=Array.from(document.querySelectorAll('button,div,a')).filter(function(el){ var t=text(el); return t.indexOf('말대말')>=0 || t.indexOf('말하면 바로 통역')>=0; }); var bar=bars[bars.length-1]; if(!bar){return;} bar.setAttribute('data-flow','mini.m2m.speak'); if(getComputedStyle(bar).position==='static'){bar.style.position='relative';} var badge=document.createElement('span'); badge.setAttribute('data-flow','mini.ai.toggle'); badge.setAttribute('data-ai','off'); badge.setAttribute('aria-checked','false'); badge.textContent='AI OFF'; badge.style.cssText='position:absolute;right:12px;top:6px;font-size:11px;padding:2px 7px;border-radius:999px;background:#dbe3ef;color:#0f172a;font-weight:800;z-index:9;'; badge.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation){ev.stopImmediatePropagation();} setMiniAi(!miniAiOn(),badge); badge.textContent=miniAiOn()?'AI ON':'AI OFF'; badge.style.background=miniAiOn()?'#2563eb':'#dbe3ef'; badge.style.color=miniAiOn()?'#fff':'#0f172a'; return false; },true); bar.appendChild(badge); }catch(e){} }
-  function init(){ if(window.KRXA_M2M_CONTROLLER_CLEAN_V1D_BOUND){return;} window.KRXA_M2M_CONTROLLER_CLEAN_V1D_BOUND=true; document.addEventListener('click',onClick,true); setTimeout(ensureMiniToggle,300); setTimeout(ensureMiniToggle,1000); setInterval(ensureMiniToggle,2500); }
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(init,30);}); setTimeout(init,200);
-  window.KRXA_FLOW={go:go,init:init,state:state,forceReleaseUI:releaseUI,unlockMobileTTS:unlockTTS};
-  window.M2M_CONTROLLER={speak:speak,stopAll:stopAll,page5AiOn:page5AiOn,miniAiOn:miniAiOn,setPage5Ai:setPage5Ai,setMiniAi:setMiniAi};
-})();
+  'use strict';
+  if(window.KRXA_M2M_CONTROLLER_FULLFILES_V1_LOADED){ return; }
+  window.KRXA_M2M_CONTROLLER_FULLFILES_V1_LOADED = true;
 
-/* M2M_CONTROLLER_CLEAN_V1D_MARKER: legacy V4D/V4F/V4G source paths removed; controller path only. */
+  if(typeof window.KRXA_PAGE5_AI_DIALOGUE_ENABLED !== 'boolean') window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = false;
+  if(typeof window.KRXA_MINI_AI_DIALOGUE_ENABLED !== 'boolean') window.KRXA_MINI_AI_DIALOGUE_ENABLED = false;
+
+  var state = { lastFlow:null, running:false, source:null };
+  var OWNED = {
+    'page5.ai.toggle':true,
+    'mini.ai.toggle':true,
+    'page5.m2m.speak':true,
+    'mini.m2m.speak':true,
+    'm2m.speak':true,
+    'm2m.stop':true,
+    'm2m.text.open':true,
+    'm2m.replay':true,
+    'm2m.enter':true,
+    'page.back':true,
+    'modal.close':true
+  };
+
+  function text(el){ try{ return (el && (el.innerText || el.textContent || '')) || ''; }catch(e){ return ''; } }
+  function log(id, payload){ try{ console.log('[M2M_CONTROLLER_FULLFILES_V1]', id, payload || ''); }catch(e){} }
+
+  function releaseUI(){
+    try{
+      state.running = false;
+      window.KRXA_M2M_BUSY = false;
+      window.KRXA_AI_DIALOGUE_BUSY = false;
+      window.KRXA_AI_DIALOGUE_LISTENING = false;
+      document.body.classList.remove('busy','listening','locked','modal-open');
+      document.querySelectorAll('[disabled]').forEach(function(el){
+        if(el.getAttribute('data-keep-disabled') !== '1') el.removeAttribute('disabled');
+      });
+    }catch(e){}
+  }
+
+  function unlockMobileTTS(){
+    try{
+      window.KRXA_TTS_UNLOCKED = true;
+      if(window.speechSynthesis){
+        var u = new SpeechSynthesisUtterance(' ');
+        u.volume = 0.01;
+        window.speechSynthesis.speak(u);
+        setTimeout(function(){ try{ window.speechSynthesis.cancel(); }catch(e){} }, 40);
+      }
+    }catch(e){}
+  }
+
+  function visual(el, on){
+    try{
+      if(!el) return;
+      el.classList.toggle('active', !!on);
+      el.classList.toggle('on', !!on);
+      el.setAttribute('data-ai', on ? 'on' : 'off');
+      el.setAttribute('aria-checked', on ? 'true' : 'false');
+      if(text(el).indexOf('AI') >= 0) el.textContent = on ? 'AI ON' : 'AI OFF';
+    }catch(e){}
+  }
+
+  function page5AiOn(){
+    try{
+      if(window.KRXA_PAGE5_M2M_STATE_MACHINE && typeof window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode === 'function'){
+        var m = window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode();
+        if(m === 'ai_dialogue' || m === 'ai') return true;
+      }
+    }catch(e){}
+    try{
+      var el = document.getElementById('autoToggle');
+      if(el && (el.classList.contains('active') || el.classList.contains('on') || el.getAttribute('data-ai') === 'on' || el.getAttribute('aria-checked') === 'true')) return true;
+    }catch(e){}
+    return window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true;
+  }
+
+  function miniAiOn(){
+    try{
+      var el = document.querySelector('[data-flow="mini.ai.toggle"]');
+      if(el && (el.classList.contains('active') || el.classList.contains('on') || el.getAttribute('data-ai') === 'on' || el.getAttribute('aria-checked') === 'true')) return true;
+    }catch(e){}
+    return window.KRXA_MINI_AI_DIALOGUE_ENABLED === true;
+  }
+
+  function setPage5Ai(on, el){
+    window.KRXA_PAGE5_AI_DIALOGUE_ENABLED = !!on;
+    window.KRXA_AI_DIALOGUE_ENABLED = !!on;
+    window.KRXA_PAGE5_MODE = on ? 'ai' : 'translate';
+    window.KRXA_M2M_MODE = window.KRXA_PAGE5_MODE;
+    try{
+      if(window.KRXA_PAGE5_M2M_STATE_MACHINE && typeof window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode === 'function'){
+        window.KRXA_PAGE5_M2M_STATE_MACHINE.setMode(on ? 'ai_dialogue' : 'translate');
+      }
+    }catch(e){}
+    visual(el || document.getElementById('autoToggle'), !!on);
+  }
+
+  function setMiniAi(on, el){
+    window.KRXA_MINI_AI_DIALOGUE_ENABLED = !!on;
+    visual(el || document.querySelector('[data-flow="mini.ai.toggle"]'), !!on);
+  }
+
+  function runTranslate(source, flowId){
+    unlockMobileTTS();
+    releaseUI();
+    state.running = true;
+    try{
+      if(window.KRXA_Translate && typeof window.KRXA_Translate.requestMicAndStart === 'function'){
+        return window.KRXA_Translate.requestMicAndStart({
+          source:source,
+          flow_id:flowId,
+          userTriggered:true,
+          forceTranslate:true,
+          mode:'translate'
+        });
+      }
+    }catch(e){ try{ console.warn('[M2M_CONTROLLER_FULLFILES_V1 translate failed]', e); }catch(_){} }
+    releaseUI();
+    return false;
+  }
+
+  function runAI(source, flowId){
+    unlockMobileTTS();
+    releaseUI();
+    state.running = true;
+    try{
+      if(window.KRXA_AI_DIALOGUE && typeof window.KRXA_AI_DIALOGUE.speakOnce === 'function'){
+        return window.KRXA_AI_DIALOGUE.speakOnce({ source:source, flow_id:flowId, userTriggered:true });
+      }
+    }catch(e){ try{ console.warn('[M2M_CONTROLLER_FULLFILES_V1 ai failed]', e); }catch(_){} }
+    releaseUI();
+    return false;
+  }
+
+  function speak(source){
+    if(source === 'page5'){
+      state.source = 'page5';
+      return page5AiOn()
+        ? runAI('M2M_CONTROLLER_FULLFILES_V1_PAGE5_AI','page5.m2m.speak')
+        : runTranslate('M2M_CONTROLLER_FULLFILES_V1_PAGE5_TRANSLATE','page5.m2m.speak');
+    }
+    if(source === 'mini'){
+      state.source = 'mini';
+      return miniAiOn()
+        ? runAI('M2M_CONTROLLER_FULLFILES_V1_MINI_AI','mini.m2m.speak')
+        : runTranslate('M2M_CONTROLLER_FULLFILES_V1_MINI_TRANSLATE','mini.m2m.speak');
+    }
+    return text(document.body).indexOf('말대말 통역') >= 0 ? speak('page5') : speak('mini');
+  }
+
+  function stopAll(){
+    try{ if(window.KRXA_AI_DIALOGUE && typeof window.KRXA_AI_DIALOGUE.stop === 'function') window.KRXA_AI_DIALOGUE.stop(); }catch(e){}
+    try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.stopAuto === 'function') window.KRXA_Translate.stopAuto(); }catch(e){}
+    try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+    releaseUI();
+    return true;
+  }
+
+  function openText(){ try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.openQuickInput === 'function'){ window.KRXA_Translate.openQuickInput(); return true; } }catch(e){} return false; }
+  function replay(){ try{ if(window.KRXA_Translate && typeof window.KRXA_Translate.replayTTS === 'function'){ window.KRXA_Translate.replayTTS(); return true; } }catch(e){} return false; }
+  function closeModal(){ try{ if(window.KRXA_App && typeof window.KRXA_App.closeModal === 'function') window.KRXA_App.closeModal(); }catch(e){} releaseUI(); return true; }
+  function pageBack(){ stopAll(); try{ if(window.KRXA_App && typeof window.KRXA_App.goUserPage === 'function'){ window.KRXA_App.goUserPage(2); return true; } }catch(e){} return false; }
+  function enterM2M(){ try{ if(window.KRXA_App && typeof window.KRXA_App.goUserPage === 'function'){ window.KRXA_App.goUserPage(5); return true; } }catch(e){} return false; }
+
+  function go(flowId, payload){
+    log(flowId, payload);
+    state.lastFlow = flowId;
+    if(flowId === 'page5.ai.toggle'){ setPage5Ai(!page5AiOn(), payload && payload.target); return true; }
+    if(flowId === 'mini.ai.toggle'){ setMiniAi(!miniAiOn(), payload && payload.target); return true; }
+    if(flowId === 'page5.m2m.speak') return speak('page5');
+    if(flowId === 'mini.m2m.speak') return speak('mini');
+    if(flowId === 'm2m.speak') return speak();
+    if(flowId === 'm2m.stop') return stopAll();
+    if(flowId === 'm2m.text.open') return openText();
+    if(flowId === 'm2m.replay') return replay();
+    if(flowId === 'page.back') return pageBack();
+    if(flowId === 'modal.close') return closeModal();
+    if(flowId === 'm2m.enter') return enterM2M();
+    return false;
+  }
+
+  function onClick(ev){
+    var el = null;
+    try{ el = ev.target && ev.target.closest ? ev.target.closest('[data-flow]') : null; }catch(e){}
+    if(!el) return;
+    var flowId = el.getAttribute('data-flow');
+    if(!flowId || !OWNED[flowId]) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    go(flowId, {target:el, text:text(el)});
+    return false;
+  }
+
+  function ensureMiniToggle(){
+    try{
+      if(document.querySelector('[data-flow="mini.ai.toggle"]')) return;
+      if(text(document.body).indexOf('말대말 통역') >= 0) return;
+      var bars = Array.from(document.querySelectorAll('button,div,a')).filter(function(el){
+        var t = text(el);
+        return t.indexOf('말대말') >= 0 || t.indexOf('말하면 바로 통역') >= 0;
+      });
+      var bar = bars[bars.length - 1];
+      if(!bar) return;
+      bar.setAttribute('data-flow','mini.m2m.speak');
+      if(getComputedStyle(bar).position === 'static') bar.style.position = 'relative';
+      var badge = document.createElement('span');
+      badge.setAttribute('data-flow','mini.ai.toggle');
+      badge.setAttribute('data-ai','off');
+      badge.setAttribute('aria-checked','false');
+      badge.textContent = 'AI OFF';
+      badge.style.cssText = 'position:absolute;right:12px;top:6px;font-size:11px;padding:2px 7px;border-radius:999px;background:#dbe3ef;color:#0f172a;font-weight:800;z-index:9;';
+      badge.addEventListener('click', function(ev){
+        ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+        setMiniAi(!miniAiOn(), badge);
+        badge.textContent = miniAiOn() ? 'AI ON' : 'AI OFF';
+        badge.style.background = miniAiOn() ? '#2563eb' : '#dbe3ef';
+        badge.style.color = miniAiOn() ? '#fff' : '#0f172a';
+        return false;
+      }, true);
+      bar.appendChild(badge);
+    }catch(e){}
+  }
+
+  function init(){
+    if(window.KRXA_M2M_CONTROLLER_FULLFILES_V1_BOUND) return;
+    window.KRXA_M2M_CONTROLLER_FULLFILES_V1_BOUND = true;
+    document.addEventListener('click', onClick, true);
+    setTimeout(ensureMiniToggle,300);
+    setTimeout(ensureMiniToggle,1000);
+    setInterval(ensureMiniToggle,2500);
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(init,30); });
+  setTimeout(init,200);
+
+  window.KRXA_FLOW = { go:go, init:init, state:state, forceReleaseUI:releaseUI, unlockMobileTTS:unlockMobileTTS };
+  window.M2M_CONTROLLER = { speak:speak, stopAll:stopAll, page5AiOn:page5AiOn, miniAiOn:miniAiOn, setPage5Ai:setPage5Ai, setMiniAi:setMiniAi };
+})();
