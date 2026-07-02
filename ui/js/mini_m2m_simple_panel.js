@@ -24,7 +24,7 @@
     stopAI();
     try{
       if(window.KRXA_Translate && window.KRXA_Translate.requestMicAndStart){
-        window.KRXA_FLOW&&window.KRXA_FLOW.go?window.KRXA_FLOW.go("mini.m2m.speak"):window.KRXA_Translate.requestMicAndStart({forceTranslate:true,source:"TRAVEL_V1_AI_DIALOGUE_FULL_SET_V4D_MINI_TRANSLATE",userTriggered:true});
+        window.KRXA_FLOW && window.KRXA_FLOW.go ? window.KRXA_FLOW.go("mini.m2m.speak") : false;
         return true;
       }
       if(typeof window.recordVoice === "function"){ window.recordVoice(); return true; }

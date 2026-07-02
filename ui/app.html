@@ -310,7 +310,7 @@
             <div class="autoBar miniAutoBar"><b>AI대화</b><div class="toggle" data-flow="mini.ai.toggle" data-ai="off"><div class="knob"></div></div></div>
             <button class="blue" onclick="KRXA_App.openMedia('photo')">📷 사진</button>
             <button class="blue" onclick="KRXA_App.openMedia('video')">🎥 동영상</button>
-            <button class="green" onclick="KRXA_Translate.openQuickInput()" data-flow="mini.m2m.speak">🎙 말하기</button>
+            <button class="green" data-flow="mini.m2m.speak">🎙 말하기</button>
           </div>
 <div class="linkBox">
   <b>추천앱 / 사용자 사이트</b>
@@ -343,7 +343,7 @@
 
 <div class="actionRow">
   <button class="btn green" data-flow="page5.m2m.speak">🎙 말하기</button>
-  <button class="btn red" onclick="KRXA_Translate.stopAuto()">종료</button>
+  <button class="btn red" data-flow="m2m.stop">종료</button>
 </div>
         </div>
       </div>

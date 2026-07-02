@@ -1,0 +1,17 @@
+{
+  "name": "TRAVEL_V1_M2M_CONTROLLER_CLEAN_V1D",
+  "created_at": "2026-07-02T13:05:52.279940",
+  "changed": [
+    "mini_m2m_simple_panel.js: legacy direct requestMicAndStart fallback removed",
+    "m2m_translate.js: requestMicAndStart rebuilt as controller-only V1D",
+    "flow_signal_router.js: controller sources upgraded to V1D"
+  ],
+  "warnings": [],
+  "backups": {
+    "ui/app.html": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1d\\20260702_130552\\ui\\app.html",
+    "ui/js/flow_signal_router.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1d\\20260702_130552\\ui\\js\\flow_signal_router.js",
+    "ui/js/m2m_translate.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1d\\20260702_130552\\ui\\js\\m2m_translate.js",
+    "ui/js/mini_m2m_simple_panel.js": "C:\\Users\\aaa\\KRXA_LOCAL_FULLSET\\backup_m2m_controller_clean_v1d\\20260702_130552\\ui\\js\\mini_m2m_simple_panel.js"
+  },
+  "goal": "Remove legacy V4D/V4F/V4G direct paths and keep only controller path."
+}

@@ -760,118 +760,26 @@ try {
     }
   }
    function requestMicAndStart(opt) {
-    /* M2M_CONTROLLER_CLEAN_V1B_TRANSLATE_GUARD */
+    /* M2M_CONTROLLER_CLEAN_V1D_TRANSLATE_GUARD */
     try{
       opt = opt || {};
       var src = String(opt.source || "");
-      var ok = opt.userTriggered === true && (
-        src === "M2M_CONTROLLER_CLEAN_V1B_PAGE5_TRANSLATE" ||
-        src === "M2M_CONTROLLER_CLEAN_V1B_MINI_TRANSLATE" ||
-        opt.forceTranslate === true
-      );
+      var allowed = [
+        "M2M_CONTROLLER_CLEAN_V1C_PAGE5_TRANSLATE",
+        "M2M_CONTROLLER_CLEAN_V1C_MINI_TRANSLATE",
+        "M2M_CONTROLLER_CLEAN_V1D_PAGE5_TRANSLATE",
+        "M2M_CONTROLLER_CLEAN_V1D_MINI_TRANSLATE"
+      ];
+      var ok = opt.userTriggered === true && allowed.indexOf(src) >= 0;
       if(!ok){
-        console.warn("[M2M_CONTROLLER_CLEAN_V1B] blocked non-controller translate request", src);
+        console.warn("[M2M_CONTROLLER_CLEAN_V1D] blocked non-controller translate request", src);
         return false;
       }
-    }catch(__m2m_controller_clean_v1b_guard_e){ return false; }
-recordVoice();
-    }catch(__patch90_e){
-      try{ console.warn("[PATCH90] direct recordVoice failed", __patch90_e); }catch(e){}
-      return false;
-    }
-
-    /* PATCH80_M2M_STATE_MACHINE_AI_BLOCK */
-    opt = opt || {};
-    try{
-      if(!(opt && opt.forceTranslate === true) &&
-         window.KRXA_PAGE5_M2M_STATE_MACHINE &&
-         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode &&
-         window.KRXA_PAGE5_M2M_STATE_MACHINE.getMode() === "ai_dialogue"){
-        if(window.KRXA_PAGE5_M2M_STATE_MACHINE.runAI){
-          window.KRXA_PAGE5_M2M_STATE_MACHINE.runAI();
-          return;
-        }
-      }
-    }catch(e){}
-
-    /* PATCH79_TRANSLATE_FLOW_MARKER */
-    try{
-      if(opt && opt.forceTranslate === true){
-        if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("translate",{source:opt.source||"m2m"}); }
-      }else if(!(window.KRXA_PAGE5_MODE_ROUTER && window.KRXA_PAGE5_MODE_ROUTER.isAi && window.KRXA_PAGE5_MODE_ROUTER.isAi())){
-        if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("translate",{source:"page5_translate"}); }
-      }
-    }catch(e){}
-
-
-    /* PATCH77_M2M_PAGE5_MODE_GATE */
-    opt = opt || {};
-    try{
-      if(!(opt && opt.forceTranslate === true) && window.KRXA_PAGE5_MODE_ROUTER && window.KRXA_PAGE5_MODE_ROUTER.isAi && window.KRXA_PAGE5_MODE_ROUTER.isAi()){
-        if(window.KRXA_AI_DIALOGUE_TRUE_AUTO && window.KRXA_AI_DIALOGUE_TRUE_AUTO.start){
-          window.KRXA_AI_DIALOGUE_TRUE_AUTO.start();
-          return;
-        }
-      }
-    }catch(e){}
-
-    /* PATCH76_FORCE_TRANSLATE_HARD_BYPASS */
-    opt = opt || {};
-    if(opt.forceTranslate === true){
-      window.KRXA_MINI_M2M_FORCE_TRANSLATE = true;
-      window.KRXA_MINI_M2M_MODE = "translate";
-      window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED = false;
-    }
-
-    opt = opt || {};
-
-    /* PATCH74_M2M_MIC_AI_GATE_START */
-    /* PATCH75_FORCE_TRANSLATE_BYPASS */
-    if (opt && opt.forceTranslate === true) { window.KRXA_MINI_M2M_FORCE_TRANSLATE = true; }
-    try {
-      var aiMode = !(opt && opt.forceTranslate === true) &&
-        window.KRXA_MINI_M2M_MODE === "ai" ||
-        window.KRXA_MINI_M2M_AI_DIALOGUE_ENABLED === true ||
-        window.KRXA_PAGE5_AI_DIALOGUE_ENABLED === true ||
-        window.KRXA_AI_DIALOGUE_ENABLED === true;
-
-      if (aiMode) {
-        if (window.KRXA_AI_DIALOGUE_TRUE_AUTO && window.KRXA_AI_DIALOGUE_TRUE_AUTO.start) {
-          window.KRXA_AI_DIALOGUE_TRUE_AUTO.start();
-          return;
-        }
-        if (window.KRXA_AI_DIALOGUE_AUTO_LOOP && window.KRXA_AI_DIALOGUE_AUTO_LOOP.start) {
-          window.KRXA_AI_DIALOGUE_AUTO_LOOP.start();
-          return;
-        }
-      }
-    } catch(e) {}
-    /* PATCH74_M2M_MIC_AI_GATE_END */
-
-    if (micStream) {
-      recordVoice();
-      return;
-    }
-
-    if (window.KRXA_App && window.KRXA_App.openModal) {
-      window.KRXA_App.openModal(
-        "마이크 사용 안내",
-        "<p>통역을 시작하려면 마이크 권한이 필요합니다.</p>" +
-          "<p style='font-size:13px;color:#64748b'>브라우저 권한창이 뜨면 허용을 눌러주세요.</p>" +
-          "<button class='btn green' style='width:100%;margin-top:8px' onclick='window.krxaMicStart()'>🎙 마이크 허용하고 시작</button>"
-      );
-      return;
-    }
-
-    recordVoice();
+    }catch(__m2m_controller_clean_v1d_guard_e){ return false; }
+    try{ if(window.KRXA_FLOW_LOCK){ window.KRXA_FLOW_LOCK.setFlow("translate",{source:opt.source||"m2m"}); } }catch(__flow_lock_e){}
+    try{ recordVoice(); return true; }
+    catch(__record_voice_e){ try{ console.warn("[M2M_CONTROLLER_CLEAN_V1D] recordVoice failed", __record_voice_e); }catch(e){} return false; }
   }
-
-  window.krxaMicStart = function () {
-    if (window.KRXA_App && window.KRXA_App.closeModal) {
-      window.KRXA_App.closeModal();
-    }
-    recordVoice();
-  };
 
   function openQuickInput() {
     if (window.KRXA_App && window.KRXA_App.openModal) {
