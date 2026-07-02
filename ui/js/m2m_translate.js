@@ -760,14 +760,20 @@ try {
     }
   }
    function requestMicAndStart(opt) {
-    /* M2M_CONTROLLER_CLEAN_V1_TRANSLATE_GUARD */
+    /* M2M_CONTROLLER_CLEAN_V1B_TRANSLATE_GUARD */
     try{
       opt = opt || {};
       var src = String(opt.source || "");
-      var allowed = ["M2M_CONTROLLER_CLEAN_V1_PAGE5_TRANSLATE","M2M_CONTROLLER_CLEAN_V1_MINI_TRANSLATE"];
-      var ok = opt.userTriggered === true && allowed.indexOf(src) >= 0;
-      if(!ok){ console.warn("[M2M_CONTROLLER_CLEAN_V1] blocked non-controller translate request", src); return false; }
-    }catch(__m2m_controller_clean_v1_guard_e){ return false; }
+      var ok = opt.userTriggered === true && (
+        src === "M2M_CONTROLLER_CLEAN_V1B_PAGE5_TRANSLATE" ||
+        src === "M2M_CONTROLLER_CLEAN_V1B_MINI_TRANSLATE" ||
+        opt.forceTranslate === true
+      );
+      if(!ok){
+        console.warn("[M2M_CONTROLLER_CLEAN_V1B] blocked non-controller translate request", src);
+        return false;
+      }
+    }catch(__m2m_controller_clean_v1b_guard_e){ return false; }
 recordVoice();
     }catch(__patch90_e){
       try{ console.warn("[PATCH90] direct recordVoice failed", __patch90_e); }catch(e){}
